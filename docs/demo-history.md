@@ -1,5 +1,9 @@
 # FaultForge Demo Git History & Regression Boundary
 
+**Active Branch:** `main`  
+**Latest Revision:** C6 (Fragile Head Revision)  
+**Status:** Ready for Chaos Detection and Git Bisect Evaluation
+
 This document records the exact commit history structure created on `main` to demonstrate deterministic chaos rehearsal, root-cause regression discovery via `git bisect`, and GitLab Duo Agent Platform remediation.
 
 ---
