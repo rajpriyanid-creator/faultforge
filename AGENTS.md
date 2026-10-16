@@ -43,3 +43,31 @@ This repository operates under the **Supervised Autonomy** model:
 - **Identical fault profile:** The exact same Toxiproxy fault profile (matching JSON attributes and profile hash) used to break the baseline must be replayed against the candidate patch.
 - **Objective machine-readable gates:** Verification is evaluated by scripts (`scripts/evaluate_replay.py`), not by model self-assessment.
 - **Fail-safe halt:** If any test fails, if dependencies are unreachable, or if evidence is ambiguous, mark status as `NOT_VERIFIED` or `CONTAINED_NEEDS_REVIEW` and halt the flow.
+
+---
+
+### 6. Repository Commands & Test Execution
+Agents must use the following standard commands when verifying code changes:
+
+- **Run Unit & Integration Tests:**
+  ```bash
+  python -m pytest tests/unit tests/integration -v
+  ```
+- **Run Live Chaos Resilience Test (requires Toxiproxy stack):**
+  ```bash
+  python -m pytest tests/chaos/test_resilience.py -v
+  ```
+- **Launch Chaos Stack (Docker Compose):**
+  ```bash
+  docker compose -f chaos/docker-compose.chaos.yml up -d
+  ```
+- **Run Fault Injection Probe:**
+  ```bash
+  python scripts/run_fault.py --mode baseline --expect-fail --output reports/fault_run_baseline.json
+  python scripts/run_fault.py --mode hardened --output reports/fault_run_hardened.json
+  ```
+- **Evaluate Replay Gates:**
+  ```bash
+  python scripts/evaluate_replay.py --baseline reports/fault_run_baseline.json --hardened reports/fault_run_hardened.json
+  ```
+

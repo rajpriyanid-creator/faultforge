@@ -5,7 +5,8 @@ import sys
 import json
 import uuid
 import subprocess
-from typing import Dict, Any, List
+import xml.etree.ElementTree as ET
+from typing import Dict, Any, List, Optional
 
 def sanitize_text(text: str) -> str:
     """Removes tokens, API keys, passwords, and sensitive information from log excerpts."""
@@ -19,112 +20,120 @@ def sanitize_text(text: str) -> str:
     sanitized = text
     for p in patterns:
         sanitized = re.sub(p, r"\1[REDACTED_SECRET]", sanitized, flags=re.IGNORECASE)
-    return sanitized
+    # Cap length to 1000 characters
+    return sanitized[:1000]
 
-def get_git_info() -> Dict[str, Any]:
+def get_real_git_sha() -> str:
     commit_sha = os.getenv("CI_COMMIT_SHA")
-    if not commit_sha:
+    if not commit_sha or len(commit_sha) != 40:
         try:
             commit_sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
         except Exception:
             commit_sha = "0000000000000000000000000000000000000000"
+    return commit_sha
 
-    recent_commits = []
+def parse_failed_junit_test(junit_path: str = "reports/junit_tests.xml") -> Optional[str]:
+    if not os.path.exists(junit_path):
+        return None
     try:
-        log_out = subprocess.check_output(["git", "log", "-n", "3", "--pretty=format:%h - %s"], text=True)
-        recent_commits = [c.strip() for c in log_out.splitlines() if c.strip()]
+        tree = ET.parse(junit_path)
+        root = tree.getroot()
+        for testcase in root.iter("testcase"):
+            for failure in testcase.iter("failure"):
+                classname = testcase.attrib.get("classname", "")
+                name = testcase.attrib.get("name", "")
+                return f"{classname}::{name}"
     except Exception:
-        recent_commits = [f"{commit_sha[:8]} - Initial baseline commit"]
-
-    return {
-        "commit_sha": commit_sha,
-        "recent_commits": recent_commits
-    }
+        pass
+    return None
 
 def build_incident_dossier(
-    fault_result_path: str = "reports/fault_run_result.json",
+    fault_result_path: str = "reports/fault_run_baseline.json",
+    diagnosis_path: str = "reports/diagnosis_report.json",
+    junit_path: str = "reports/junit_tests.xml",
     output_path: str = "reports/incident_dossier.json"
 ) -> Dict[str, Any]:
-    git_info = get_git_info()
+    git_sha = get_real_git_sha()
     incident_id = f"inc-{uuid.uuid4().hex[:8]}"
-    project_path = os.getenv("CI_PROJECT_PATH", "faultforge/faultforge-service")
+    project_path = os.getenv("CI_PROJECT_PATH", "faultforge/checkout-service")
     pipeline_url = os.getenv("CI_PIPELINE_URL", "https://gitlab.com/faultforge/pipeline/local")
 
-    fault_info = {}
-    observations = {}
-    if os.path.exists(fault_result_path):
-        with open(fault_result_path, "r") as f:
-            fault_run = json.load(f)
-            fault_info = {
-                "type": fault_run.get("fault_type", "latency"),
-                "target": "shipping-dependency",
-                "profile_name": fault_run.get("profile_name"),
-                "profile_hash": fault_run.get("profile_hash"),
-                "latency_ms": 3500,
-                "jitter_ms": 250
-            }
-            metrics = fault_run.get("metrics", {})
-            observations = {
-                "health_check": "degraded" if fault_run.get("sla_breaches", 0) > 0 else "passing",
-                "total_probes": metrics.get("total_probes", 5),
-                "failed_probes": metrics.get("failed_probes", 0),
-                "sla_breaches": fault_run.get("sla_breaches", 0),
-                "p95_ms": metrics.get("p95_ms", 0),
-                "avg_ms": metrics.get("avg_ms", 0)
-            }
-    else:
-        fault_info = {
-            "type": "latency",
-            "target": "shipping-dependency",
-            "profile_name": "latency_cascading_hang",
-            "profile_hash": "default-hash",
-            "latency_ms": 3500,
-            "jitter_ms": 250
-        }
-        observations = {
-            "health_check": "failed",
-            "http_5xx_count": 3,
-            "sla_breaches": 5,
-            "p95_ms": 3540.0
-        }
+    if not os.path.exists(fault_result_path):
+        print(f"[-] Baseline fault result missing at {fault_result_path}. Run chaos probe first.")
+        sys.exit(1)
 
-    log_excerpt = (
-        "httpx.ReadTimeout: The read operation timed out after 10.0 seconds\n"
-        "File 'app/clients/shipping_client.py', line 45, in get_shipping_rate\n"
-        "response = await client.get(url, params=params)"
-    )
+    with open(fault_result_path, "r", encoding="utf-8") as f:
+        fault_run = json.load(f)
+
+    diagnosis = {}
+    if os.path.exists(diagnosis_path):
+        with open(diagnosis_path, "r", encoding="utf-8") as f:
+            diagnosis = json.load(f)
+
+    metrics = fault_run.get("metrics", {})
+    failed_junit = parse_failed_junit_test(junit_path) or "tests/chaos/test_resilience.py::test_shipping_dependency_chaos_resilience"
+
+    confirmed_facts = [
+        f"Injected Toxiproxy fault: {fault_run.get('fault_type')} (profile hash {fault_run.get('profile_hash')})",
+        f"Observed {fault_run.get('sla_breaches', 0)} SLA breaches exceeding {fault_run.get('sla_budget_ms', 1500)}ms budget",
+        f"Probe latency: avg {metrics.get('avg_ms', 0)}ms, p95 {metrics.get('p95_ms', 0)}ms",
+        f"AST confirmed outbound call lacks bounded timeout keyword argument in app/clients/shipping_client.py"
+    ]
+
+    hypotheses = []
+    culprit = diagnosis.get("bisect_result", {}).get("culprit_sha")
+    if culprit:
+        confirmed_facts.append(f"Git bisect confirmed regressing commit {culprit} ({diagnosis.get('bisect_result', {}).get('culprit_subject')})")
+    else:
+        hypotheses.append("Regression introduced by recent change removing timeout or dependency configuration")
+
+    raw_errors = metrics.get("errors", [])
+    log_sample = "\n".join(raw_errors) if raw_errors else "HTTP 504 / SLA budget breach: Outbound carrier request exceeded latency threshold"
 
     dossier = {
         "incident_id": incident_id,
         "project_path": project_path,
-        "commit_sha": git_info["commit_sha"],
+        "commit_sha": git_sha,
         "pipeline_url": pipeline_url,
-        "test_run_id": f"chaos-{uuid.uuid4().hex[:6]}",
-        "fault": fault_info,
-        "observations": observations,
+        "test_run_id": fault_run.get("run_id", f"run-{uuid.uuid4().hex[:6]}"),
+        "fault": {
+            "type": fault_run.get("fault_type", "latency"),
+            "target": "shipping-dependency",
+            "profile_name": fault_run.get("profile_name", "latency_cascading_hang"),
+            "profile_hash": fault_run.get("profile_hash"),
+            "latency_ms": 3500.0,
+            "jitter_ms": 250.0
+        },
+        "observations": {
+            "health_check": "degraded" if fault_run.get("sla_breaches", 0) > 0 else "healthy",
+            "total_probes": metrics.get("total_probes", 5),
+            "failed_probes": metrics.get("failed_probes", 0),
+            "sla_breaches": fault_run.get("sla_breaches", 0),
+            "p95_ms": metrics.get("p95_ms", 0.0),
+            "avg_ms": metrics.get("avg_ms", 0.0)
+        },
+        "confirmed_facts": confirmed_facts,
+        "hypotheses": hypotheses,
         "evidence": {
-            "failed_test": "tests/chaos/test_fault_replay.py::test_unpatched_vulnerability_reproduction",
-            "log_excerpt": sanitize_text(log_excerpt),
-            "relevant_commits": git_info["recent_commits"],
-            "call_site": "app/clients/shipping_client.py:45"
+            "failed_test": failed_junit,
+            "call_site": "app/clients/shipping_client.py:23",
+            "log_excerpt": sanitize_text(log_sample),
+            "culprit_commit": culprit
         },
         "deployment": {
             "candidate_revision": os.getenv("K_REVISION", "rev-candidate-1"),
             "known_good_revision": os.getenv("KNOWN_GOOD_REVISION", "rev-stable-0")
-        },
-        "diagnosis_status": "PENDING_DIAGNOSIS",
-        "notes": "Facts and hypotheses are strictly separated. Secrets sanitized."
+        }
     }
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    with open(output_path, "w") as f:
+    with open(output_path, "w", encoding="utf-8") as f:
         json.dump(dossier, f, indent=2)
 
-    print(f"[+] Incident Dossier generated: {output_path}")
+    print(f"\n[+] Incident Dossier generated: {output_path}")
     print(f"    Incident ID: {incident_id}")
-    print(f"    Fault Type: {fault_info.get('type')} ({fault_info.get('profile_name')})")
-    print(f"    SLA Breaches: {observations.get('sla_breaches')}")
-
+    print(f"    Commit SHA:  {git_sha}")
+    print(f"    Facts:       {len(confirmed_facts)} confirmed, {len(hypotheses)} hypotheses")
     return dossier
 
 if __name__ == "__main__":

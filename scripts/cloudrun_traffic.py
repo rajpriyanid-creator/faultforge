@@ -41,7 +41,7 @@ def route_traffic(service: str, region: str, revisions_and_percents: str):
     ]
     return run_cmd(cmd)
 
-def rollback_to_stable(service: str, region: str, stable_revision: str):
+def rollback_to_stable(service: str, region: str, stable_revision: str, verify_url: Optional[str] = None) -> Dict[str, Any]:
     print(f"\n[!] ALERT: Initiating immediate traffic rollback to known-good revision: {stable_revision}")
     cmd = [
         "gcloud", "run", "services", "update-traffic", service,
@@ -49,8 +49,31 @@ def rollback_to_stable(service: str, region: str, stable_revision: str):
         f"--to-revisions={stable_revision}=100"
     ]
     out = run_cmd(cmd)
-    print(f"[+] Rollback executed successfully. Traffic restored to 100% on {stable_revision}.\n")
-    return out
+
+    healthy = True
+    if verify_url:
+        print(f"[*] Re-verifying health after rollback at {verify_url}...")
+        healthy = verify_live_health(verify_url)
+
+    rollback_record = {
+        "rollback_executed": True,
+        "target_service": service,
+        "region": region,
+        "restored_revision": stable_revision,
+        "traffic_allocation": {stable_revision: 100},
+        "health_reverified": healthy,
+        "timestamp": time.time(),
+        "command_output": out
+    }
+
+    os.makedirs("reports", exist_ok=True)
+    with open("reports/rollback.json", "w", encoding="utf-8") as f:
+        json.dump(rollback_record, f, indent=2)
+
+    print(f"[+] Rollback executed successfully. Saved to reports/rollback.json\n")
+    if not healthy:
+        sys.exit(1)
+    return rollback_record
 
 def main():
     parser = argparse.ArgumentParser(description="FaultForge Cloud Run Traffic & Rollback Manager")
@@ -71,7 +94,7 @@ def main():
             sys.exit(1)
         route_traffic(args.service, args.region, args.revisions)
     elif args.action == "rollback":
-        rollback_to_stable(args.service, args.region, args.stable_revision)
+        rollback_to_stable(args.service, args.region, args.stable_revision, verify_url=args.url)
 
 if __name__ == "__main__":
     main()

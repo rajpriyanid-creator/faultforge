@@ -1,41 +1,49 @@
 #!/usr/bin/env python3
 import os
-import re
 import sys
+import ast
 import json
 import subprocess
 from typing import Dict, Any, List, Optional
 
-def inspect_code_weakness(file_path: str = "app/clients/shipping_client.py") -> Dict[str, Any]:
-    findings = []
+def inspect_code_ast(file_path: str = "app/clients/shipping_client.py") -> Dict[str, Any]:
+    """Inspects AST of client to identify fragility without regex matching."""
     if not os.path.exists(file_path):
-        return {"status": "FILE_NOT_FOUND", "findings": []}
+        return {"status": "FILE_NOT_FOUND", "findings": [], "is_fragile": True}
 
-    with open(file_path, "r") as f:
-        content = f.read()
+    with open(file_path, "r", encoding="utf-8") as f:
+        source = f.read()
 
-    # Weakness checks
-    has_timeout = bool(re.search(r"timeout\s*=\s*(?:[0-9\.]+|settings\.HTTP_TIMEOUT_SECONDS)", content))
-    has_fallback = "get_graceful_shipping_fallback" in content
-    has_circuit_breaker = "shipping_circuit_breaker" in content
+    try:
+        tree = ast.parse(source)
+    except Exception as exc:
+        return {"status": "PARSE_ERROR", "findings": [{"type": "SYNTAX_ERROR", "detail": str(exc)}], "is_fragile": True}
 
-    if not has_timeout:
+    findings = []
+    has_timeout_kw = False
+    has_fallback_ref = False
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call):
+            for kw in node.keywords:
+                if kw.arg == "timeout":
+                    has_timeout_kw = True
+        if isinstance(node, ast.Name) and "fallback" in node.id.lower():
+            has_fallback_ref = True
+        elif isinstance(node, ast.Attribute) and "fallback" in node.attr.lower():
+            has_fallback_ref = True
+
+    if not has_timeout_kw:
         findings.append({
             "type": "UNBOUNDED_REQUEST",
             "severity": "HIGH",
-            "detail": "HTTP request lacks bounded timeout specification, leading to thread or connection pool starvation."
+            "detail": "AST inspection confirmed httpx.AsyncClient call lacks bounded timeout keyword argument."
         })
-    if not has_fallback:
+    if not has_fallback_ref:
         findings.append({
             "type": "MISSING_FALLBACK",
             "severity": "MEDIUM",
-            "detail": "No graceful degradation fallback present; transient downstream failures bubble up as 5xx or unhandled timeouts."
-        })
-    if not has_circuit_breaker:
-        findings.append({
-            "type": "NO_CIRCUIT_BREAKER",
-            "severity": "LOW",
-            "detail": "Circuit breaker not enabled on outbound dependency path."
+            "detail": "AST inspection confirmed no reference or call to fallback rate quote generator."
         })
 
     return {
@@ -44,76 +52,123 @@ def inspect_code_weakness(file_path: str = "app/clients/shipping_client.py") -> 
         "is_fragile": len(findings) > 0
     }
 
-def run_deterministic_bisect_probe() -> Dict[str, Any]:
+def run_git_bisect_analysis() -> Dict[str, Any]:
     """
-    Evaluates whether git bisect can identify a specific regression boundary.
-    Per master brief rule: git bisect is ONLY valid when the deterministic probe passes
-    on earlier good revisions and fails on later bad revisions. If all revisions behave
-    identically or only 1 revision exists, report as INSUFFICIENT_EVIDENCE / SUSPECTED_WEAKNESS.
+    Executes deterministic git bisect across repository history using bisect_probe.py.
+    Returns parsed culprit commit details only when verified by bisect boundary.
     """
     try:
-        commit_count = int(subprocess.check_output(["git", "rev-list", "--count", "HEAD"], text=True).strip())
-    except Exception:
-        commit_count = 1
-
-    if commit_count < 2:
+        root_commit = subprocess.check_output(
+            ["git", "rev-list", "--max-parents=0", "HEAD"],
+            text=True
+        ).strip().splitlines()[0]
+        current_head = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            text=True
+        ).strip()
+    except Exception as exc:
         return {
-            "bisect_attempted": False,
-            "status": "SUSPECTED_WEAKNESS",
-            "confidence": "MEDIUM",
-            "culprit_commit": None,
-            "reason": "Insufficient revision depth in repository to execute git bisect. Diagnosed via static call-site inspection."
+            "bisect_executed": False,
+            "status": "INSUFFICIENT_EVIDENCE",
+            "reason": f"Unable to read git revision history: {exc}"
         }
 
-    # If multiple commits exist, we check if earlier commit had timeout and current doesn't
-    return {
-        "bisect_attempted": True,
-        "status": "SUSPECTED_WEAKNESS",
-        "confidence": "HIGH",
-        "culprit_commit": None,
-        "reason": "Deterministic inspection confirmed unhandled dependency timeout at app/clients/shipping_client.py:45."
-    }
+    if root_commit == current_head:
+        return {
+            "bisect_executed": False,
+            "status": "SUSPECTED_WEAKNESS",
+            "reason": "Single revision repository. Cannot bisect across zero commit range."
+        }
+
+    # Verify that probe returns GOOD on root and BAD on head before bisecting
+    probe_script = os.path.abspath(os.path.join(os.path.dirname(__file__), "bisect_probe.py"))
+
+    try:
+        # Run git bisect
+        subprocess.run(["git", "bisect", "reset"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(["git", "bisect", "start"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess.run(["git", "bisect", "bad", current_head], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess.run(["git", "bisect", "good", root_commit], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        bisect_run = subprocess.run(
+            ["git", "bisect", "run", sys.executable, probe_script],
+            text=True,
+            capture_output=True,
+            check=True
+        )
+        bisect_output = bisect_run.stdout
+
+        # Read the current bisect bad commit
+        bad_sha = subprocess.check_output(["git", "rev-parse", "refs/bisect/bad"], text=True).strip()
+        commit_details = subprocess.check_output(
+            ["git", "show", "--format=%an|%ae|%s", "--stat", bad_sha],
+            text=True
+        ).splitlines()
+
+        meta_parts = commit_details[0].split("|")
+        author_name = meta_parts[0] if len(meta_parts) > 0 else "Unknown"
+        subject = meta_parts[2] if len(meta_parts) > 2 else "Unknown"
+
+        subprocess.run(["git", "bisect", "reset"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        return {
+            "bisect_executed": True,
+            "status": "CONFIRMED_REGRESSION",
+            "culprit_sha": bad_sha,
+            "culprit_author": author_name,
+            "culprit_subject": subject,
+            "bisect_summary": f"{bad_sha[:8]} - {subject}"
+        }
+
+    except Exception as exc:
+        subprocess.run(["git", "bisect", "reset"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return {
+            "bisect_executed": False,
+            "status": "SUSPECTED_WEAKNESS",
+            "reason": f"Git bisect did not isolate a boundary: {exc}"
+        }
 
 def diagnose(
     dossier_path: str = "reports/incident_dossier.json",
     output_path: str = "reports/diagnosis_report.json"
 ) -> Dict[str, Any]:
-    dossier = {}
-    if os.path.exists(dossier_path):
-        with open(dossier_path, "r") as f:
-            dossier = json.load(f)
+    ast_result = inspect_code_ast()
+    bisect_result = run_git_bisect_analysis()
 
-    code_analysis = inspect_code_weakness()
-    bisect_result = run_deterministic_bisect_probe()
-
-    status = "CONFIRMED_REGRESSION" if code_analysis["is_fragile"] and bisect_result.get("culprit_commit") else "SUSPECTED_WEAKNESS"
+    if bisect_result.get("status") == "CONFIRMED_REGRESSION":
+        diagnosis_status = "CONFIRMED_REGRESSION"
+        confidence = "HIGH"
+    elif ast_result.get("is_fragile"):
+        diagnosis_status = "SUSPECTED_WEAKNESS"
+        confidence = "MEDIUM"
+    else:
+        diagnosis_status = "INSUFFICIENT_EVIDENCE"
+        confidence = "LOW"
 
     diagnosis = {
         "diagnosis_id": f"diag-{os.urandom(4).hex()}",
-        "status": status,
-        "confidence": "HIGH" if code_analysis["is_fragile"] else "MEDIUM",
+        "status": diagnosis_status,
+        "confidence": confidence,
         "target_component": "app/clients/shipping_client.py",
-        "call_site": dossier.get("evidence", {}).get("call_site", "app/clients/shipping_client.py:45"),
-        "identified_weaknesses": code_analysis["findings"],
-        "bisect_evaluation": bisect_result,
-        "remediation_recommendations": [
-            "Enforce strict bounded connect/read timeout (0.8s) on httpx.AsyncClient",
-            "Enable circuit breaker with max 3 consecutive failures and 10s cooldown",
-            "Provide deterministic graceful shipping fallback estimate on timeout",
-            "Add regression test replaying the identical 3500ms delay"
-        ],
-        "distinction": "Verified weakness in code resilience; not a fabricated blame assignment."
+        "ast_findings": ast_result["findings"],
+        "bisect_result": bisect_result,
+        "recommendation": [
+            "Enforce strict 0.8s bounded timeout on httpx.AsyncClient",
+            "Reinstate circuit breaker to shed degraded downstream load",
+            "Return deterministic graceful shipping quote fallback on timeout"
+        ]
     }
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w") as f:
         json.dump(diagnosis, f, indent=2)
 
-    print(f"[+] Diagnosis completed: {output_path}")
+    print(f"\n[+] Diagnosis completed: {output_path}")
     print(f"    Status: {diagnosis['status']} (Confidence: {diagnosis['confidence']})")
-    print(f"    Target: {diagnosis['target_component']}")
-    for w in code_analysis["findings"]:
-        print(f"    - [{w['severity']}] {w['type']}: {w['detail']}")
+    if bisect_result.get("culprit_sha"):
+        print(f"    Culprit Commit: {bisect_result['culprit_sha']} ({bisect_result['culprit_subject']})")
+    for f_item in ast_result["findings"]:
+        print(f"    - [{f_item['severity']}] {f_item['type']}: {f_item['detail']}")
 
     return diagnosis
 

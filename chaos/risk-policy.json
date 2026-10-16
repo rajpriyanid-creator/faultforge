@@ -1,0 +1,24 @@
+{
+  "high_risk_patterns": [
+    "auth",
+    "payment",
+    "schema",
+    "migration",
+    "secret",
+    "iam",
+    "infra/cloudrun"
+  ],
+  "max_low_risk_diff_lines": 150,
+  "medium_risk_patterns": [
+    "requirements.txt",
+    "Dockerfile",
+    "docker-compose",
+    "flows/"
+  ],
+  "allowed_low_risk_prefixes": [
+    "app/clients/",
+    "app/resilience/",
+    "tests/"
+  ],
+  "require_regression_test_in_tests": true
+}

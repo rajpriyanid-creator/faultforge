@@ -33,8 +33,17 @@ async def test_metrics_endpoint():
         assert "circuit_breaker" in data
 
 @pytest.mark.asyncio
-async def test_checkout_endpoint_with_fallback(monkeypatch):
-    # Ensure fallback works seamlessly end-to-end
+async def test_checkout_endpoint(monkeypatch):
+    async def mock_get_shipping_rate(destination_zip, weight_kg):
+        return {
+            "carrier": "Standard Express",
+            "rate": 10.00,
+            "currency": "USD",
+            "is_fallback": False,
+            "is_estimate": False
+        }
+
+    monkeypatch.setattr("app.main.shipping_client.get_shipping_rate", mock_get_shipping_rate)
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         payload = {
@@ -51,7 +60,7 @@ async def test_checkout_endpoint_with_fallback(monkeypatch):
         assert res.status_code == 200
         data = res.json()
         assert data["order_id"] == "ORD-12345"
-        assert data["status"] in ("CONFIRMED", "CONFIRMED_ESTIMATED_SHIPPING")
+        assert data["status"] == "CONFIRMED"
         assert data["items_subtotal"] == 60.00
-        assert data["total_amount"] > 60.00
+        assert data["total_amount"] == 70.00
         assert "X-Response-Time-Ms" in res.headers

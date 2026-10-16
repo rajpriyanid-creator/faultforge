@@ -1,50 +1,48 @@
 # GitLab Transcend 2026: Life After Code — Submission Guide
 
-## Project Information
+## 1. Project Information
 
 - **Project Name:** FaultForge
 - **Tagline:** Rehearse a failure. Recover safely. Prove the service is stronger.
-- **Track:** Path B — Bring Your Own (Open Source Base with MIT License)
-- **Primary Prize Category:** Path B — Best Supervised Agent ($4,000)
-- **Secondary Prize Category:** Path B — Most Stages Covered ($5,000)
+- **Track Selection:** Path A — Start Fresh (or Path B if citing an existing MIT upstream repository; default: Path A)
+- **Primary Prize Category:** Best Supervised Agent ($4,000)
+- **Secondary Prize Category:** Most Stages Covered ($5,000)
 - **Additional Prize Opportunity:** Most Creative ($4,000)
 - **Bonus Award:** Google Cloud Deployment Bonus (+0.2 Points)
-- **Autonomy Level:** Supervised Autonomy
+- **Autonomy Level:** Supervised Autonomy (Risk-gated human promotion for live traffic)
 
 ---
 
-## Pitch & Submission Overview
+## 2. Devpost Submission Copy
 
 ### One-Sentence Pitch
 FaultForge uses GitLab Duo Agent Platform to inject a controlled dependency failure into an isolated application environment, diagnose the code or configuration weakness that makes the application fail, recover safely, open a resilience-hardening merge request, and prove the fix by replaying the exact same fault.
 
-### The Problem
-Most CI pipelines only tell a developer when a deterministic unit test fails. AI coding assistants can generate code patches, but they cannot prove the patch actually withstands real-world network degradation. When external dependencies slow down, timeout, or reset connections, services experience cascading failures and thread starvation because unit tests mocked those dependencies.
+### The Problem It Solves
+Standard CI pipelines test that unit tests pass, but unit tests usually mock outbound HTTP dependencies. In production, when an external API experiences transient network degradation or slow responses, services experience thread starvation, cascading timeouts, and unhandled 5xx errors. AI coding tools can suggest code changes, but cannot verify whether the patch actually survives live network failure.
 
-### The Differentiator
-The differentiator is not "AI says it fixed the app." **It is the before/after empirical proof under the exact same controlled failure condition.**
+### What FaultForge Does
+FaultForge closes the loop between chaos engineering and AI-assisted remediation:
+1. **Injects Chaos:** Routes outbound calls through Shopify Toxiproxy and injects a 3500ms delay.
+2. **Proves Failure:** Captures SLA budget breaches (>1500ms) with empirical telemetry.
+3. **Diagnoses Weakness:** Discovers the regression boundary via deterministic `git bisect` and AST call-site inspection.
+4. **Remediates with Duo:** GitLab Duo custom flow synthesizes a minimal resilience fix (0.8s timeout, circuit breaker, and observable fallback) and opens a Merge Request.
+5. **Replays Exact Fault:** Re-runs the identical Toxiproxy fault profile hash against the candidate code.
+6. **Signs Audit Receipt:** Generates a cryptographic SHA-256 sealed Evidence Receipt.
+7. **Supervised Gate:** Enforces risk policy and requires human developer approval before promoting Cloud Run candidate revisions.
+
+### Limitations & Honest Boundaries
+- Evaluated on a focused FastAPI microservice with an external shipping carrier dependency.
+- Primary fault scenario is a 3500ms dependency latency toxic; secondary scenario is connection reset.
+- Fallback quotes are deterministically generated estimates clearly flagged with `is_fallback: true` and `is_estimate: true` to avoid misrepresenting live carrier data.
+- Does not modify database schemas, payment processing, or authorization code.
 
 ---
 
-## Lifecycle Stages Covered (9 of 9)
-
-1. **`plan`**: Creates an incident work item and Incident Dossier with sanitized logs and failure evidence.
-2. **`create`**: GitLab Duo Flow Orchestrator prepares the resilience fix, branch, and Merge Request with risk classification.
-3. **`configure`**: Configures Toxiproxy network chaos topology and latency toxic profiles.
-4. **`verify`**: Runs pytest unit/integration tests and replays the identical Toxiproxy fault against both baseline and hardened revisions.
-5. **`secure`**: Executes Bandit AST security scans and regex secret detection to ensure zero credential leakage.
-6. **`package`**: Builds multi-stage production container image with security non-root user.
-7. **`release`**: Deploys candidate revision to Google Cloud Run staging environment.
-8. **`monitor`**: Evaluates live health probes (`/health`, `/ready`), sliding window latency percentiles (p50/p95/p99), and circuit breaker status.
-9. **`govern`**: Enforces Supervised Autonomy risk policy, evaluates tamper-evident SHA-256 seal, and gates live production promotion on human approval.
-
----
-
-## Architecture & Technology Stack
+## 3. Technology Stack
 
 - **Agent Platform:** GitLab Duo Agent Platform Custom Flow (`flows/faultforge-flow.yaml`)
-- **Backend Framework:** Python 3.12 + FastAPI (`app/main.py`)
-- **Fault Injection Engine:** Shopify Toxiproxy & Python Standalone Chaos Proxy (`chaos/toxiproxy_helper.py`)
-- **Resilience Layer:** Bounded HTTP timeouts (`httpx`), Circuit Breaker (`CLOSED` -> `OPEN` -> `HALF_OPEN`), and Graceful Fallback (`app/resilience/policy.py`)
-- **Deployment Platform:** Google Cloud Run with Knative revision traffic management (`infra/cloudrun/`)
-- **Verification Engine:** Machine-readable before/after evaluator (`scripts/evaluate_replay.py`) and tamper-evident Evidence Receipt (`scripts/generate_receipt.py`)
+- **Backend Service:** Python 3.12 + FastAPI (`app/main.py`)
+- **Chaos Engine:** Shopify Toxiproxy (`ghcr.io/shopify/toxiproxy:2.9.0`) & `chaos/toxiproxy_helper.py`
+- **Testing:** pytest & pytest-asyncio (`tests/unit`, `tests/integration`, `tests/chaos`)
+- **Deployment:** Google Cloud Run Knative spec (`infra/cloudrun/service.yaml`) & `scripts/cloudrun_traffic.py`
