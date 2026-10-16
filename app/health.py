@@ -12,6 +12,7 @@ async def health_check():
     """
     Kubernetes / Cloud Run liveness probe.
     Returns 200 OK if service process is healthy and active.
+    Includes active uptime and revision identifier.
     """
     uptime_seconds = round(time.time() - start_timestamp, 2)
     return {
