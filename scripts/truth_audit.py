@@ -135,6 +135,75 @@ def audit_report_consistency() -> List[str]:
 
     return violations
 
+def audit_docs_claims() -> List[str]:
+    violations = []
+    baseline_path = "reports/fault_run_baseline.json"
+    receipt_path = "reports/evidence_receipt.json"
+
+    baseline_data = {}
+    if os.path.exists(baseline_path):
+        try:
+            with open(baseline_path, "r", encoding="utf-8") as bf:
+                baseline_data = json.load(bf)
+        except Exception as e:
+            violations.append(f"Could not load {baseline_path} for claims audit: {e}")
+
+    receipt_data = {}
+    if os.path.exists(receipt_path):
+        try:
+            with open(receipt_path, "r", encoding="utf-8") as rf:
+                receipt_data = json.load(rf)
+        except Exception as e:
+            violations.append(f"Could not load {receipt_path} for claims audit: {e}")
+
+    doc_files = [
+        "README.md",
+        "docs/architecture.md",
+        "docs/measurement-method.md",
+        "docs/safety-policy.md",
+        "docs/hackathon-submission.md",
+        "docs/demo-script.md",
+    ]
+
+    expected_stages = 9
+    expected_budget = 1500
+    expected_culprit = "974035c"
+
+    for doc in doc_files:
+        if not os.path.exists(doc):
+            continue
+        with open(doc, "r", encoding="utf-8", errors="ignore") as f:
+            content = f.read()
+
+        # Check track selection: Path A
+        if "Path B — Bring Your Own" in content:
+            violations.append(f"{doc} - Mismatched track selection: claims Path B instead of Path A")
+
+        # Check stage count claims: 9 lifecycle stages
+        stage_matches = re.findall(r"(\d+)\s+(?:Covered\s+)?(?:Lifecycle\s+)?Stages", content, re.IGNORECASE)
+        for sm in stage_matches:
+            if int(sm) != expected_stages:
+                violations.append(f"{doc} - Mismatched lifecycle stage claim: claims {sm} stages instead of {expected_stages}")
+
+        # Check budget claims
+        budget_matches = re.findall(r"(\d+)\s*ms\s+SLA\s+budget", content, re.IGNORECASE)
+        for bm in budget_matches:
+            if int(bm) != expected_budget:
+                violations.append(f"{doc} - Mismatched SLA budget claim: claims {bm}ms instead of {expected_budget}ms")
+
+        # Check culprit commit
+        if "974035" not in content and "culprit" in content.lower():
+            violations.append(f"{doc} - Missing or mismatched culprit commit SHA reference (expected {expected_culprit})")
+
+        # If baseline data exists, verify baseline latency claims
+        if baseline_data:
+            metrics = baseline_data.get("metrics", {})
+            real_avg = metrics.get("avg_ms")
+            if real_avg and "3742" in content and abs(float(real_avg) - 3742.46) > 1.0:
+                violations.append(f"{doc} - Claimed avg latency 3742ms does not match real baseline avg ({real_avg}ms)")
+
+    return violations
+
 def main():
     final_audit = ("--final-audit" in sys.argv) or (os.getenv("FINAL_AUDIT") == "1")
     print("=================================================================")
@@ -147,6 +216,7 @@ def main():
     violations.extend(audit_gitlab_ci_todos(final_mode=final_audit))
     violations.extend(audit_chaos_mocks())
     violations.extend(audit_report_consistency())
+    violations.extend(audit_docs_claims())
 
     if violations:
         print(f"\n[-] FAILED: Found {len(violations)} truth audit violation(s):")
@@ -155,8 +225,9 @@ def main():
         print("\nFix all violations to satisfy Rule 1 (Never Fabricate Evidence).\n")
         sys.exit(1)
     else:
-        print("\n[+] PASSED: Zero forbidden patterns, zero mocked chaos tests, clean audit.\n")
+        print("\n[+] PASSED: Zero forbidden patterns, zero mocked chaos tests, clean claims audit.\n")
         sys.exit(0)
 
 if __name__ == "__main__":
     main()
+

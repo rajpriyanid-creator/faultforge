@@ -1,48 +1,71 @@
 # GitLab Transcend 2026: Life After Code — Submission Guide
 
-## 1. Project Information
+**Project:** FaultForge ("Break It, Heal It")  
+**Track:** Path A — Start Fresh  
+**Deadline:** 27 Oct 2026, 1:00 PM UTC (6:30 PM IST)  
+**Submission Portal:** Devpost  
+
+---
+
+## 1. Project Overview
 
 - **Project Name:** FaultForge
 - **Tagline:** Rehearse a failure. Recover safely. Prove the service is stronger.
-- **Track Selection:** Path A — Start Fresh (or Path B if citing an existing MIT upstream repository; default: Path A)
-- **Primary Prize Category:** Best Supervised Agent ($4,000)
-- **Secondary Prize Category:** Most Stages Covered ($5,000)
-- **Additional Prize Opportunity:** Most Creative ($4,000)
-- **Bonus Award:** Google Cloud Deployment Bonus (+0.2 Points)
-- **Autonomy Level:** Supervised Autonomy (Risk-gated human promotion for live traffic)
+- **Track Selection:** **Path A — Start Fresh**
+- **Primary Prize Category:** **Best Supervised Agent ($4,000)**
+  - Full automation for chaos injection, AST bisecting, MR generation, and staging deployment, paired with a mandatory human approval gate for live traffic.
+- **Secondary Prize Category:** **Most Stages Covered ($5,000)**
+  - All 9 GitLab lifecycle stages (`plan`, `create`, `configure`, `verify`, `secure`, `package`, `release`, `monitor`, `govern`) actively executed with verifiable machine-readable artifacts.
+- **Additional Prize Opportunity:** **Most Creative ($4,000)**
+  - First closed-loop system combining chaos engineering, GitLab Duo custom flows, and empirical exact-fault replay verification.
+- **Google Cloud Deployment Bonus:** (+0.2 Points)
+  - Google Cloud Run Knative deployment and automated canary traffic splitting / rollback implemented in `infra/cloudrun/` and `scripts/cloudrun_traffic.py`.
+- **Autonomy Model:** Supervised Autonomy (human approves promotion to 100% live traffic).
 
 ---
 
 ## 2. Devpost Submission Copy
 
 ### One-Sentence Pitch
-FaultForge uses GitLab Duo Agent Platform to inject a controlled dependency failure into an isolated application environment, diagnose the code or configuration weakness that makes the application fail, recover safely, open a resilience-hardening merge request, and prove the fix by replaying the exact same fault.
+FaultForge injects controlled network chaos into an isolated dependency, proves the service breaches its SLA, uses GitLab Duo Agent Platform to diagnose and open a fix merge request, replays the identical fault to prove recovery from machine-readable data, and enforces human-supervised promotion to live traffic.
 
 ### The Problem It Solves
-Standard CI pipelines test that unit tests pass, but unit tests usually mock outbound HTTP dependencies. In production, when an external API experiences transient network degradation or slow responses, services experience thread starvation, cascading timeouts, and unhandled 5xx errors. AI coding tools can suggest code changes, but cannot verify whether the patch actually survives live network failure.
+Standard CI pipelines test that unit tests pass, but unit tests usually mock outbound HTTP dependencies. In production, when an external API experiences transient network degradation or slow responses, services suffer thread starvation, cascading timeouts, and unhandled 5xx errors. AI coding tools can suggest code changes, but cannot verify whether the patch actually survives live network failure.
 
 ### What FaultForge Does
-FaultForge closes the loop between chaos engineering and AI-assisted remediation:
-1. **Injects Chaos:** Routes outbound calls through Shopify Toxiproxy and injects a 3500ms delay.
-2. **Proves Failure:** Captures SLA budget breaches (>1500ms) with empirical telemetry.
-3. **Diagnoses Weakness:** Discovers the regression boundary via deterministic `git bisect` and AST call-site inspection.
-4. **Remediates with Duo:** GitLab Duo custom flow synthesizes a minimal resilience fix (0.8s timeout, circuit breaker, and observable fallback) and opens a Merge Request.
-5. **Replays Exact Fault:** Re-runs the identical Toxiproxy fault profile hash against the candidate code.
-6. **Signs Audit Receipt:** Generates a cryptographic SHA-256 sealed Evidence Receipt.
+FaultForge closes the loop between chaos engineering, AI-assisted diagnosis, and empirical verification:
+1. **Injects Chaos:** Routes outbound calls through Shopify Toxiproxy and injects a 3500ms delay (±250ms jitter).
+2. **Proves Failure:** Proves checkout service breaches the 1500ms SLA budget (observed 5/5 breaches, 3742.46ms avg).
+3. **Diagnoses Weakness:** Discovers the regression boundary via deterministic `git bisect` and AST call-site inspection, pinpointing commit `974035c6`.
+4. **Remediates with Duo:** GitLab Duo custom flow (`flows/faultforge-flow.yaml`) plans a scoped resilience fix (0.8s timeout, circuit breaker, and observable fallback) and opens a Merge Request.
+5. **Replays Exact Fault:** Re-runs the identical Toxiproxy fault profile hash against the candidate code across 10 consecutive probes.
+6. **Signs Audit Receipt:** Generates a cryptographic SHA-256 sealed Evidence Receipt with full run history.
 7. **Supervised Gate:** Enforces risk policy and requires human developer approval before promoting Cloud Run candidate revisions.
 
 ### Limitations & Honest Boundaries
-- Evaluated on a focused FastAPI microservice with an external shipping carrier dependency.
+- Evaluated on a focused FastAPI checkout microservice with an external shipping carrier dependency.
 - Primary fault scenario is a 3500ms dependency latency toxic; secondary scenario is connection reset.
 - Fallback quotes are deterministically generated estimates clearly flagged with `is_fallback: true` and `is_estimate: true` to avoid misrepresenting live carrier data.
 - Does not modify database schemas, payment processing, or authorization code.
+- Orbit dependency is unused.
 
 ---
 
 ## 3. Technology Stack
 
-- **Agent Platform:** GitLab Duo Agent Platform Custom Flow (`flows/faultforge-flow.yaml`)
+- **Agent Platform:** GitLab Duo Agent Platform Custom Flow Schema v1 (`flows/faultforge-flow.yaml`)
 - **Backend Service:** Python 3.12 + FastAPI (`app/main.py`)
 - **Chaos Engine:** Shopify Toxiproxy (`ghcr.io/shopify/toxiproxy:2.9.0`) & `chaos/toxiproxy_helper.py`
 - **Testing:** pytest & pytest-asyncio (`tests/unit`, `tests/integration`, `tests/chaos`)
 - **Deployment:** Google Cloud Run Knative spec (`infra/cloudrun/service.yaml`) & `scripts/cloudrun_traffic.py`
+- **Governance:** Cryptographic SHA-256 sealed receipts (`scripts/generate_receipt.py`)
+
+---
+
+## 4. Video Demonstration Outline (< 3 Minutes)
+
+- **0:00 – 0:35:** Dependency Fragility Under Chaos (3500ms delay, 1500ms budget breach).
+- **0:35 – 1:05:** Deterministic Regression Discovery (`git bisect` isolates commit `974035c`).
+- **1:05 – 1:45:** GitLab Duo Agent Platform Custom Flow (Diagnostician, Healer, Hardener MR).
+- **1:45 – 2:20:** Exact-Fault Replay Verification (10/10 passes, <850ms, observable fallback).
+- **2:20 – 2:50:** Supervised Governance, Cloud Run Rollback & Tamper-Evident Evidence Receipt.

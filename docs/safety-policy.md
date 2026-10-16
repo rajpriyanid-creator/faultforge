@@ -1,21 +1,29 @@
 # FaultForge Safety Policy & Risk-Based Autonomy
 
+**Revision:** 2.0 (Verified Policy)  
+**Track:** Path A — Start Fresh  
+**Declared Autonomy Tier:** SUPERVISED  
+
+---
+
 ## 1. Declared Autonomy Model: SUPERVISED
 
-In compliance with the official **GitLab Transcend 2026** competition rules, FaultForge declares the **Supervised Autonomy** tier.
+In compliance with the official **GitLab Transcend 2026** competition guidelines, FaultForge strictly operates within the **Supervised Autonomy** tier.
 
-- **Automated Lifecycle Scope:** Multi-step chaos rehearsal, evidence-backed diagnosis, candidate patch generation, regression testing, exact-fault replay, container packaging, security scanning, and candidate deployment to isolated staging revisions.
+- **Automated Lifecycle Scope:** Multi-stage chaos rehearsal, evidence-backed diagnosis, candidate patch generation, regression testing, exact-fault replay, container packaging, security scanning, and candidate deployment to isolated staging revisions (0% live traffic).
 - **Human Approval Gate:** Final live production traffic migration and high-impact actions strictly require explicit human developer review and authorization.
 
 ---
 
 ## 2. Risk Classification Tiers
 
-| Risk Tier | Scope & Examples | Automated System Permissions | Human Approval Requirement |
+FaultForge enforces risk policies defined in `chaos/risk-policy.json` via `scripts/classify_risk.py`:
+
+| Risk Tier | Scope & File Patterns | Automated Permissions | Mandatory Human Gate |
 |---|---|---|---|
-| **LOW** | Scoped network timeouts, circuit breaker thresholds, deterministic fallback quotes in `app/resilience/` or `app/clients/` | Prepare branch, generate MR, run full test suite, deploy to staging candidate revision | Required only before live production promotion |
-| **MEDIUM** | Dependency version upgrades, broad control flow changes, component restructuring | Prepare branch and MR, run tests; mark as requiring developer inspection | Required prior to staging deployment and production promotion |
-| **HIGH** | Authentication, authorization, payment capture, database schema migrations, IAM permissions, secrets management, destructive file operations | Prohibited from automated modification. System must halt and create an advisory issue | Explicit manual developer implementation required |
+| **LOW** | Scoped network timeouts, circuit breaker parameters, and deterministic fallback quotes in `app/resilience/` or `app/clients/` | Branch creation, MR preparation, full test execution, packaging, staging deployment (0% traffic) | Required before live production traffic promotion (100%) |
+| **MEDIUM** | Dependency version changes, broad control flow modifications, component architectural restructuring | Branch and MR preparation, test execution; flagged with `REQUIRES_INSPECTION` | Required prior to staging deployment and production promotion |
+| **HIGH** | Authentication, authorization, payment processing, database migrations, IAM permissions, secrets management, destructive commands | Automated changes strictly prohibited. System halts and opens an advisory issue | Explicit manual developer implementation required |
 
 ---
 
