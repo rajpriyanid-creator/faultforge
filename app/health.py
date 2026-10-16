@@ -8,12 +8,13 @@ router = APIRouter()
 start_timestamp = time.time()
 
 @router.get("/health")
-async def health_check():
+async def health_check(response: Response):
     """
     Kubernetes / Cloud Run liveness probe.
     Returns 200 OK if service process is healthy and active.
     Includes active uptime and revision identifier.
     """
+    response.headers["X-Service-Revision"] = settings.REVISION_ID
     uptime_seconds = round(time.time() - start_timestamp, 2)
     return {
         "status": "healthy",
