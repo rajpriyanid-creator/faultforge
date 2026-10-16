@@ -64,3 +64,13 @@ async def test_checkout_endpoint(monkeypatch):
         assert data["items_subtotal"] == 60.00
         assert data["total_amount"] == 70.00
         assert "X-Response-Time-Ms" in res.headers
+
+@pytest.mark.asyncio
+async def test_dashboard_endpoint():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        res = await client.get("/dashboard")
+        assert res.status_code == 200
+        assert "FaultForge" in res.text
+        assert "text/html" in res.headers["content-type"]
+

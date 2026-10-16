@@ -66,14 +66,30 @@ async def add_timing_header(request: Request, call_next):
     response.headers["X-Service-Revision"] = settings.REVISION_ID
     return response
 
+import os
+from fastapi.responses import HTMLResponse
+
+DASHBOARD_HTML_PATH = os.path.join(os.path.dirname(__file__), "dashboard.html")
+
+@app.get("/dashboard", response_class=HTMLResponse)
+async def dashboard():
+    if os.path.exists(DASHBOARD_HTML_PATH):
+        with open(DASHBOARD_HTML_PATH, "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    return HTMLResponse(content="<h1>Dashboard file not found</h1>", status_code=404)
+
 @app.get("/")
-async def root():
+async def root(request: Request):
+    accept = request.headers.get("accept", "")
+    if "text/html" in accept and "application/json" not in accept:
+        return await dashboard()
     return {
         "service": settings.SERVICE_NAME,
         "tagline": "Rehearse a failure. Recover safely. Prove the service is stronger.",
         "version": "1.0.0",
         "revision": settings.REVISION_ID,
-        "docs_url": "/docs"
+        "docs_url": "/docs",
+        "dashboard_url": "/dashboard"
     }
 
 @app.get("/api/v1/shipping/rate")
