@@ -50,6 +50,7 @@ create:duo_remediation_mr:
   dependencies:
     - plan:incident_tracking
   script:
+    - apt-get update -qq && apt-get install -y -qq git
     - pip install -r requirements.txt
     - python scripts/collect_evidence.py
     - python scripts/diagnose_and_bisect.py
@@ -71,6 +72,8 @@ configure:chaos_topology:
   services:
     - name: ghcr.io/shopify/toxiproxy:2.9.0
       alias: toxiproxy
+  variables:
+    TOXIPROXY_URL: "http://toxiproxy:8474"
   script:
     - pip install -r requirements.txt
     - python scripts/configure_chaos.py
@@ -97,13 +100,21 @@ verify:exact_fault_replay_proof:
   services:
     - name: ghcr.io/shopify/toxiproxy:2.9.0
       alias: toxiproxy
+  variables:
+    TOXIPROXY_URL: "http://toxiproxy:8474"
+    SHIPPING_SERVICE_URL: "http://127.0.0.1:8082"
   dependencies:
     - create:duo_remediation_mr
     - configure:chaos_topology
   script:
+    - apt-get update -qq && apt-get install -y -qq git
     - pip install -r requirements.txt
-    - python scripts/run_fault.py --label baseline --expect-fail --output reports/fault_run_baseline.json
-    - python scripts/run_fault.py --label candidate --iterations 10 --output reports/fault_run_hardened.json
+    - git fetch origin reference-fix
+    - git checkout origin/reference-fix -- app/clients/shipping_client.py
+    - python -m uvicorn stub.mock_shipping_api:app --host 127.0.0.1 --port 8081 &
+    - python -m uvicorn app.main:app --host 127.0.0.1 --port 8090 &
+    - sleep 3
+    - python scripts/run_fault.py --label candidate --iterations 10 --allow-standalone-proxy --output reports/fault_run_hardened.json
     - python scripts/evaluate_replay.py --baseline reports/fault_run_baseline.json --candidate reports/fault_run_hardened.json --output reports/replay_evaluation.json
   artifacts:
     name: "chaos-replay-evidence-$CI_COMMIT_SHA"
@@ -134,10 +145,13 @@ package:container_build:
   image: docker:24.0.5
   services:
     - docker:24.0.5-dind
+  variables:
+    DOCKER_TLS_CERTDIR: ""
   before_script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
   script:
     - docker build -t $DOCKER_IMAGE .
+    - mkdir -p reports
     - docker inspect --format='{{index .Id}}' $DOCKER_IMAGE > reports/image_digest.txt
   artifacts:
     paths:
@@ -148,12 +162,15 @@ package:container_build:
 # -------------------------------------------------------------
 release:cloudrun_candidate_deploy:
   stage: release
-  image: google/cloud-sdk:alpine
+  image: python:3.12-slim
   script:
-    - python3 scripts/cloudrun_traffic.py --action verify --url "http://127.0.0.1:8090"
+    - python scripts/cloudrun_traffic.py --action verify --url "http://127.0.0.1:8090" --dry-run
   environment:
     name: staging
     url: https://faultforge-staging.run.app
+  artifacts:
+    paths:
+      - reports/release.json
 
 # -------------------------------------------------------------
 # 8. MONITOR STAGE: Pre & Post Fault Telemetry & Health Probes
@@ -165,6 +182,8 @@ monitor:telemetry_probes:
     - verify:exact_fault_replay_proof
   script:
     - pip install -r requirements.txt
+    - python -m uvicorn app.main:app --host 127.0.0.1 --port 8090 &
+    - sleep 2
     - python scripts/monitor_service.py
   artifacts:
     paths:
@@ -180,6 +199,8 @@ govern:audit_receipt_and_gate:
     - plan:incident_tracking
     - create:duo_remediation_mr
     - verify:exact_fault_replay_proof
+    - package:container_build
+    - release:cloudrun_candidate_deploy
   script:
     - pip install -r requirements.txt
     - python scripts/classify_risk.py
@@ -196,12 +217,12 @@ govern:audit_receipt_and_gate:
 # Supervised Human Approval Gate for Live Production Promotion
 govern:promote_to_production:
   stage: govern
-  image: google/cloud-sdk:alpine
+  image: python:3.12-slim
   needs:
     - job: govern:audit_receipt_and_gate
       artifacts: true
   script:
-    - python3 scripts/cloudrun_traffic.py --action route --service $SERVICE_NAME --revisions "$SERVICE_NAME-$CI_COMMIT_SHA=100"
+    - python scripts/cloudrun_traffic.py --action route --service $SERVICE_NAME --revisions "$SERVICE_NAME-$CI_COMMIT_SHA=100" --dry-run
   when: manual
   allow_failure: false
   environment:

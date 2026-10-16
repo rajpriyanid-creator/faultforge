@@ -29,7 +29,15 @@ def configure_chaos_network(
     attrs = profile.get("attributes", {})
 
     print(f"[*] Configuring Toxiproxy via {toxi_api} ...")
-    if not client.is_available():
+    connected = False
+    for _ in range(20):
+        if client.is_available():
+            connected = True
+            break
+        import time
+        time.sleep(1)
+
+    if not connected:
         print(f"[-] Error: Toxiproxy is unreachable at {toxi_api}", file=sys.stderr)
         sys.exit(1)
 

@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     SERVICE_NAME: str = "faultforge-checkout"
-    APP_HOST: str = "0.0.0.0"
+    APP_HOST: str = "0.0.0.0"  # nosec B104
     APP_PORT: int = 8090
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "test")
     REVISION_ID: str = os.getenv("CI_COMMIT_SHA", os.getenv("K_REVISION", "local-dev"))

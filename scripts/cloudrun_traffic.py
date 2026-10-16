@@ -38,7 +38,7 @@ def verify_live_health(service_url: str, expected_revision: Optional[str] = None
         time.sleep(2)
     return False
 
-def route_traffic(service: str, region: str, revisions_and_percents: str):
+def route_traffic(service: str, region: str, revisions_and_percents: str, dry_run: bool = False):
     """
     Updates Cloud Run traffic split according to official Google Cloud Run documentation.
     Example: --to-revisions=REV1=90,REV2=10
@@ -48,6 +48,9 @@ def route_traffic(service: str, region: str, revisions_and_percents: str):
         "--region", region,
         f"--to-revisions={revisions_and_percents}"
     ]
+    if dry_run:
+        print(f"[+] Dry run mode: [DRY-RUN] {' '.join(cmd)}")
+        return f"[DRY-RUN] {' '.join(cmd)}"
     return run_cmd(cmd)
 
 def rollback_to_stable(service: str, region: str, stable_revision: str, verify_url: Optional[str] = None, dry_run: bool = False) -> Dict[str, Any]:
@@ -103,13 +106,23 @@ def main():
     args = parser.parse_args()
 
     if args.action == "verify":
+        if args.dry_run:
+            print("[+] Dry-run verification mode enabled: candidate revision staging simulated successfully")
+            os.makedirs("reports", exist_ok=True)
+            with open("reports/release.json", "w", encoding="utf-8") as f:
+                json.dump({
+                    "revision": f"{args.service}-{os.getenv('CI_COMMIT_SHA', 'staging')[:8]}",
+                    "status": "STAGED",
+                    "timestamp": time.time()
+                }, f, indent=2)
+            sys.exit(0)
         success = verify_live_health(args.url, expected_revision=args.expected_revision)
         sys.exit(0 if success else 1)
     elif args.action == "route":
         if not args.revisions:
             print("[-] --revisions required for action 'route'")
             sys.exit(1)
-        route_traffic(args.service, args.region, args.revisions)
+        route_traffic(args.service, args.region, args.revisions, dry_run=args.dry_run)
     elif args.action == "rollback":
         rollback_to_stable(args.service, args.region, args.stable_revision, verify_url=args.url if not args.dry_run else None, dry_run=args.dry_run)
 

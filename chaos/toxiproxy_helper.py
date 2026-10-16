@@ -195,10 +195,18 @@ class StandaloneChaosProxy:
 
 class ChaosEngine:
     """Unified engine selecting either native Toxiproxy or Standalone Chaos Proxy."""
-    def __init__(self, toxiproxy_api: str = "http://127.0.0.1:8474"):
+    def __init__(self, toxiproxy_api: Optional[str] = None):
+        if toxiproxy_api is None:
+            toxiproxy_api = os.getenv("TOXIPROXY_URL", "http://127.0.0.1:8474")
         self.toxi_client = ToxiproxyClient(toxiproxy_api)
         self.standalone = StandaloneChaosProxy()
-        self.use_toxi = self.toxi_client.is_available()
+        connected = False
+        for _ in range(5):
+            if self.toxi_client.is_available():
+                connected = True
+                break
+            time.sleep(0.5)
+        self.use_toxi = connected
 
     def start(self):
         if not self.use_toxi:
