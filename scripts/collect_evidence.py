@@ -155,6 +155,35 @@ def build_incident_dossier(
         dossier["deployment"] = deployment_info
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+    # Validate against schemas/dossier.schema.json
+    schema_path = "schemas/dossier.schema.json"
+    if os.path.exists(schema_path):
+        import jsonschema
+        with open(schema_path, "r", encoding="utf-8") as sf:
+            schema_data = json.load(sf)
+        try:
+            jsonschema.validate(instance=dossier, schema=schema_data)
+            print(f"[+] Schema validation passed: {schema_path}")
+        except Exception as exc:
+            print(f"[-] Schema validation error: {exc}", file=sys.stderr)
+            sys.exit(1)
+
+    # Assert no field equals a placeholder
+    raw_str = json.dumps(dossier)
+    if ("default-" + "hash") in raw_str:
+        print("[-] Anti-fake violation: default hash detected in dossier", file=sys.stderr)
+        sys.exit(1)
+    if ("0" * 40) in raw_str:
+        print("[-] Anti-fake violation: zero-SHA detected in dossier", file=sys.stderr)
+        sys.exit(1)
+    if ("rev-" + "candidate") in raw_str or ("rev-" + "stable") in raw_str:
+        print("[-] Anti-fake violation: placeholder revision detected in dossier", file=sys.stderr)
+        sys.exit(1)
+    if ("faultforge/pipeline/" + "local") in raw_str:
+        print("[-] Anti-fake violation: fake pipeline URL detected in dossier", file=sys.stderr)
+        sys.exit(1)
+
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(dossier, f, indent=2)
 
