@@ -45,6 +45,13 @@ def evaluate_replay(
     hard_payload_hash = hardened.get("payload_hash", "default")
     gate_identical_payload = (base_payload_hash == hard_payload_hash)
 
+    base_toxic = baseline.get("toxic_readback")
+    hard_toxic = hardened.get("toxic_readback")
+    if base_toxic is not None and hard_toxic is not None:
+        gate_identical_toxic = (base_toxic == hard_toxic)
+    else:
+        gate_identical_toxic = gate_identical_profile
+
     # 2. Baseline Failed Check (>= 4 of 5 runs failed or SLA breached)
     base_metrics = baseline.get("metrics", {})
     base_total = base_metrics.get("total_probes", 0)
@@ -52,12 +59,13 @@ def evaluate_replay(
     base_fail_ratio = (base_failed / base_total) if base_total > 0 else 0.0
     gate_baseline_failed = base_fail_ratio >= criteria.get("min_baseline_failure_ratio", 0.8)
 
-    # 3. Candidate Passed Check (0 SLA breaches, 0 errors)
+    # 3. Candidate Passed Check (10/10 consecutive passes, 0 SLA breaches, 0 errors)
     hard_metrics = hardened.get("metrics", {})
     hard_total = hard_metrics.get("total_probes", 0)
     hard_failed = hard_metrics.get("failed_probes", 0)
     hard_sla_breaches = hardened.get("sla_breaches", 0)
-    gate_candidate_passed = (hard_failed == 0) and (hard_sla_breaches == 0) and (hard_total > 0)
+    req_consecutive = criteria.get("required_consecutive_candidate_passes", 10)
+    gate_candidate_passed = (hard_failed == 0) and (hard_sla_breaches == 0) and (hard_total >= req_consecutive)
 
     # 4. Latency Budget Check: All candidate samples <= SLA budget
     hard_latencies = hard_metrics.get("latencies_ms", [])
@@ -65,13 +73,12 @@ def evaluate_replay(
 
     # 5. Fallback Observability Check
     fallback_count = hard_metrics.get("fallback_count", 0)
-    gate_fallback_valid = True
-    if fallback_count > 0 and criteria.get("require_fallback_marked_estimated"):
-        gate_fallback_valid = True
+    gate_fallback_valid = (fallback_count > 0) if criteria.get("require_fallback_marked_estimated") else True
 
     all_gates_passed = (
         gate_identical_profile
         and gate_identical_payload
+        and gate_identical_toxic
         and gate_baseline_failed
         and gate_candidate_passed
         and gate_latency_budget
@@ -94,6 +101,11 @@ def evaluate_replay(
                 "baseline_payload": base_payload_hash,
                 "hardened_payload": hard_payload_hash
             },
+            "identical_toxic_readback": {
+                "passed": gate_identical_toxic,
+                "baseline_toxic": base_toxic,
+                "hardened_toxic": hard_toxic
+            },
             "baseline_reproducibility": {
                 "passed": gate_baseline_failed,
                 "failure_ratio": round(base_fail_ratio, 2),
@@ -105,7 +117,8 @@ def evaluate_replay(
                 "passed": gate_candidate_passed,
                 "failed_probes": hard_failed,
                 "sla_breaches": hard_sla_breaches,
-                "total_probes": hard_total
+                "total_probes": hard_total,
+                "required_consecutive": req_consecutive
             },
             "latency_budget": {
                 "passed": gate_latency_budget,
@@ -136,10 +149,11 @@ def evaluate_replay(
     print(f"=================================================================")
     print(f" [Gate 1] Identical Profile Hash:    {gate_identical_profile}")
     print(f" [Gate 2] Identical Payload Hash:    {gate_identical_payload}")
-    print(f" [Gate 3] Baseline Reproducibility:  {gate_baseline_failed} ({base_fail_ratio*100:.0f}% fail rate)")
-    print(f" [Gate 4] Candidate Resilience:      {gate_candidate_passed} (0 errors)")
-    print(f" [Gate 5] Latency Budget (<= {budget}ms): {gate_latency_budget}")
-    print(f" [Gate 6] Fallback Observability:    {gate_fallback_valid}\n")
+    print(f" [Gate 3] Identical Toxic Readback:  {gate_identical_toxic}")
+    print(f" [Gate 4] Baseline Reproducibility:  {gate_baseline_failed} ({base_fail_ratio*100:.0f}% fail rate)")
+    print(f" [Gate 5] Candidate Resilience:      {gate_candidate_passed} (0 errors, {hard_total}/{req_consecutive} runs)")
+    print(f" [Gate 6] Latency Budget (<= {budget}ms): {gate_latency_budget}")
+    print(f" [Gate 7] Fallback Observability:    {gate_fallback_valid}\n")
 
     if not all_gates_passed:
         print(f"[-] Evaluation FAILED: One or more gates did not pass.")
@@ -152,6 +166,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate chaos replay gates deterministically")
     parser.add_argument("--baseline", default="reports/fault_run_baseline.json")
     parser.add_argument("--hardened", default="reports/fault_run_hardened.json")
+    parser.add_argument("--candidate", dest="hardened", help="Alias for --hardened")
     parser.add_argument("--output", default="reports/replay_evaluation.json")
     parser.add_argument("--criteria", default="chaos/criteria.json")
     args = parser.parse_args()

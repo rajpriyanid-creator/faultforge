@@ -2,6 +2,10 @@
   "run_id": "fixture-base-pass",
   "profile_hash": "hash-abc-123",
   "payload_hash": "payload-xyz-999",
+  "toxic_readback": {
+    "latency": 3500,
+    "jitter": 250
+  },
   "sla_budget_ms": 1500,
   "sla_breaches": 5,
   "metrics": {

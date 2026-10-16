@@ -37,6 +37,11 @@ def generate_evidence_receipt(
     replay_path = os.path.join(reports_dir, "replay_evaluation.json")
     risk_path = os.path.join(reports_dir, "risk_classification.json")
     duo_run_path = os.path.join(reports_dir, "duo_run.json")
+    issue_path = os.path.join(reports_dir, "issue.json")
+    base_run_path = os.path.join(reports_dir, "fault_run_baseline.json")
+    hard_run_path = os.path.join(reports_dir, "fault_run_hardened.json")
+    image_digest_path = os.path.join(reports_dir, "image_digest.txt")
+    release_path = os.path.join(reports_dir, "release.json")
 
     dossier = {}
     if os.path.exists(dossier_path):
@@ -68,6 +73,40 @@ def generate_evidence_receipt(
         with open(duo_run_path, "r", encoding="utf-8") as f:
             duo_run = json.load(f)
 
+    issue_data = {}
+    if os.path.exists(issue_path):
+        with open(issue_path, "r", encoding="utf-8") as f:
+            issue_data = json.load(f)
+
+    base_run = {}
+    if os.path.exists(base_run_path):
+        with open(base_run_path, "r", encoding="utf-8") as f:
+            base_run = json.load(f)
+
+    hard_run = {}
+    if os.path.exists(hard_run_path):
+        with open(hard_run_path, "r", encoding="utf-8") as f:
+            hard_run = json.load(f)
+
+    # 15 run probe history assembly
+    run_history_15 = []
+    for r in base_run.get("per_request_results", []):
+        run_history_15.append({"label": "baseline", **r})
+    for r in hard_run.get("per_request_results", []):
+        run_history_15.append({"label": "candidate", **r})
+
+    image_digest = None
+    if os.path.exists(image_digest_path):
+        with open(image_digest_path, "r", encoding="utf-8") as f:
+            image_digest = f.read().strip()
+
+    cloud_run_revision = None
+    if os.path.exists(release_path):
+        with open(release_path, "r", encoding="utf-8") as f:
+            cloud_run_revision = json.load(f).get("revision")
+    elif os.getenv("K_REVISION"):
+        cloud_run_revision = os.getenv("K_REVISION")
+
     # Cross-file consistency checks
     not_established = []
     is_verified = replay.get("verified", False) and (replay.get("evaluation_status") == "RECOVERED_AND_VERIFIED")
@@ -85,9 +124,31 @@ def generate_evidence_receipt(
     if not duo_run.get("run_id"):
         not_established.append("GitLab Duo remote run ID unconfirmed (local or API trigger pending).")
 
-    final_status = "RECOVERED_AND_VERIFIED" if (is_verified and not_established == []) else "CONTAINED_NEEDS_REVIEW"
-    if not replay.get("verified", False):
+    if len(run_history_15) != 15:
+        not_established.append(f"Complete 15-probe run evidence incomplete (found {len(run_history_15)}/15).")
+
+    if not image_digest:
+        not_established.append("Container image digest unconfirmed from package stage.")
+
+    if not cloud_run_revision:
+        not_established.append("Cloud Run revision deployment unconfirmed from release stage.")
+
+    # Refuse to emit RECOVERED_AND_VERIFIED if any input is missing or inconsistent
+    if is_verified and len(not_established) == 0:
+        final_status = "RECOVERED_AND_VERIFIED"
+        promotion_gate = "BLOCKED_PENDING_APPROVAL"
+    elif is_verified and len(not_established) > 0:
+        final_status = "CONTAINED_NEEDS_REVIEW"
+        promotion_gate = "BLOCKED_PENDING_REVIEW"
+    else:
         final_status = "NOT_VERIFIED"
+        promotion_gate = "REJECTED"
+
+    pipeline_url = os.getenv("CI_PIPELINE_URL", dossier.get("pipeline_url", "local://pipeline"))
+    job_url = os.getenv("CI_JOB_URL", "local://job")
+    issue_url = issue_data.get("web_url", "local://issue")
+    mr_url = duo_run.get("web_url", mr_data.get("mr_url", "local://mr"))
+    approver = os.getenv("GITLAB_USER_LOGIN", "SUPERVISED_OPERATOR")
 
     receipt_data = {
         "receipt_id": f"rcpt-{os.urandom(6).hex()}",
@@ -97,11 +158,23 @@ def generate_evidence_receipt(
         "commit_sha": git_sha,
         "autonomy_model": "SUPERVISED",
         "risk_classification": risk_data.get("tier", "LOW"),
+        "approver": approver,
+        "urls": {
+            "pipeline_url": pipeline_url,
+            "job_url": job_url,
+            "issue_url": issue_url,
+            "merge_request_url": mr_url
+        },
         "fault_profile": {
             "name": dossier.get("fault", {}).get("profile_name", "latency_cascading_hang"),
             "type": dossier.get("fault", {}).get("type", "latency"),
             "hash": base_hash,
-            "identical_replay_confirmed": (base_hash == hard_hash)
+            "identical_replay_confirmed": (base_hash == hard_hash) if (base_hash and hard_hash) else False
+        },
+        "duo_execution": {
+            "run_id": duo_run.get("run_id"),
+            "trigger_mechanism": duo_run.get("trigger_mechanism", "PENDING"),
+            "status": duo_run.get("status", "UNCONFIRMED")
         },
         "diagnosis_summary": {
             "status": diagnosis.get("status", "SUSPECTED_WEAKNESS"),
@@ -110,17 +183,23 @@ def generate_evidence_receipt(
             "target_component": diagnosis.get("target_component", "app/clients/shipping_client.py")
         },
         "evaluation_gates": replay.get("gates", {}),
+        "run_history_15_probes": run_history_15,
         "metrics_raw": replay.get("raw_metrics", {}),
+        "deployment": {
+            "image_digest": image_digest,
+            "cloud_run_revision": cloud_run_revision
+        },
         "pipeline_artifacts": {
             "incident_dossier_sha256": hash_file(dossier_path),
             "diagnosis_report_sha256": hash_file(diagnosis_path),
             "mr_payload_sha256": hash_file(mr_path),
-            "replay_evaluation_sha256": hash_file(replay_path)
+            "replay_evaluation_sha256": hash_file(replay_path),
+            "risk_classification_sha256": hash_file(risk_path)
         },
         "not_established": not_established,
         "governance": {
             "requires_human_approval_to_promote": True,
-            "promotion_gate": "BLOCKED_PENDING_APPROVAL" if final_status == "RECOVERED_AND_VERIFIED" else "REJECTED"
+            "promotion_gate": promotion_gate
         }
     }
 
@@ -140,14 +219,16 @@ def generate_evidence_receipt(
 **Generated At:** `{time.strftime('%Y-%m-%d %H:%M:%S UTC', time.gmtime(receipt_data['generated_at']))}`  
 **Final Status:** **`{receipt_data['final_status']}`**  
 **Autonomy Level:** `{receipt_data['autonomy_model']}` (Supervised Gate)  
+**Approver:** `{receipt_data['approver']}`  
 **Tamper-Evident Seal (SHA-256):** `{receipt_data['tamper_evident_seal_sha256']}`
 
 ---
 
-## 1. Controlled Chaos Experiment
+## 1. Controlled Chaos Experiment & Integrity
 - **Injected Fault:** `{receipt_data['fault_profile']['name']}` ({receipt_data['fault_profile']['type']})
 - **Profile Hash:** `{receipt_data['fault_profile']['hash']}`
 - **Identical Replay Confirmed:** `{receipt_data['fault_profile']['identical_replay_confirmed']}`
+- **Duo Run ID:** `{receipt_data['duo_execution']['run_id']}`
 
 ## 2. Before & After Verified Metrics
 | Metric | Baseline (Unpatched) | Hardened (Candidate Patch) |
