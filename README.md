@@ -107,7 +107,7 @@ Build the Incident Dossier and execute the Duo Flow Orchestrator:
 ```bash
 python scripts/collect_evidence.py
 python scripts/diagnose_and_bisect.py
-python scripts/duo_orchestrator.py
+python scripts/trigger_duo_flow.py
 ```
 *Output:* Diagnostician identifies unbounded HTTP call site at `app/clients/shipping_client.py:45` and generates Merge Request payload with **LOW** risk classification.
 

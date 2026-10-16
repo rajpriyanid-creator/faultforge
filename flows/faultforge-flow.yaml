@@ -11,7 +11,6 @@ environment: ambient
 components:
   - id: "diagnostician"
     type: "agent"
-    model: "claude-3-5-sonnet"
     description: "Inspects incident dossier and source call-site to diagnose fragility without inventing blame"
     prompt: |
       You are the FaultForge Diagnostician. Read the incident dossier in reports/incident_dossier.json and AGENTS.md.
@@ -33,7 +32,6 @@ components:
 
   - id: "resilience_healer"
     type: "agent"
-    model: "claude-3-5-sonnet"
     description: "Synthesizes minimal resilience patch and opens Merge Request"
     prompt: |
       You are the FaultForge Resilience Healer. Review the Diagnostician output and AGENTS.md.

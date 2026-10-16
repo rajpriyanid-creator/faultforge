@@ -28,8 +28,12 @@ def get_real_git_sha() -> str:
     if not commit_sha or len(commit_sha) != 40:
         try:
             commit_sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
-        except Exception:
-            commit_sha = "0000000000000000000000000000000000000000"
+        except Exception as exc:
+            print(f"[-] Error: Unable to determine git commit SHA from CI_COMMIT_SHA or git rev-parse HEAD: {exc}", file=sys.stderr)
+            sys.exit(1)
+    if not commit_sha or len(commit_sha) != 40:
+        print(f"[-] Error: Invalid git commit SHA '{commit_sha}' (must be 40 hex chars)", file=sys.stderr)
+        sys.exit(1)
     return commit_sha
 
 def parse_failed_junit_test(junit_path: str = "reports/junit_tests.xml") -> Optional[str]:
@@ -56,7 +60,7 @@ def build_incident_dossier(
     git_sha = get_real_git_sha()
     incident_id = f"inc-{uuid.uuid4().hex[:8]}"
     project_path = os.getenv("CI_PROJECT_PATH", "faultforge/checkout-service")
-    pipeline_url = os.getenv("CI_PIPELINE_URL", "https://gitlab.com/faultforge/pipeline/local")
+    pipeline_url = os.getenv("CI_PIPELINE_URL")
 
     if not os.path.exists(fault_result_path):
         print(f"[-] Baseline fault result missing at {fault_result_path}. Run chaos probe first.")
@@ -72,6 +76,24 @@ def build_incident_dossier(
 
     metrics = fault_run.get("metrics", {})
     failed_junit = parse_failed_junit_test(junit_path) or "tests/chaos/test_resilience.py::test_shipping_dependency_chaos_resilience"
+
+    profile_name = fault_run.get("profile_name", "latency_cascading_hang")
+    profile_path = os.path.join("chaos", "profiles", f"{profile_name}.json")
+    
+    latency_ms = None
+    jitter_ms = None
+    if "attributes" in fault_run:
+        latency_ms = float(fault_run["attributes"].get("latency", 0))
+        jitter_ms = float(fault_run["attributes"].get("jitter", 0))
+    elif os.path.exists(profile_path):
+        with open(profile_path, "r", encoding="utf-8") as pf:
+            profile_json = json.load(pf)
+            attrs = profile_json.get("attributes", {})
+            latency_ms = float(attrs.get("latency", 0))
+            jitter_ms = float(attrs.get("jitter", 0))
+    else:
+        print(f"[-] Error: Cannot resolve fault profile '{profile_name}' to read latency/jitter attributes", file=sys.stderr)
+        sys.exit(1)
 
     confirmed_facts = [
         f"Injected Toxiproxy fault: {fault_run.get('fault_type')} (profile hash {fault_run.get('profile_hash')})",
@@ -94,15 +116,14 @@ def build_incident_dossier(
         "incident_id": incident_id,
         "project_path": project_path,
         "commit_sha": git_sha,
-        "pipeline_url": pipeline_url,
         "test_run_id": fault_run.get("run_id", f"run-{uuid.uuid4().hex[:6]}"),
         "fault": {
             "type": fault_run.get("fault_type", "latency"),
             "target": "shipping-dependency",
-            "profile_name": fault_run.get("profile_name", "latency_cascading_hang"),
+            "profile_name": profile_name,
             "profile_hash": fault_run.get("profile_hash"),
-            "latency_ms": 3500.0,
-            "jitter_ms": 250.0
+            "latency_ms": latency_ms,
+            "jitter_ms": jitter_ms
         },
         "observations": {
             "health_check": "degraded" if fault_run.get("sla_breaches", 0) > 0 else "healthy",
@@ -119,12 +140,19 @@ def build_incident_dossier(
             "call_site": "app/clients/shipping_client.py:23",
             "log_excerpt": sanitize_text(log_sample),
             "culprit_commit": culprit
-        },
-        "deployment": {
-            "candidate_revision": os.getenv("K_REVISION", "rev-candidate-1"),
-            "known_good_revision": os.getenv("KNOWN_GOOD_REVISION", "rev-stable-0")
         }
     }
+
+    if pipeline_url:
+        dossier["pipeline_url"] = pipeline_url
+
+    deployment_info = {}
+    if os.getenv("K_REVISION"):
+        deployment_info["candidate_revision"] = os.getenv("K_REVISION")
+    if os.getenv("KNOWN_GOOD_REVISION"):
+        deployment_info["known_good_revision"] = os.getenv("KNOWN_GOOD_REVISION")
+    if deployment_info:
+        dossier["deployment"] = deployment_info
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:

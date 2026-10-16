@@ -53,7 +53,7 @@ create:duo_remediation_mr:
   script:
     - pip install -r requirements.txt
     - python scripts/diagnose_and_bisect.py
-    - python scripts/duo_orchestrator.py
+    - python scripts/trigger_duo_flow.py
   artifacts:
     name: "remediation-mr-$CI_COMMIT_SHA"
     expire_in: 7 days

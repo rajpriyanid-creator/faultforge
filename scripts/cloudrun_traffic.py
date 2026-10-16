@@ -5,7 +5,7 @@ import time
 import argparse
 import subprocess
 import requests
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 def run_cmd(cmd: list) -> str:
     print(f"[*] Running: {' '.join(cmd)}")
@@ -80,7 +80,7 @@ def main():
     parser.add_argument("--action", choices=["route", "rollback", "verify"], required=True)
     parser.add_argument("--service", default=os.getenv("K_SERVICE", "faultforge-checkout"))
     parser.add_argument("--region", default=os.getenv("GCP_REGION", "us-central1"))
-    parser.add_argument("--revisions", help="e.g. rev-stable=90,rev-candidate=10")
+    parser.add_argument("--revisions", help="e.g. revision-a=90,revision-b=10")
     parser.add_argument("--stable-revision", default=os.getenv("KNOWN_GOOD_REVISION", "faultforge-checkout-00001"))
     parser.add_argument("--url", default=os.getenv("DEPLOYED_URL", "http://127.0.0.1:8080"))
     args = parser.parse_args()

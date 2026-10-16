@@ -18,8 +18,12 @@ def get_real_git_sha() -> str:
     if not commit_sha or len(commit_sha) != 40:
         try:
             commit_sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
-        except Exception:
-            commit_sha = "0000000000000000000000000000000000000000"
+        except Exception as exc:
+            print(f"[-] Error: Unable to determine git commit SHA from CI_COMMIT_SHA or git rev-parse HEAD: {exc}", file=sys.stderr)
+            sys.exit(1)
+    if not commit_sha or len(commit_sha) != 40:
+        print(f"[-] Error: Invalid git commit SHA '{commit_sha}' (must be 40 hex chars)", file=sys.stderr)
+        sys.exit(1)
     return commit_sha
 
 def generate_evidence_receipt(

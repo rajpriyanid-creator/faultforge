@@ -71,7 +71,7 @@ FaultForge is an AI-assisted resilience hardening system designed for the **GitL
 - **`run_fault.py`**: Injects fault and records probe latency percentiles.
 - **`collect_evidence.py`**: Builds compact, sanitized Incident Dossier.
 - **`diagnose_and_bisect.py`**: Analyzes code weaknesses and evaluates git bisect applicability.
-- **`duo_orchestrator.py`**: Synthesizes MR payload and risk assessment.
+- **`trigger_duo_flow.py`**: Invokes GitLab Duo Custom Flows API and tracks workflow execution.
 - **`evaluate_replay.py`**: Compares baseline vs candidate under identical fault profile.
 - **`generate_receipt.py`**: Emits tamper-evident Evidence Receipt with SHA-256 seal.
 - **`cloudrun_traffic.py`**: Controls Google Cloud Run revision canary traffic and automated rollback.
