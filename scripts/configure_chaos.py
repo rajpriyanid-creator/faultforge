@@ -24,7 +24,7 @@ def configure_chaos_network(
     client = ToxiproxyClient(toxi_api)
     proxy_name = profile.get("proxy_name", "shipping_api_proxy")
     listen = profile.get("listen", "0.0.0.0:8082")
-    upstream = profile.get("upstream", "127.0.0.1:8081")
+    upstream = os.getenv("TOXIPROXY_UPSTREAM", profile.get("upstream", "shipping-stub:8081"))
     fault_type = profile.get("fault_type", "latency")
     attrs = profile.get("attributes", {})
 

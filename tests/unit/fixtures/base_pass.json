@@ -1,5 +1,7 @@
 {
-  "run_id": "fixture-base-pass",
+  "run_id": "run-base-fixture-01",
+  "label": "baseline",
+  "git_sha": "e53f1d3576bbdf1f9adb17f012beba101f92376a",
   "profile_hash": "hash-abc-123",
   "payload_hash": "payload-xyz-999",
   "toxic_readback": {
@@ -16,5 +18,12 @@
     "latencies_ms": [3500.0, 3600.0, 3450.0, 3700.0, 3550.0],
     "avg_ms": 3560.0,
     "p95_ms": 3700.0
-  }
+  },
+  "per_request_results": [
+    {"probe_index": 1, "order_id": "ORD-01", "latency_ms": 3500.0, "status_code": 200, "is_fallback": false, "is_estimate": false, "error": null},
+    {"probe_index": 2, "order_id": "ORD-02", "latency_ms": 3600.0, "status_code": 200, "is_fallback": false, "is_estimate": false, "error": null},
+    {"probe_index": 3, "order_id": "ORD-03", "latency_ms": 3450.0, "status_code": 200, "is_fallback": false, "is_estimate": false, "error": null},
+    {"probe_index": 4, "order_id": "ORD-04", "latency_ms": 3700.0, "status_code": 200, "is_fallback": false, "is_estimate": false, "error": null},
+    {"probe_index": 5, "order_id": "ORD-05", "latency_ms": 3550.0, "status_code": 200, "is_fallback": false, "is_estimate": false, "error": null}
+  ]
 }

@@ -25,10 +25,17 @@ prompts:
       2. Wire graceful fallback with is_fallback=True and is_estimate=True when timeout occurs.
       3. Ensure checkout order status reflects CONFIRMED_ESTIMATED_SHIPPING under fallback.
       4. Reinstate circuit breaker if justified to shed degraded dependency load.
-      5. Extend regression test in tests/chaos/test_resilience.py to assert SLA budget <= 1500ms.
-      6. Run tests to confirm fix: pytest tests/unit tests/integration.
-      7. Open a new branch 'fix/resilience-shipping-timeout' and create a Merge Request targeting 'main'.
-      8. Safety constraints: NEVER alter authentication, authorization, payment, database schemas, secrets, or IAM. Max 2 patch attempts.
+      5. Open a new branch 'fix/resilience-shipping-timeout' and commit the scoped resilience fix.
+      6. Safety constraints: NEVER alter authentication, authorization, payment, database schemas, secrets, or IAM. Max 2 patch attempts.
+
+  hardener_prompt:
+    system: |
+      You are the FaultForge Chaos Hardener. Review the Resilience Healer's patch.
+      1. Inspect the candidate branch and modified files.
+      2. Verify that tests/chaos/test_resilience.py contains deterministic assertions for SLA budget (<=1500ms), HTTP 200, is_fallback=True, and is_estimate=True.
+      3. Run local unit and integration tests using run_command: pytest tests/unit tests/integration.
+      4. Prepare a structured verification report and open the Merge Request targeting 'main'.
+      5. Ensure the MR description links to the incident dossier and includes the verification summary for human review.
 
 components:
   - name: "diagnostician"
@@ -57,10 +64,26 @@ components:
       - list_dir
       - run_command
 
+  - name: "chaos_hardener"
+    type: AgentComponent
+    prompt_id: "hardener_prompt"
+    inputs:
+      - from: "context:project_id"
+        as: "project_id"
+      - from: "components.resilience_healer.output"
+        as: "healer_result"
+      - "context:goal"
+    toolset:
+      - read_file
+      - list_dir
+      - run_command
+
 routers:
   - from: "diagnostician"
     to: "resilience_healer"
   - from: "resilience_healer"
+    to: "chaos_hardener"
+  - from: "chaos_hardener"
     to: "end"
 
 flow:
