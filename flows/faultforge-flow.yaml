@@ -1,0 +1,143 @@
+# GitLab Duo Agent Platform Custom Flow
+# FaultForge: "Break It, Heal It"
+# Schema Reference: https://docs.gitlab.com/user/duo_agent_platform/flows/custom_flows_schema/
+
+version: "1.0"
+name: "faultforge-resilience-recovery-flow"
+description: >
+  Autonomous chaos rehearsal, evidence-backed diagnosis, and resilience hardening flow.
+  Injects controlled Toxiproxy faults, builds compact incident dossiers, plans minimal
+  resilience fixes, opens Merge Requests, and verifies fixes via identical-fault replay.
+
+metadata:
+  hackathon: "GitLab Transcend 2026: Life After Code"
+  autonomy_model: "SUPERVISED"
+  category: "Best Supervised Agent / Most Stages Covered"
+  target_service: "faultforge-checkout"
+
+trigger:
+  # Invoked via GitLab CI job or Duo Flows API upon chaos probe SLA breach
+  type: "pipeline_event"
+  on:
+    job_status: "failed"
+    job_name: "verify:chaos_fault_injection"
+  fallback: "api_or_manual"
+
+agents:
+  orchestrator:
+    model: "claude-3-5-sonnet"
+    role: "Flow Orchestrator"
+    instructions: >
+      Coordinate the resilience recovery lifecycle. Ingest the compact incident dossier,
+      dispatch tasks to Diagnostician, Healer, and Hardener. Ensure that no change is accepted
+      without independent exact-fault verification. Never fabricate commit hashes or test results.
+    tools:
+      - "gitlab_merge_request_tool"
+      - "gitlab_pipeline_tool"
+      - "gitlab_issue_tool"
+
+  diagnostician:
+    model: "claude-3-5-sonnet"
+    role: "Code Weakness & Regression Diagnostician"
+    instructions: >
+      Analyze the incident dossier, stack trace, and call site. Inspect recent git commits
+      and merge requests. Distinguish between CONFIRMED_REGRESSION (where bisect distinguishes
+      revisions) and SUSPECTED_WEAKNESS (where outbound HTTP call lacks bounded timeout/fallback).
+      Do not invent blame or commit SHAs.
+    tools:
+      - "gitlab_repository_files_tool"
+      - "gitlab_commits_tool"
+      - "gitlab_orbit_graph_tool"
+
+  healer:
+    model: "claude-3-5-sonnet"
+    role: "Resilience Healer"
+    instructions: >
+      Generate the smallest possible code patch that resolves the diagnosed fragility.
+      Enforce bounded connect/read timeouts, circuit breaking, and deterministic graceful
+      fallbacks for safe idempotent dependencies. Adhere strictly to repository AGENTS.md rules.
+      Do not alter authorization, database schema, or payments.
+
+  hardener:
+    model: "claude-3-5-sonnet"
+    role: "Verification & Chaos Hardener"
+    instructions: >
+      Generate a deterministic regression test reproducing the original failure.
+      Mandate that the identical Toxiproxy fault profile is replayed against the candidate patch.
+      Generate a machine-readable audit receipt with cryptographic SHA-256 seal.
+
+steps:
+  - id: "step_ingest_incident_dossier"
+    name: "Ingest Incident Dossier"
+    action: "read_artifact"
+    params:
+      artifact_path: "reports/incident_dossier.json"
+    output_key: "dossier"
+
+  - id: "step_diagnose_fragility"
+    name: "Evidence-Backed Fragility Diagnosis"
+    agent: "diagnostician"
+    inputs:
+      dossier: "{{steps.step_ingest_incident_dossier.output.dossier}}"
+    expected_output:
+      status: "CONFIRMED_REGRESSION | SUSPECTED_WEAKNESS | INSUFFICIENT_EVIDENCE"
+      call_site: "string"
+      root_cause: "string"
+    output_key: "diagnosis"
+
+  - id: "step_plan_resilience_patch"
+    name: "Plan Minimal Resilience Fix"
+    agent: "healer"
+    inputs:
+      dossier: "{{steps.step_ingest_incident_dossier.output.dossier}}"
+      diagnosis: "{{steps.step_diagnose_fragility.output.diagnosis}}"
+    expected_output:
+      patch_summary: "string"
+      timeout_seconds: 0.8
+      fallback_mechanism: "string"
+      risk_tier: "LOW"
+    output_key: "patch_plan"
+
+  - id: "step_generate_regression_test"
+    name: "Generate Exact-Fault Regression Test"
+    agent: "hardener"
+    inputs:
+      dossier: "{{steps.step_ingest_incident_dossier.output.dossier}}"
+      diagnosis: "{{steps.step_diagnose_fragility.output.diagnosis}}"
+    expected_output:
+      test_file: "tests/chaos/test_fault_replay.py"
+      target_profile: "chaos/profiles/latency_cascading_hang.json"
+    output_key: "verification_plan"
+
+  - id: "step_open_remediation_mr"
+    name: "Create Resilience Merge Request"
+    agent: "orchestrator"
+    action: "create_merge_request"
+    params:
+      title: "FaultForge: Enforce bounded timeout & graceful fallback for shipping dependency"
+      target_branch: "main"
+      source_branch: "faultforge/fix-shipping-resilience"
+      description_template: "reports/merge_request_payload.json"
+      risk_classification: "LOW"
+      supervised_review_required: true
+
+  - id: "step_exact_fault_verification"
+    name: "Exact-Fault Replay Gate"
+    action: "evaluate_ci_job"
+    params:
+      job_name: "verify:replay_hardened_fault"
+      require_identical_profile_hash: true
+      require_sla_breaches: 0
+
+  - id: "step_governance_receipt"
+    name: "Generate Evidence Receipt"
+    action: "run_script"
+    params:
+      command: "python scripts/generate_receipt.py"
+    output_key: "receipt"
+
+policy:
+  autonomy_level: "SUPERVISED"
+  auto_merge: false
+  require_human_approval_for_production: true
+  max_autonomous_repair_iterations: 2

@@ -1,0 +1,8 @@
+{
+  "latency_budget_ms": 1500,
+  "max_error_rate_percent": 0.0,
+  "min_baseline_failure_ratio": 0.8,
+  "required_consecutive_candidate_passes": 10,
+  "fallback_counts_as_success": true,
+  "require_fallback_marked_estimated": true
+}

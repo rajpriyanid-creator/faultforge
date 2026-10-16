@@ -1,0 +1,18 @@
+{
+  "name": "latency_cascading_hang",
+  "fault_type": "latency",
+  "proxy_name": "shipping_api_proxy",
+  "listen": "0.0.0.0:8082",
+  "upstream": "127.0.0.1:8081",
+  "stream": "downstream",
+  "toxicity": 1.0,
+  "attributes": {
+    "latency": 3500,
+    "jitter": 250
+  },
+  "description": "Cascading hang fault injecting 3500ms latency and 250ms jitter on downstream shipping API",
+  "target_service": "shipping-dependency",
+  "sla_budget_ms": 1500,
+  "expected_unpatched_result": "FAIL_SLA_OR_TIMEOUT",
+  "expected_hardened_result": "PASS_GRACEFUL_FALLBACK"
+}

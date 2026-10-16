@@ -1,0 +1,16 @@
+{
+  "run_id": "fixture-hard-mismatch",
+  "profile_hash": "different-hash-456",
+  "payload_hash": "payload-xyz-999",
+  "sla_budget_ms": 1500,
+  "sla_breaches": 0,
+  "metrics": {
+    "total_probes": 10,
+    "successful_probes": 10,
+    "failed_probes": 0,
+    "fallback_count": 10,
+    "latencies_ms": [820.0, 830.0, 815.0, 840.0, 825.0, 810.0, 835.0, 820.0, 845.0, 825.0],
+    "avg_ms": 826.5,
+    "p95_ms": 845.0
+  }
+}

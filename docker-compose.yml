@@ -1,0 +1,50 @@
+version: "3.8"
+
+services:
+  # 1. Main Checkout Service
+  checkout-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - APP_PORT=8080
+      - ENVIRONMENT=chaos-test
+      - SHIPPING_SERVICE_URL=http://toxiproxy:8082
+      - HTTP_TIMEOUT_SECONDS=0.8
+      - FALLBACK_ENABLED=true
+      - CIRCUIT_BREAKER_ENABLED=true
+    depends_on:
+      - toxiproxy
+      - mock-shipping-api
+    networks:
+      - faultforge-net
+
+  # 2. Downstream External Dependency Mock
+  mock-shipping-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python", "-m", "uvicorn", "stub.mock_shipping_api:app", "--host", "0.0.0.0", "--port", "8081"]
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+    networks:
+      - faultforge-net
+
+  # 3. Toxiproxy Chaos Proxy
+  toxiproxy:
+    image: ghcr.io/shopify/toxiproxy:2.9.0
+    ports:
+      - "8474:8474" # Toxiproxy Admin API
+      - "8082:8082" # Injected fault proxy listening port
+    depends_on:
+      - mock-shipping-api
+    networks:
+      - faultforge-net
+
+networks:
+  faultforge-net:
+    driver: bridge

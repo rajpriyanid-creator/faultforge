@@ -1,0 +1,16 @@
+{
+  "run_id": "fixture-base-pass",
+  "profile_hash": "hash-abc-123",
+  "payload_hash": "payload-xyz-999",
+  "sla_budget_ms": 1500,
+  "sla_breaches": 5,
+  "metrics": {
+    "total_probes": 5,
+    "successful_probes": 0,
+    "failed_probes": 5,
+    "fallback_count": 0,
+    "latencies_ms": [3500.0, 3600.0, 3450.0, 3700.0, 3550.0],
+    "avg_ms": 3560.0,
+    "p95_ms": 3700.0
+  }
+}

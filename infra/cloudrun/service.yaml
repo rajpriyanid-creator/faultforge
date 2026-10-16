@@ -1,0 +1,39 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: faultforge-checkout
+  labels:
+    cloud.google.com/location: us-central1
+    app.kubernetes.io/name: faultforge
+    app.kubernetes.io/part-of: gitlab-transcend-2026
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "1"
+        autoscaling.knative.dev/maxScale: "5"
+        run.googleapis.com/client-name: "gitlab-ci"
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 30
+      containers:
+        - image: gcr.io/faultforge-project/faultforge-checkout:latest
+          ports:
+            - name: http1
+              containerPort: 8080
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+          env:
+            - name: ENVIRONMENT
+              value: "production"
+            - name: HTTP_TIMEOUT_SECONDS
+              value: "0.8"
+            - name: FALLBACK_ENABLED
+              value: "true"
+            - name: CIRCUIT_BREAKER_ENABLED
+              value: "true"
+  traffic:
+    - percent: 100
+      latestRevision: true

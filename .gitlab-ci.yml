@@ -1,0 +1,200 @@
+# FaultForge GitLab CI/CD Pipeline
+# Full 9 Lifecycle Stages: plan, create, configure, verify, secure, package, release, monitor, govern
+# Hackathon Target: Path A (Start Fresh) / Path B (Bring Your Own)
+
+stages:
+  - plan
+  - create
+  - configure
+  - verify
+  - secure
+  - package
+  - release
+  - monitor
+  - govern
+
+variables:
+  PYTHON_VERSION: "3.12"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  SERVICE_NAME: "faultforge-checkout"
+  GCP_REGION: "us-central1"
+  DOCKER_IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
+
+cache:
+  paths:
+    - .cache/pip
+    - venv/
+
+# -------------------------------------------------------------
+# 1. PLAN STAGE: Incident Work Item Creation & Tracking
+# -------------------------------------------------------------
+plan:incident_tracking:
+  stage: plan
+  image: python:3.12-slim
+  when: manual # TODO(phase 8): Wire to GitLab Issues API
+  script:
+    - pip install -r requirements.txt
+    - python scripts/collect_evidence.py
+  artifacts:
+    name: "incident-plan-$CI_COMMIT_SHA"
+    expire_in: 7 days
+    paths:
+      - reports/incident_dossier.json
+
+# -------------------------------------------------------------
+# 2. CREATE STAGE: Duo Remediation & Branch/MR Synthesis
+# -------------------------------------------------------------
+create:duo_remediation_mr:
+  stage: create
+  image: python:3.12-slim
+  when: manual # TODO(phase 8): Wire to Duo Agent Platform flow trigger
+  dependencies:
+    - plan:incident_tracking
+  script:
+    - pip install -r requirements.txt
+    - python scripts/diagnose_and_bisect.py
+    - python scripts/duo_orchestrator.py
+  artifacts:
+    name: "remediation-mr-$CI_COMMIT_SHA"
+    expire_in: 7 days
+    paths:
+      - reports/diagnosis_report.json
+      - reports/merge_request_payload.json
+
+# -------------------------------------------------------------
+# 3. CONFIGURE STAGE: Toxiproxy Setup & Chaos Network Wiring
+# -------------------------------------------------------------
+configure:chaos_topology:
+  stage: configure
+  image: python:3.12-slim
+  when: manual # TODO(phase 8): Toxiproxy network wiring in CI service
+  script:
+    - pip install -r requirements.txt
+  artifacts:
+    paths:
+      - chaos/profiles/
+
+# -------------------------------------------------------------
+# 4. VERIFY STAGE: Unit, Integration & Exact-Fault Replay Verification
+# -------------------------------------------------------------
+verify:unit_and_integration:
+  stage: verify
+  image: python:3.12-slim
+  script:
+    - pip install -r requirements.txt
+    - pytest tests/unit tests/integration -v --junitxml=reports/junit_tests.xml
+  artifacts:
+    reports:
+      junit: reports/junit_tests.xml
+
+verify:exact_fault_replay_proof:
+  stage: verify
+  image: python:3.12-slim
+  when: manual # TODO(phase 8): Compose/services stack for Toxiproxy replay
+  dependencies:
+    - create:duo_remediation_mr
+  script:
+    - pip install -r requirements.txt
+    - python scripts/run_fault.py --mode baseline --expect-fail --output reports/fault_run_baseline.json
+    - python scripts/run_fault.py --mode hardened --output reports/fault_run_hardened.json
+    - python scripts/evaluate_replay.py --baseline reports/fault_run_baseline.json --hardened reports/fault_run_hardened.json --output reports/replay_evaluation.json
+  artifacts:
+    name: "chaos-replay-evidence-$CI_COMMIT_SHA"
+    expire_in: 7 days
+    paths:
+      - reports/fault_run_baseline.json
+      - reports/fault_run_hardened.json
+      - reports/replay_evaluation.json
+
+# -------------------------------------------------------------
+# 5. SECURE STAGE: Static Analysis & Secret Detection
+# -------------------------------------------------------------
+secure:sast_and_secret_scan:
+  stage: secure
+  image: python:3.12-slim
+  when: manual # TODO(phase 8): Official GitLab SAST / Gitleaks templates
+  script:
+    - pip install bandit
+    - bandit -r app/ -f json -o reports/bandit_security_report.json
+  artifacts:
+    paths:
+      - reports/bandit_security_report.json
+
+# -------------------------------------------------------------
+# 6. PACKAGE STAGE: Multi-Stage Container Build & Registry Push
+# -------------------------------------------------------------
+package:container_build:
+  stage: package
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  when: manual # TODO(phase 8): Kaniko / Container registry push
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+  script:
+    - docker build -t $DOCKER_IMAGE .
+  artifacts:
+    paths:
+      - Dockerfile
+
+# -------------------------------------------------------------
+# 7. RELEASE STAGE: Google Cloud Run Candidate Revision Deployment
+# -------------------------------------------------------------
+release:cloudrun_candidate_deploy:
+  stage: release
+  image: google/cloud-sdk:alpine
+  when: manual # TODO(phase 10): Cloud Run deployment
+  script:
+    - python3 scripts/cloudrun_traffic.py --action verify --url "http://127.0.0.1:8090"
+  environment:
+    name: staging
+    url: https://faultforge-staging.run.app
+
+# -------------------------------------------------------------
+# 8. MONITOR STAGE: Pre & Post Fault Telemetry & Health Probes
+# -------------------------------------------------------------
+monitor:telemetry_probes:
+  stage: monitor
+  image: python:3.12-slim
+  when: manual # TODO(phase 8): Live metrics ingestion
+  script:
+    - pip install -r requirements.txt
+    - python -c "from app.resilience.metrics import global_metrics; print(global_metrics.get_summary())"
+  artifacts:
+    paths:
+      - reports/
+
+# -------------------------------------------------------------
+# 9. GOVERN STAGE: Supervised Autonomy Gate & Audit Receipt
+# -------------------------------------------------------------
+govern:audit_receipt_and_gate:
+  stage: govern
+  image: python:3.12-slim
+  when: manual # TODO(phase 11): Audit receipt generation
+  dependencies:
+    - plan:incident_tracking
+    - create:duo_remediation_mr
+    - verify:exact_fault_replay_proof
+  script:
+    - pip install -r requirements.txt
+    - python scripts/generate_receipt.py
+  artifacts:
+    name: "audit-receipt-$CI_COMMIT_SHA"
+    expire_in: 30 days
+    paths:
+      - reports/evidence_receipt.json
+      - reports/EVIDENCE_RECEIPT.md
+
+# Supervised Human Approval Gate for Live Production Promotion
+govern:promote_to_production:
+  stage: govern
+  image: google/cloud-sdk:alpine
+  dependencies:
+    - govern:audit_receipt_and_gate
+  script:
+    - python3 scripts/cloudrun_traffic.py --action route --service $SERVICE_NAME --revisions "$SERVICE_NAME-$CI_COMMIT_SHA=100"
+  when: manual
+  allow_failure: false
+  environment:
+    name: production
+    url: https://faultforge-checkout.run.app

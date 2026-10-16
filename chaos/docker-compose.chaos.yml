@@ -1,0 +1,50 @@
+version: "3.8"
+
+services:
+  # 1. Downstream External Dependency Mock
+  shipping-stub:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    command: ["python", "-m", "uvicorn", "stub.mock_shipping_api:app", "--host", "0.0.0.0", "--port", "8081"]
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+    networks:
+      - chaos-net
+
+  # 2. Official Shopify Toxiproxy Engine
+  toxiproxy:
+    image: ghcr.io/shopify/toxiproxy:2.9.0
+    command: ["-host=0.0.0.0", "-config=/config/toxiproxy-config.json"]
+    volumes:
+      - ./toxiproxy-config.json:/config/toxiproxy-config.json:ro
+    ports:
+      - "8474:8474" # Toxiproxy Management API
+      - "8082:8082" # Injected Fault Proxy Port
+    depends_on:
+      - shipping-stub
+    networks:
+      - chaos-net
+
+  # 3. FaultForge Checkout Microservice
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    ports:
+      - "8090:8090"
+    environment:
+      - APP_PORT=8090
+      - ENVIRONMENT=chaos-test
+      - SHIPPING_SERVICE_URL=http://toxiproxy:8082
+    depends_on:
+      - toxiproxy
+      - shipping-stub
+    networks:
+      - chaos-net
+
+networks:
+  chaos-net:
+    driver: bridge

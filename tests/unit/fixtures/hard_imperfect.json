@@ -1,0 +1,16 @@
+{
+  "run_id": "fixture-hard-imperfect",
+  "profile_hash": "hash-abc-123",
+  "payload_hash": "payload-xyz-999",
+  "sla_budget_ms": 1500,
+  "sla_breaches": 1,
+  "metrics": {
+    "total_probes": 10,
+    "successful_probes": 9,
+    "failed_probes": 1,
+    "fallback_count": 9,
+    "latencies_ms": [820.0, 830.0, 815.0, 840.0, 825.0, 810.0, 835.0, 820.0, 1850.0, 825.0],
+    "avg_ms": 927.0,
+    "p95_ms": 1850.0
+  }
+}

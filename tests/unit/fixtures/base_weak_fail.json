@@ -1,0 +1,16 @@
+{
+  "run_id": "fixture-base-weak",
+  "profile_hash": "hash-abc-123",
+  "payload_hash": "payload-xyz-999",
+  "sla_budget_ms": 1500,
+  "sla_breaches": 3,
+  "metrics": {
+    "total_probes": 5,
+    "successful_probes": 2,
+    "failed_probes": 3,
+    "fallback_count": 0,
+    "latencies_ms": [1200.0, 3600.0, 1100.0, 3700.0, 3550.0],
+    "avg_ms": 2630.0,
+    "p95_ms": 3700.0
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "connection_reset",
+  "fault_type": "reset_peer",
+  "proxy_name": "shipping_api_proxy",
+  "listen": "0.0.0.0:8082",
+  "upstream": "127.0.0.1:8081",
+  "stream": "downstream",
+  "toxicity": 1.0,
+  "attributes": {},
+  "description": "TCP connection reset injected by Toxiproxy simulating dropped connections",
+  "target_service": "shipping-dependency",
+  "sla_budget_ms": 1500,
+  "expected_unpatched_result": "UNHANDLED_CONNECTION_RESET",
+  "expected_hardened_result": "PASS_GRACEFUL_FALLBACK"
+}
