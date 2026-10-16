@@ -3,7 +3,7 @@
   "fault_type": "latency",
   "proxy_name": "shipping_api_proxy",
   "listen": "0.0.0.0:8082",
-  "upstream": "shipping-stub:8081",
+  "upstream": "127.0.0.1:8081",
   "stream": "downstream",
   "toxicity": 1.0,
   "attributes": {
