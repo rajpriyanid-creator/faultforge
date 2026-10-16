@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 FaultForge Authors
+
 import os
 from pydantic_settings import BaseSettings
 

@@ -35,11 +35,13 @@ plan:incident_tracking:
   script:
     - pip install -r requirements.txt
     - python scripts/plan_incident.py
+    - python scripts/evidence_ledger.py --stage plan --job plan:incident_tracking --status SUCCESS --artifacts reports/issue.json
   artifacts:
     name: "incident-plan-$CI_COMMIT_SHA"
     expire_in: 7 days
     paths:
       - reports/issue.json
+      - reports/stage_ledger.json
 
 # -------------------------------------------------------------
 # 2. CREATE STAGE: Duo Remediation & Branch/MR Synthesis
@@ -207,6 +209,8 @@ govern:audit_receipt_and_gate:
     - pip install -r requirements.txt
     - python scripts/classify_risk.py
     - python scripts/generate_receipt.py
+    - python scripts/evidence_ledger.py --stage govern --job govern:audit_receipt_and_gate --status SUCCESS --artifacts reports/evidence_receipt.json --approval-required
+    - python scripts/evidence_ledger.py --summary
     - python scripts/truth_audit.py --final-audit
   artifacts:
     name: "audit-receipt-$CI_COMMIT_SHA"
@@ -215,6 +219,7 @@ govern:audit_receipt_and_gate:
       - reports/evidence_receipt.json
       - reports/EVIDENCE_RECEIPT.md
       - reports/risk_classification.json
+      - reports/stage_ledger.json
 
 # Supervised Human Approval Gate for Live Production Promotion
 govern:promote_to_production:

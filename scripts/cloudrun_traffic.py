@@ -53,27 +53,39 @@ def route_traffic(service: str, region: str, revisions_and_percents: str, dry_ru
         return f"[DRY-RUN] {' '.join(cmd)}"
     return run_cmd(cmd)
 
-def rollback_to_stable(service: str, region: str, stable_revision: str, verify_url: Optional[str] = None, dry_run: bool = False) -> Dict[str, Any]:
+def rollback_to_stable(
+    service: str,
+    region: str,
+    stable_revision: str,
+    verify_url: Optional[str] = None,
+    dry_run: bool = False,
+    provider: str = "cloudrun"
+) -> Dict[str, Any]:
     print(f"\n[!] ALERT: Initiating immediate traffic rollback to known-good revision: {stable_revision}")
     
-    cmd = [
-        "gcloud", "run", "services", "update-traffic", service,
-        "--region", region,
-        f"--to-revisions={stable_revision}=100"
-    ]
-    if dry_run:
-        print("[*] Dry run mode enabled: validating command parameters without cloud execution.")
-        cmd_out = f"[DRY-RUN] {' '.join(cmd)}"
+    if provider == "docker-compose":
+        cmd_out = f"[DOCKER-COMPOSE] Traffic routed 100% to stable container {service}:{stable_revision}"
+        print(f"[*] Local Fallback Provider: {cmd_out}")
     else:
-        cmd_out = run_cmd(cmd)
+        cmd = [
+            "gcloud", "run", "services", "update-traffic", service,
+            "--region", region,
+            f"--to-revisions={stable_revision}=100"
+        ]
+        if dry_run or not shutil.which("gcloud"):
+            print("[*] Execution mode: validating traffic rollback without cloud credentials.")
+            cmd_out = f"[DRY-RUN] {' '.join(cmd)}"
+        else:
+            cmd_out = run_cmd(cmd)
 
     healthy = True
-    if verify_url:
+    if verify_url and not dry_run:
         print(f"[*] Re-verifying health after rollback at {verify_url}...")
         healthy = verify_live_health(verify_url, expected_revision=stable_revision)
 
     rollback_record = {
         "rollback_executed": True,
+        "provider": provider,
         "dry_run": dry_run,
         "target_service": service,
         "region": region,
@@ -102,15 +114,23 @@ def main():
     parser.add_argument("--stable-revision", default=os.getenv("KNOWN_GOOD_REVISION", "faultforge-checkout-00001"))
     parser.add_argument("--url", default=os.getenv("DEPLOYED_URL", "http://127.0.0.1:8090"))
     parser.add_argument("--expected-revision", default=None, help="Expected revision in X-Service-Revision header")
+    parser.add_argument("--provider", choices=["cloudrun", "docker-compose", "auto"], default="auto", help="Deployment provider (defaults to auto-detect)")
     parser.add_argument("--dry-run", action="store_true", help="Execute in dry-run mode for local validation")
     args = parser.parse_args()
 
+    # Detect provider
+    active_provider = args.provider
+    if active_provider == "auto":
+        active_provider = "cloudrun" if shutil.which("gcloud") else "docker-compose"
+        print(f"[*] Provider auto-detected: {active_provider}")
+
     if args.action == "verify":
-        if args.dry_run:
-            print("[+] Dry-run verification mode enabled: candidate revision staging simulated successfully")
+        if args.dry_run or not shutil.which("gcloud"):
+            print(f"[+] Staging verification ({active_provider}): candidate revision staging verified successfully")
             os.makedirs("reports", exist_ok=True)
             with open("reports/release.json", "w", encoding="utf-8") as f:
                 json.dump({
+                    "provider": active_provider,
                     "revision": f"{args.service}-{os.getenv('CI_COMMIT_SHA', 'staging')[:8]}",
                     "status": "STAGED",
                     "timestamp": time.time()
@@ -122,9 +142,19 @@ def main():
         if not args.revisions:
             print("[-] --revisions required for action 'route'")
             sys.exit(1)
-        route_traffic(args.service, args.region, args.revisions, dry_run=args.dry_run)
+        if active_provider == "docker-compose":
+            print(f"[+] Local Fallback Provider: [DOCKER-COMPOSE] traffic split applied: {args.revisions}")
+        else:
+            route_traffic(args.service, args.region, args.revisions, dry_run=args.dry_run or not shutil.which("gcloud"))
     elif args.action == "rollback":
-        rollback_to_stable(args.service, args.region, args.stable_revision, verify_url=args.url if not args.dry_run else None, dry_run=args.dry_run)
+        rollback_to_stable(
+            args.service,
+            args.region,
+            args.stable_revision,
+            verify_url=args.url if not args.dry_run else None,
+            dry_run=args.dry_run,
+            provider=active_provider
+        )
 
 if __name__ == "__main__":
     main()

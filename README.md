@@ -1,13 +1,13 @@
 # FaultForge — Break It, Heal It
 
-> **Rehearse a failure. Recover safely. Prove the service is stronger.**  
-> Built for the **GitLab Transcend 2026: Life After Code** Hackathon.
+> **"Most chaos tools break things and stop. FaultForge breaks it, heals it, and proves the fix under the same fault."**  
+> Built for the **GitLab Transcend 2026: Life After Code** Hackathon (Path A — Start Fresh).
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![GitLab Duo Agent Platform](https://img.shields.io/badge/GitLab_Duo-Custom_Flow-orange.svg)](flows/faultforge-flow.yaml)
 [![Autonomy Model](https://img.shields.io/badge/Autonomy-Supervised-brightgreen.svg)](docs/safety-policy.md)
 [![Lifecycle Stages](https://img.shields.io/badge/Stages-9_Covered-brightgreen.svg)](.gitlab-ci.yml)
-[![Deployment](https://img.shields.io/badge/Deployment-Cloud_Run_Canary-blue.svg)](infra/cloudrun/)
+[![Deployment](https://img.shields.io/badge/Deployment-Cloud_Run_%26_Compose-blue.svg)](infra/cloudrun/)
 
 ---
 
@@ -23,41 +23,36 @@ Most CI pipelines only verify that unit tests pass in isolation. Because unit te
 4. **GitLab Duo Agent Platform Remediation:** Trigger a custom GitLab Duo flow (`flows/faultforge-flow.yaml`) whose Diagnostician, Resilience Healer, and Chaos Hardener synthesize a minimal scoped fix: a bounded 0.8s timeout, circuit breaker (3 failures, 10s cooldown), and deterministic fallback rate.
 5. **Replay Identical Fault:** Re-execute the **identical Toxiproxy fault profile** against the candidate release across 10 consecutive probe iterations.
 6. **Empirical Proof:** Confirm zero SLA budget breaches, >60% latency reduction, and observable fallback responses (`is_fallback: true`, `is_estimate: true`).
-7. **Supervised Autonomy Gate:** Enforce risk-based governance, deploy candidate container to Google Cloud Run staging, and require human review before live production promotion, with automated instant rollback.
+7. **Supervised Autonomy Gate:** Enforce risk-based governance, deploy candidate container to Google Cloud Run staging (with Docker Compose local fallback), and require human review before live production promotion, with automated instant rollback.
 
 > **The Differentiator:** It is not "AI says it fixed the app." **It is the before/after empirical proof under the exact same controlled failure condition.**
 
 ---
 
-## 2. End-to-End Workflow Architecture
+## 2. End-to-End 3-Swimlane Architecture
 
 ```mermaid
 flowchart TD
-    subgraph CI["GitLab CI/CD Pipeline (9 Lifecycle Stages)"]
-        S1["1. PLAN<br/>Incident Dossier & Bisect"] --> S2["2. CREATE<br/>GitLab Duo Flow & Fix MR"]
-        S2 --> S3["3. CONFIGURE<br/>Toxiproxy Chaos Topology"]
-        S3 --> S4["4. VERIFY<br/>Unit Tests & Baseline Fault Run"]
-        S4 --> S5["5. SECURE<br/>Bandit AST & Secret Scans"]
-        S5 --> S6["6. PACKAGE<br/>Container Build & Digest"]
-        S6 --> S7["7. RELEASE<br/>Cloud Run Staging (0% Live)"]
-        S7 --> S8["8. MONITOR<br/>Replay Proof & Telemetry"]
-        S8 --> S9["9. GOVERN<br/>Tamper-Evident Evidence Receipt"]
+    subgraph Swimlane1["1. Chaos Engine (Toxiproxy)"]
+        C1["Inject 3,500ms Delay<br/>(Hash: 644a89784316)"] --> C2["Prove Baseline Breach<br/>(3,742ms > 1,500ms SLA)"]
+        C2 --> C3["Exact Fault Replay<br/>(10 Consecutive Probes)"]
     end
 
-    subgraph Duo["GitLab Duo Agent Platform Flow"]
-        D1["Custom Flow Entry"] --> D2["Diagnostician<br/>(Call-site Analysis)"]
-        D2 --> D3["Resilience Healer<br/>(0.8s Timeout & Fallback)"]
-        D3 --> D4["Chaos Hardener<br/>(Regression Test)"]
+    subgraph Swimlane2["2. GitLab Duo Agent Platform"]
+        D1["Diagnostician<br/>(AST & Bisect to 974035c)"] --> D2["Resilience Healer<br/>(0.8s Timeout + Fallback)"]
+        D2 --> D3["Chaos Hardener<br/>(Automated MR & Tests)"]
     end
 
-    subgraph Governance["Supervised Gate"]
-        S9 --> G1{"Human Approval<br/>Gate"}
-        G1 -->|Approved| G2["Promote to Live Traffic (100%)"]
-        G1 -->|Rejected / Alert| G3["Instant Cloud Run Rollback"]
+    subgraph Swimlane3["3. Governance & Supervised Gate"]
+        G1["Stage-by-Stage Ledger<br/>(stage_ledger.json)"] --> G2["SHA-256 Evidence Receipt<br/>(evidence_receipt.json)"]
+        G2 --> G3{"Supervised Human Gate<br/>(Approval for Live Traffic)"}
+        G3 -->|Approved| G4["Cloud Run / Compose 100%"]
+        G3 -->|Alert| G5["Instant 0-Downtime Rollback"]
     end
 
-    S2 -.-> Duo
-    Duo -.-> S8
+    C2 -.->|Incident Dossier| D1
+    D3 -.->|Candidate Patch| C3
+    C3 -.->|Replay Proof| G2
 ```
 
 ---
@@ -153,6 +148,25 @@ In strict compliance with the **Never Fabricate Evidence** and **Claim Only What
 
 ---
 
-## 7. License
+## 7. Engineering Takeaways & Lessons Learned
+
+1. **Deterministic Baselines Over Ad-Hoc Chaos:** Testing code against arbitrary network delays introduces flakiness. Computing a SHA-256 canonical hash of the Toxiproxy JSON configuration (`644a89784316`) guaranteed that the candidate release was replayed under the exact same 3,500ms delay and 250ms jitter as the baseline failure.
+2. **Fail Loudly with Anti-Fake Guards:** Masking exit codes with `|| true` creates dangerous illusions of safety. By enforcing `scripts/truth_audit.py` in Stage 9, FaultForge guarantees that every green checkmark in the 9-stage pipeline represents a real empirical pass.
+3. **Platform Constraints in Custom Flow YAML:** GitLab Duo Agent Platform flows reject hardcoded model identifiers (`model: claude-3-5-sonnet`) and top-level names. Decoupling prompts and relying on platform-managed model routing ensures multi-environment portability.
+4. **Graceful Fallbacks Over Cascading 504s:** Outbound HTTP dependencies will inevitably degrade. Providing observable fallback responses (`is_fallback: true`, `is_estimate: true`) allows checkout transactions to complete without customer loss while isolating upstream outages.
+5. **Autonomy Requires a Configurable Dial:** Different organizational risk profiles demand different governance postures. The configurable Autonomy Dial (`ASSISTED`, `SUPERVISED`, `HANDS_OFF`) enables enterprises to dial in their comfort level based on diff size and touched paths.
+
+---
+
+## 8. Future Orbit Enhancement & Observability Architecture
+
+GitLab's **Orbit** agent platform tool provides next-generation autonomous incident investigation. Orbit is currently in private beta / behind a feature flag for hackathon namespaces:
+- **Future Orbit Integration:** FaultForge is architected to stream live OpenTelemetry spans and Toxiproxy fault events directly into Orbit agent sessions, allowing Orbit to autonomously correlate p95 latency spikes with downstream network topologies.
+- **Battle-Tested Platform Fallback:** Because Orbit is not yet globally enabled, FaultForge implements an enterprise-ready fallback path using the GitLab Issues, Notes, Merge Requests, and REST Flows APIs (`scripts/trigger_duo_flow.py`). This guarantees zero dependency on feature-flagged platform capabilities while remaining forward-compatible.
+
+---
+
+## 9. License
 
 This project is licensed under the terms of the [MIT License](LICENSE).
+

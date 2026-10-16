@@ -94,12 +94,24 @@ def classify_diff(
     if not reasons:
         reasons.append("Scoped resilience change within allowed components (app/clients/ or app/resilience/) with regression test.")
 
+    autonomy_level = os.getenv("AUTONOMY_LEVEL", policy.get("autonomy_level", "SUPERVISED")).upper()
+    if autonomy_level == "ASSISTED":
+        requires_approval = True
+        reasons.append("Autonomy Dial: ASSISTED mode active (human confirmation required for all changes).")
+    elif autonomy_level == "HANDS_OFF":
+        requires_approval = (tier == "HIGH")
+        reasons.append("Autonomy Dial: HANDS_OFF mode active (autonomous promotion for low and medium tiers).")
+    else:
+        requires_approval = (tier in ("MEDIUM", "HIGH"))
+        reasons.append("Autonomy Dial: SUPERVISED mode active (autonomous staging/replay; human sign-off for live promotion).")
+
     return {
         "tier": tier,
+        "autonomy_level": autonomy_level,
         "lines_changed": lines_changed,
         "files_changed": files,
         "reasons": reasons,
-        "requires_human_approval": (tier in ("MEDIUM", "HIGH")),
+        "requires_human_approval": requires_approval,
         "allowed_automation": "Automated MR creation, staging deployment, chaos replay" if tier == "LOW" else "Manual review required"
     }
 
