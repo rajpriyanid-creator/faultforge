@@ -203,6 +203,21 @@
           </div>
         </div>
 
+        <!-- Execution Mode Selector -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono bg-slate-950 p-3 rounded border border-slate-800">
+          <span class="text-slate-400">EXECUTION MODE:</span>
+          <div class="flex items-center gap-4">
+            <label class="flex items-center gap-1.5 cursor-pointer text-emerald-400 font-semibold">
+              <input type="radio" name="checkout-mode" value="resilience" checked class="text-sky-500 bg-slate-900 border-slate-700">
+              <span>Resilience Interception (0.8s SLA Fallback)</span>
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer text-slate-300">
+              <input type="radio" name="checkout-mode" value="direct" class="text-sky-500 bg-slate-900 border-slate-700">
+              <span>Direct Outbound Carrier</span>
+            </label>
+          </div>
+        </div>
+
         <!-- Action Execution Strip -->
         <div class="flex flex-col sm:flex-row gap-3 pt-2">
           <button id="btn-submit-checkout" onclick="executeCheckoutTransaction()" class="flex-1 bg-sky-600 hover:bg-sky-500 text-white font-medium text-xs py-3 px-4 rounded border border-sky-400/30 transition flex items-center justify-center gap-2">
@@ -638,7 +653,10 @@
 
       const t0 = performance.now();
       try {
-        const response = await fetch('/api/v1/checkout', {
+        const mode = document.querySelector('input[name="checkout-mode"]:checked')?.value || 'resilience';
+        const targetEndpoint = mode === 'resilience' ? '/api/v1/checkout/test-resilience' : '/api/v1/checkout';
+
+        const response = await fetch(targetEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)

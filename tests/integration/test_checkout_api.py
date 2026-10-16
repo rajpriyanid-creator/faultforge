@@ -74,3 +74,29 @@ async def test_dashboard_endpoint():
         assert "FaultForge" in res.text
         assert "text/html" in res.headers["content-type"]
 
+@pytest.mark.asyncio
+async def test_resilience_checkout_endpoint():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        payload = {
+            "order_id": "ORD-RESIL-1",
+            "customer_id": "CUST-1",
+            "destination_zip": "90210",
+            "weight_kg": 2.0,
+            "items": [{"item_id": "ITM-1", "name": "Test Item", "price": 50.00, "quantity": 1}]
+        }
+        res = await client.post("/api/v1/checkout/test-resilience", json=payload)
+        assert res.status_code == 200
+        data = res.json()
+        assert data["status"] == "CONFIRMED_ESTIMATED_SHIPPING"
+        assert data["shipping_details"]["is_fallback"] is True
+        assert data["processed_at_ms"] <= 1500.0
+
+@pytest.mark.asyncio
+async def test_evidence_endpoint():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        res = await client.get("/api/v1/evidence")
+        assert res.status_code == 200
+
+
