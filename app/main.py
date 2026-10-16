@@ -43,7 +43,7 @@ class OrderItem(BaseModel):
 class CheckoutRequest(BaseModel):
     order_id: str
     customer_id: str
-    destination_zip: str
+    destination_zip: str = Field(..., description="5-digit destination postal code", min_length=3)
     weight_kg: float = Field(default=1.5, gt=0)
     items: List[OrderItem]
 
