@@ -1,5 +1,8 @@
 # FaultForge Architecture & Technical Design
 
+**Revision:** 1.0 (Component Specifications)  
+**Last Updated:** October 2026
+
 ## 1. System Overview
 
 FaultForge is an AI-assisted resilience hardening system designed for the **GitLab Transcend 2026: Life After Code** hackathon. It automates controlled chaos rehearsal, deterministic evidence collection, GitLab Duo Agent Platform diagnosis/remediation, and exact-fault verification.
