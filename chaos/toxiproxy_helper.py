@@ -16,6 +16,24 @@ class ToxiproxyClient:
     def __init__(self, api_url: str = "http://127.0.0.1:8474"):
         self.api_url = api_url.rstrip("/")
 
+    def get_version(self) -> str:
+        try:
+            r = requests.get(f"{self.api_url}/version", timeout=1.0)
+            if r.status_code == 200:
+                return r.text.strip()
+        except Exception:
+            pass
+        return "unknown"
+
+    def get_toxic(self, proxy_name: str, toxic_name: str) -> Dict[str, Any]:
+        try:
+            r = requests.get(f"{self.api_url}/proxies/{proxy_name}/toxics/{toxic_name}", timeout=1.0)
+            if r.status_code == 200:
+                return r.json()
+        except Exception:
+            pass
+        return {}
+
     def is_available(self) -> bool:
         try:
             r = requests.get(f"{self.api_url}/version", timeout=1.0)
@@ -203,6 +221,24 @@ class ChaosEngine:
                 self.standalone.configure_fault(latency_ms=latency, jitter_ms=jitter, reset_peer=False)
             elif fault_type in ("reset_peer", "reset"):
                 self.standalone.configure_fault(reset_peer=True)
+
+    def get_version(self) -> str:
+        if self.use_toxi:
+            return self.toxi_client.get_version()
+        return "standalone"
+
+    def read_back_toxic(self, profile: Dict[str, Any]) -> Dict[str, Any]:
+        if self.use_toxi:
+            proxy_name = profile.get("proxy_name", "shipping_api_proxy")
+            toxic_type = profile.get("fault_type", "latency")
+            toxic_name = f"{toxic_type}_toxic"
+            toxic_data = self.toxi_client.get_toxic(proxy_name, toxic_name)
+            return toxic_data.get("attributes", toxic_data)
+        else:
+            return {
+                "latency": self.standalone.latency_ms,
+                "jitter": self.standalone.jitter_ms
+            }
 
     def clear(self):
         if self.use_toxi:

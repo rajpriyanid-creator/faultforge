@@ -11,6 +11,12 @@ services:
       - "8081:8081"
     environment:
       - PORT=8081
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8081/health')\" || exit 1"]
+      interval: 3s
+      timeout: 2s
+      retries: 5
+      start_period: 3s
     networks:
       - chaos-net
 
@@ -24,7 +30,14 @@ services:
       - "8474:8474" # Toxiproxy Management API
       - "8082:8082" # Injected Fault Proxy Port
     depends_on:
-      - shipping-stub
+      shipping-stub:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "/toxiproxy-cli version || wget -qO- http://127.0.0.1:8474/version || exit 1"]
+      interval: 3s
+      timeout: 2s
+      retries: 5
+      start_period: 2s
     networks:
       - chaos-net
 
@@ -40,8 +53,16 @@ services:
       - ENVIRONMENT=chaos-test
       - SHIPPING_SERVICE_URL=http://toxiproxy:8082
     depends_on:
-      - toxiproxy
-      - shipping-stub
+      toxiproxy:
+        condition: service_healthy
+      shipping-stub:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8090/health')\" || exit 1"]
+      interval: 3s
+      timeout: 2s
+      retries: 5
+      start_period: 5s
     networks:
       - chaos-net
 
