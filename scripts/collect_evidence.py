@@ -159,12 +159,14 @@ def build_incident_dossier(
     # Validate against schemas/dossier.schema.json
     schema_path = "schemas/dossier.schema.json"
     if os.path.exists(schema_path):
-        import jsonschema
-        with open(schema_path, "r", encoding="utf-8") as sf:
-            schema_data = json.load(sf)
         try:
+            import jsonschema
+            with open(schema_path, "r", encoding="utf-8") as sf:
+                schema_data = json.load(sf)
             jsonschema.validate(instance=dossier, schema=schema_data)
             print(f"[+] Schema validation passed: {schema_path}")
+        except ImportError:
+            print("[!] Notice: jsonschema library not installed; skipping schema validation.")
         except Exception as exc:
             print(f"[-] Schema validation error: {exc}", file=sys.stderr)
             sys.exit(1)
