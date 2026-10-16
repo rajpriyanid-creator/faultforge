@@ -196,8 +196,9 @@ govern:audit_receipt_and_gate:
 govern:promote_to_production:
   stage: govern
   image: google/cloud-sdk:alpine
-  dependencies:
-    - govern:audit_receipt_and_gate
+  needs:
+    - job: govern:audit_receipt_and_gate
+      artifacts: true
   script:
     - python3 scripts/cloudrun_traffic.py --action route --service $SERVICE_NAME --revisions "$SERVICE_NAME-$CI_COMMIT_SHA=100"
   when: manual
