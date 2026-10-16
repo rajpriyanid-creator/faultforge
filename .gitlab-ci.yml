@@ -164,6 +164,7 @@ release:cloudrun_candidate_deploy:
   stage: release
   image: python:3.12-slim
   script:
+    - pip install -r requirements.txt
     - python scripts/cloudrun_traffic.py --action verify --url "http://127.0.0.1:8090" --dry-run
   environment:
     name: staging
@@ -222,6 +223,7 @@ govern:promote_to_production:
     - job: govern:audit_receipt_and_gate
       artifacts: true
   script:
+    - pip install -r requirements.txt
     - python scripts/cloudrun_traffic.py --action route --service $SERVICE_NAME --revisions "$SERVICE_NAME-$CI_COMMIT_SHA=100" --dry-run
   when: manual
   allow_failure: false
