@@ -1,63 +1,67 @@
 # GitLab Duo Agent Platform Custom Flow
 # FaultForge: "Break It, Heal It"
-# Schema Reference: https://docs.gitlab.com/user/duo_agent_platform/flows/custom_flows_schema/
+# Validated against official schema: https://docs.gitlab.com/user/duo_agent_platform/flows/custom_flows_schema/
 
 version: "v1"
-name: "faultforge_resilience_flow"
-description: "Diagnose dependency fragility from Incident Dossier and synthesize resilience-hardening Merge Request"
-
 environment: ambient
+coding_environment: full
+
+prompts:
+  diagnose_prompt:
+    system: |
+      You are the FaultForge Diagnostician. Read AGENTS.md and the incident dossier in reports/incident_dossier.json.
+      Examine app/clients/shipping_client.py at the reported call site.
+      Identify why checkout breached the 1500ms latency budget under the 3500ms downstream delay.
+      Distinguish confirmed facts (e.g. missing bounded timeout) from hypotheses.
+      Confirm the failing chaos test in tests/chaos/test_resilience.py.
+      If unsure of root cause, report UNKNOWN rather than guessing.
+      Summarize findings concisely for the resilience healer.
+
+  heal_prompt:
+    system: |
+      You are the FaultForge Resilience Healer. Review AGENTS.md, the Diagnostician output, and reports/incident_dossier.json.
+      Synthesize the smallest scoped resilience patch:
+      1. Add strict 0.8s bounded timeout on httpx.AsyncClient call in app/clients/shipping_client.py.
+      2. Wire graceful fallback with is_fallback=True and is_estimate=True when timeout occurs.
+      3. Ensure checkout order status reflects CONFIRMED_ESTIMATED_SHIPPING under fallback.
+      4. Reinstate circuit breaker if justified to shed degraded dependency load.
+      5. Extend regression test in tests/chaos/test_resilience.py to assert SLA budget <= 1500ms.
+      6. Run tests to confirm fix: pytest tests/unit tests/integration.
+      7. Open a new branch 'fix/resilience-shipping-timeout' and create a Merge Request targeting 'main'.
+      8. Safety constraints: NEVER alter authentication, authorization, payment, database schemas, secrets, or IAM. Max 2 patch attempts.
 
 components:
-  - id: "diagnostician"
-    type: "agent"
-    description: "Inspects incident dossier and source call-site to diagnose fragility without inventing blame"
-    prompt: |
-      You are the FaultForge Diagnostician. Read the incident dossier in reports/incident_dossier.json and AGENTS.md.
-      Examine app/clients/shipping_client.py at the reported call site.
-      Identify why the service failed under the 3500ms dependency delay.
-      Distinguish confirmed facts (e.g. missing bounded timeout) from hypotheses.
-      Output a structured diagnosis summary with target component, weakness classification, and recommended fix.
-    tools:
-      - "gitlab_repository_files_tool"
-      - "gitlab_commits_tool"
-    output_schema:
-      type: "object"
-      required: ["status", "target_file", "weakness_type", "recommended_action"]
-      properties:
-        status: { "type": "string", "enum": ["CONFIRMED_REGRESSION", "SUSPECTED_WEAKNESS", "INSUFFICIENT_EVIDENCE"] }
-        target_file: { "type": "string" }
-        weakness_type: { "type": "string" }
-        recommended_action: { "type": "string" }
+  - name: "diagnostician"
+    type: AgentComponent
+    prompt_id: "diagnose_prompt"
+    inputs:
+      - from: "context:project_id"
+        as: "project_id"
+      - "context:goal"
+    toolset:
+      - read_file
+      - list_dir
+      - run_command
 
-  - id: "resilience_healer"
-    type: "agent"
-    description: "Synthesizes minimal resilience patch and opens Merge Request"
-    prompt: |
-      You are the FaultForge Resilience Healer. Review the Diagnostician output and AGENTS.md.
-      Synthesize the smallest scoped fix:
-      1. Add strict 0.8s bounded timeout on httpx.AsyncClient call in app/clients/shipping_client.py.
-      2. Wire graceful fallback with is_fallback=True and is_estimate=True when timeout or error occurs.
-      3. Extend regression test in tests/chaos/test_resilience.py to assert SLA budget <= 1500ms.
-      4. Never alter authentication, authorization, payment, database schemas, or secrets.
-      5. Open a new branch 'fix/resilience-shipping-timeout' and create a Merge Request targeting 'main'.
-      6. Classify risk tier as LOW in accordance with the repository safety policy.
-    tools:
-      - "gitlab_repository_files_tool"
-      - "gitlab_merge_request_tool"
-    output_schema:
-      type: "object"
-      required: ["branch_name", "mr_title", "risk_tier"]
-      properties:
-        branch_name: { "type": "string" }
-        mr_title: { "type": "string" }
-        risk_tier: { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH"] }
+  - name: "resilience_healer"
+    type: AgentComponent
+    prompt_id: "heal_prompt"
+    inputs:
+      - from: "context:project_id"
+        as: "project_id"
+      - from: "components.diagnostician.output"
+        as: "diagnosis_result"
+      - "context:goal"
+    toolset:
+      - read_file
+      - list_dir
+      - run_command
 
 routers:
-  - id: "route_after_diagnosis"
-    from: "diagnostician"
+  - from: "diagnostician"
     to: "resilience_healer"
-    condition: "steps.diagnostician.output.status != 'INSUFFICIENT_EVIDENCE'"
+  - from: "resilience_healer"
+    to: "end"
 
 flow:
-  entrypoint: "diagnostician"
+  entry_point: "diagnostician"

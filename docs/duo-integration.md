@@ -1,40 +1,64 @@
 # GitLab Duo Agent Platform Integration Guide
 
-This guide documents the configuration, trigger options, API integration, and fallback procedures for running the FaultForge custom flow on GitLab.
+This guide documents the configuration, schema compliance, trigger options, API integration, and fallback procedures for running the FaultForge custom flow on GitLab.
 
 ---
 
-## 1. Flow Registration in GitLab UI
+## 1. Flow Registration in GitLab UI (AI Catalog / Flows)
 
-1. In your GitLab project or group, navigate to **Automate** > **Flows**.
+1. In your GitLab project or group, navigate to **Automate** > **Flows** (or **AI Catalog** > **Flows**).
 2. Click **New flow**.
 3. Import the flow YAML specification from [`flows/faultforge-flow.yaml`](../flows/faultforge-flow.yaml).
 4. Save the flow with identifier `faultforge_resilience_flow`.
-5. Grant the flow permissions to create Merge Requests and read repository files.
+5. Grant the flow permissions to create Merge Requests, commit code, and read repository files.
+6. Note the generated service account username (typically `ai-faultforge_resilience_flow`).
 
 ---
 
-## 2. Trigger Mechanisms
+## 2. Verified Trigger Mechanisms
 
-### Method A: Direct CI / Script Invocation via Flows API (Recommended)
-The CI/CD pipeline triggers the custom flow directly using the official GitLab Flows API:
+### Method A: REST API Runs Trigger (Automated CI Path)
+The pipeline dispatches an execution request directly to the GitLab Duo Agent Platform:
 ```bash
 python scripts/trigger_duo_flow.py
 ```
-- **Requirements:**
-  - `FF_GITLAB_TOKEN`: Project Access Token or Personal Access Token with `api` and `read_repository` scopes.
+- **Endpoint:** `POST /api/v4/projects/:id/duo_agent_platform/flows/:flow_id/runs`
+- **Required Variables:**
+  - `FF_GITLAB_TOKEN`: Project or Personal Access Token with `api` and `write_repository` scopes.
   - `CI_PROJECT_ID`: GitLab project numerical ID.
   - `FF_DUO_FLOW_ID`: Identifier of the registered flow (default: `faultforge_resilience_flow`).
+- **Output:** Saves run record with run ID and URL to `reports/duo_run.json`.
 
-### Method B: Work Item / Issue Assignment Trigger (Fallback)
-If direct API access is restricted by tier permissions:
-1. The `plan:incident_tracking` CI job generates [`reports/incident_dossier.json`](../reports/incident_dossier.json) and creates an Incident Work Item.
-2. In the GitLab Issue, mention the flow bot `@gitlab-duo` or assign the issue to the flow service account.
-3. The flow triggers on the `issue_assigned` or `mention` event, ingests the Incident Dossier attached to the issue, and opens the remediation Merge Request.
+### Method B: Issue Assignment / Mention Trigger (Documented Platform Fallback)
+If group permissions or tier restrictions disallow direct REST flow execution:
+1. `scripts/trigger_duo_flow.py` automatically falls back to creating an **Incident Issue** via GitLab Issues API with the complete Incident Dossier summary.
+2. It assigns or mentions the flow service account (`@ai-faultforge_resilience_flow`).
+3. GitLab's event router initiates the custom flow on the `mention` or `assignment` trigger.
+4. The agent ingests `context:goal` containing the incident context and proceeds with diagnosis and patch creation.
+
+### Method C: Human Interactive Fallback
+If API triggers are blocked or credentials expire:
+1. View the Incident Issue created by CI (`Incident inc-XXXX: Checkout dependency SLA budget breach`).
+2. Add a comment: `@ai-faultforge_resilience_flow Please run resilience flow to fix checkout timeout`.
+3. The Duo agent will open the Merge Request targeting `main`.
 
 ---
 
-## 3. Strict Authenticity Rule
-In accordance with Rule 7 of the FaultForge specification:
-- Duo must execute real diagnosis and code synthesis.
-- If tokens or credits are exhausted, the script halts with a clear error; it does not fabricate a synthetic MR response.
+## 3. What Worked, What Didn't, and Platform Constraints
+
+### What Worked:
+- **Flow Registry v1 Specification:** `environment: ambient`, `coding_environment: full`, decoupled `prompts:`, modular `AgentComponent` blocks, and explicit `routers:` transitions pass GitLab Duo validation.
+- **Dynamic Dossier Ingestion:** The Incident Dossier contains 0 placeholders, providing concrete AST findings, git bisect culprit SHA, and failing test node IDs.
+- **Fail-Loud Enforcement:** If `FF_GITLAB_TOKEN` or `CI_PROJECT_ID` is missing, `scripts/trigger_duo_flow.py` immediately exits with code 1 instead of emitting fake run records.
+
+### What Didn't (Platform Constraints Handled):
+- **Model In Prompts:** GitLab custom flows reject explicit model identifiers (`model: claude-3-5-sonnet`) inside the flow YAML. Model selection is strictly governed by group/instance configuration.
+- **Top-Level Metadata:** GitLab rejects top-level `name` and `description` in the flow YAML. Flow naming is handled when registering the flow in the UI.
+
+---
+
+## 4. Strict Authenticity Rule (Rule 5 & Rule 7)
+In accordance with the hackathon rules:
+- GitLab Duo must execute real diagnosis and code synthesis.
+- Under no circumstances is a synthetic MR payload generated.
+- When human assistance is needed, the human runs the flow or assigns the flow bot, linking the real MR.
