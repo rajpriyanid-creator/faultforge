@@ -203,6 +203,7 @@ govern:audit_receipt_and_gate:
     - package:container_build
     - release:cloudrun_candidate_deploy
   script:
+    - apt-get update -qq && apt-get install -y -qq git
     - pip install -r requirements.txt
     - python scripts/classify_risk.py
     - python scripts/generate_receipt.py

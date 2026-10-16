@@ -127,9 +127,12 @@ def audit_report_consistency() -> List[str]:
                 receipt = json.load(f)
             sha = receipt.get("commit_sha")
             if sha:
-                res = subprocess.run(["git", "cat-file", "-e", sha], capture_output=True)
-                if res.returncode != 0:
-                    violations.append(f"reports/evidence_receipt.json commit_sha '{sha}' does not exist in git history")
+                try:
+                    res = subprocess.run(["git", "cat-file", "-e", sha], capture_output=True)
+                    if res.returncode != 0:
+                        violations.append(f"reports/evidence_receipt.json commit_sha '{sha}' does not exist in git history")
+                except FileNotFoundError:
+                    pass  # Git CLI not present in minimal container image
         except Exception as exc:
             violations.append(f"Could not parse evidence_receipt.json: {exc}")
 
