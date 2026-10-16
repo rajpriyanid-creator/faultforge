@@ -43,3 +43,20 @@ def test_classify_diff_high_risk_diff_size():
     result = classify_diff(files, lines, POLICY)
     assert result["tier"] == "HIGH"
     assert result["requires_human_approval"] is True
+
+def test_classify_diff_autonomy_dial(monkeypatch):
+    files = ["app/clients/shipping_client.py", "tests/chaos/test_resilience.py"]
+    lines = 20
+
+    # In ASSISTED mode, even LOW tier requires human approval
+    monkeypatch.setenv("AUTONOMY_LEVEL", "ASSISTED")
+    result_assisted = classify_diff(files, lines, POLICY)
+    assert result_assisted["requires_human_approval"] is True
+    assert result_assisted["autonomy_level"] == "ASSISTED"
+
+    # In HANDS_OFF mode, LOW tier is autonomous
+    monkeypatch.setenv("AUTONOMY_LEVEL", "HANDS_OFF")
+    result_hands_off = classify_diff(files, lines, POLICY)
+    assert result_hands_off["requires_human_approval"] is False
+    assert result_hands_off["autonomy_level"] == "HANDS_OFF"
+

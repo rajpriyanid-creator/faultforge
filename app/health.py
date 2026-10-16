@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 FaultForge Authors
+
 import time
 from fastapi import APIRouter, Response, status
 from app.config import settings

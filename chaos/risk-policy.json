@@ -1,4 +1,22 @@
 {
+  "autonomy_level": "SUPERVISED",
+  "autonomy_levels": {
+    "ASSISTED": {
+      "description": "Human approval required for all deployments and code changes",
+      "auto_promotion": false,
+      "max_low_risk_diff_lines": 0
+    },
+    "SUPERVISED": {
+      "description": "Autonomous staging and testing; mandatory human approval gate for live production traffic",
+      "auto_promotion": false,
+      "max_low_risk_diff_lines": 150
+    },
+    "HANDS_OFF": {
+      "description": "Fully autonomous pipeline progression for verified low-risk changes",
+      "auto_promotion": true,
+      "max_low_risk_diff_lines": 300
+    }
+  },
   "high_risk_patterns": [
     "auth",
     "payment",

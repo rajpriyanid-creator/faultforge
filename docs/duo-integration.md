@@ -62,3 +62,20 @@ In accordance with the hackathon rules:
 - GitLab Duo must execute real diagnosis and code synthesis.
 - Under no circumstances is a synthetic MR payload generated.
 - When human assistance is needed, the human runs the flow or assigns the flow bot, linking the real MR.
+
+---
+
+## 5. Future Orbit Enhancement & Fallback Diagnosis Path
+
+### Future Orbit Capabilities
+GitLab Orbit is designed for conversational, context-aware autonomous investigations. When available:
+1. Orbit agents will subscribe to Toxiproxy chaos webhooks.
+2. Orbit will query real-time OpenTelemetry trace spans directly from Cloud Run and local containers.
+3. Orbit will correlate degraded dependency health probes with culprit commit regressions autonomously.
+
+### Production-Ready Platform Fallback
+Because Orbit is currently behind a feature flag for hackathon namespaces:
+1. **Deterministic Bisect Fallback:** `scripts/diagnose_and_bisect.py` performs AST and `git bisect` boundary discovery without external dependencies.
+2. **GitLab REST API Fallback:** `scripts/trigger_duo_flow.py` uses verified Issues, Notes, and Merge Request APIs to trigger and link GitLab Duo custom flows.
+3. **Evidence Artifact Integration:** Findings are saved into machine-readable JSON files (`reports/incident_dossier.json`, `reports/stage_ledger.json`) rather than ephemeral chat memory.
+

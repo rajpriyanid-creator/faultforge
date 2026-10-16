@@ -71,3 +71,19 @@ Agents must use the following standard commands when verifying code changes:
   python scripts/evaluate_replay.py --baseline reports/fault_run_baseline.json --hardened reports/fault_run_hardened.json
   ```
 
+---
+
+### 7. Model Context Protocol (MCP) & Future Orbit Enhancement
+- **Model Context Protocol (MCP):** Agents interact with the repository through standard MCP tools (`read_file`, `list_dir`, `run_command`).
+- **Future Orbit Integration:** When GitLab Orbit is globally available, FaultForge will ingest live telemetry via Orbit MCP tools.
+- **GitLab API Production Fallback:** For current GitLab Transcend environments, agents operate using standard GitLab REST and GraphQL APIs for issues, merge requests, notes, and pipeline events (`scripts/trigger_duo_flow.py`).
+
+---
+
+### 8. Autonomy Dial Configuration
+The repository supports three distinct autonomy postures via `AUTONOMY_LEVEL`:
+1. `ASSISTED`: Every change, commit, and deployment requires manual operator authorization.
+2. `SUPERVISED` (Default): Automated diagnosis, staging deployment, and chaos replay; manual human sign-off required for 100% live production traffic.
+3. `HANDS_OFF`: Autonomous pipeline progression for verified low-risk and medium-risk resilience patches.
+
+
