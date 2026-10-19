@@ -128,8 +128,21 @@ def generate_evidence_receipt(
     if dossier.get("commit_sha") and dossier["commit_sha"] != git_sha:
         not_established.append(f"Dossier commit SHA ({dossier['commit_sha'][:8]}) differs from current HEAD ({git_sha[:8]}).")
 
-    if not duo_run.get("run_id"):
-        not_established.append("GitLab Duo remote run ID unconfirmed (local or API trigger pending).")
+    duo_status = duo_run.get("status", "UNCONFIRMED")
+    duo_executed = bool(
+        duo_run.get("executed") is True
+        or (
+            duo_run.get("run_id")
+            and duo_status in ("CONFIRMED", "DISPATCHED_TO_AGENT", "SUCCESS", "RUNNING")
+            and not duo_status.startswith("NOT_EXECUTED")
+        )
+    )
+    if not duo_executed or not duo_run.get("run_id") or duo_run.get("run_id") in ("unconfirmed", "reference-only"):
+        not_established.append("GitLab Duo remote remediation execution unconfirmed (no platform trigger or API credentials).")
+
+    candidate_source = replay.get("candidate_source", "duo-authored-mr")
+    if "not Duo-authored" in candidate_source:
+        not_established.append("Candidate code under test is from fallback reference-fix (not Duo-authored MR branch).")
 
     if len(run_history_15) != 15:
         not_established.append(f"Complete 15-probe run evidence incomplete (found {len(run_history_15)}/15).")
@@ -160,8 +173,6 @@ def generate_evidence_receipt(
         mr_url = f"{gitlab_project_url}/-/work_items/30"
     approver = os.getenv("GITLAB_USER_LOGIN", "SUPERVISED_OPERATOR")
 
-    duo_status = "CONFIRMED" if (duo_run.get("run_id") and duo_run.get("status") in ("CONFIRMED", "DISPATCHED_TO_AGENT", "SUCCESS", "RUNNING")) else duo_run.get("status", "UNCONFIRMED")
-
     receipt_data = {
         "receipt_id": f"rcpt-{os.urandom(6).hex()}",
         "generated_at": time.time(),
@@ -171,6 +182,7 @@ def generate_evidence_receipt(
         "autonomy_model": "SUPERVISED",
         "risk_classification": risk_data.get("tier", "LOW"),
         "approver": approver,
+        "candidate_source": candidate_source,
         "urls": {
             "pipeline_url": pipeline_url,
             "job_url": job_url,
@@ -184,6 +196,7 @@ def generate_evidence_receipt(
             "identical_replay_confirmed": (base_hash == hard_hash) if (base_hash and hard_hash) else False
         },
         "duo_execution": {
+            "executed": duo_executed,
             "run_id": duo_run.get("run_id"),
             "trigger_mechanism": duo_run.get("trigger_mechanism", "ISSUE_MENTION_TRIGGER"),
             "status": duo_status

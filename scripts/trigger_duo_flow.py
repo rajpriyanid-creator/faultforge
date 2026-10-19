@@ -75,14 +75,16 @@ Failing Test: {dossier.get('evidence', {}).get('failed_test', 'tests/chaos/test_
 
     # If running in manual/offline mode without live tokens, write reference trigger record
     if mode == "manual" or not (gitlab_token and project_id):
-        print("[*] Running in manual/reference trigger mode.")
+        status_val = "NOT_EXECUTED_REFERENCE_ONLY" if mode == "manual" else "NOT_EXECUTED_NO_CREDENTIALS"
+        print(f"[*] Running in fallback trigger mode: {status_val}")
         run_record = {
-            "run_id": f"issue-30-{int(time.time())}",
-            "trigger_mechanism": "ISSUE_MENTION_TRIGGER",
+            "run_id": "reference-only",
+            "trigger_mechanism": "MANUAL_REFERENCE",
             "flow_id": flow_id,
             "project_id": project_id or "43424456",
             "issue_iid": 30,
-            "status": "CONFIRMED",
+            "status": status_val,
+            "executed": False,
             "web_url": f"{gitlab_project_url}/-/work_items/30",
             "triggered_at": time.time(),
             "inputs_hash": dossier.get("fault", {}).get("profile_hash", "644a89784316")
@@ -125,6 +127,7 @@ Failing Test: {dossier.get('evidence', {}).get('failed_test', 'tests/chaos/test_
             "flow_id": flow_id,
             "project_id": project_id,
             "status": data.get("status", "RUNNING"),
+            "executed": True,
             "web_url": data.get("web_url", f"{gitlab_project_url}/-/flows/{flow_id}"),
             "triggered_at": time.time(),
             "inputs_hash": dossier.get("fault", {}).get("profile_hash")
@@ -160,21 +163,23 @@ Failing Test: {dossier.get('evidence', {}).get('failed_test', 'tests/chaos/test_
                 "project_id": project_id,
                 "issue_iid": issue_iid,
                 "status": "DISPATCHED_TO_AGENT",
+                "executed": True,
                 "web_url": issue_url,
                 "triggered_at": time.time(),
                 "inputs_hash": dossier.get("fault", {}).get("profile_hash")
             }
             print(f"[+] GitLab Duo Agent triggered via Issue #{issue_iid}: {issue_url}")
         else:
-            print("[!] Could not contact GitLab Issues API; recording structured fallback trigger.")
+            print("[!] Could not contact GitLab Issues API; recording NOT_EXECUTED_NO_CREDENTIALS.")
             run_record = {
-                "run_id": f"issue-30-{int(time.time())}",
-                "trigger_mechanism": "ISSUE_MENTION_TRIGGER",
+                "run_id": "unconfirmed",
+                "trigger_mechanism": "UNCONFIRMED",
                 "flow_id": flow_id,
                 "project_id": project_id,
-                "issue_iid": 30,
-                "status": "CONFIRMED",
-                "web_url": f"{gitlab_project_url}/-/work_items/30",
+                "issue_iid": None,
+                "status": "NOT_EXECUTED_NO_CREDENTIALS",
+                "executed": False,
+                "web_url": None,
                 "triggered_at": time.time(),
                 "inputs_hash": dossier.get("fault", {}).get("profile_hash", "644a89784316")
             }

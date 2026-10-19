@@ -70,7 +70,8 @@ create:duo_remediation_mr:
     - python scripts/collect_evidence.py
     - python scripts/diagnose_and_bisect.py
     - python scripts/trigger_duo_flow.py
-    - python scripts/evidence_ledger.py --stage create --job create:duo_remediation_mr --status SUCCESS --artifacts reports/fault_run_baseline.json reports/incident_dossier.json reports/diagnosis_report.json reports/duo_run.json
+    - python scripts/record_duo_evidence.py
+    - python scripts/evidence_ledger.py --stage create --job create:duo_remediation_mr --status SUCCESS --artifacts reports/fault_run_baseline.json reports/incident_dossier.json reports/diagnosis_report.json reports/duo_run.json reports/duo_evidence.json
   artifacts:
     name: "remediation-mr-$CI_COMMIT_SHA"
     expire_in: 30 days
@@ -79,6 +80,7 @@ create:duo_remediation_mr:
       - reports/incident_dossier.json
       - reports/diagnosis_report.json
       - reports/duo_run.json
+      - reports/duo_evidence.json
       - reports/stage_ledger.json
       - reports/stage_ledger_*.json
 
@@ -114,7 +116,7 @@ verify:unit_and_integration:
   image: python:3.12-slim
   script:
     - pip install -r requirements.txt
-    - pytest tests/unit tests/integration -v --junitxml=reports/junit_tests.xml
+    - pytest tests/unit tests/integration tests/test_*.py -v --junitxml=reports/junit_tests.xml
   artifacts:
     expire_in: 30 days
     reports:
@@ -135,14 +137,26 @@ verify:exact_fault_replay_proof:
   script:
     - apt-get update -qq && apt-get install -y -qq git
     - pip install -r requirements.txt
-    - git fetch origin reference-fix
-    - git checkout origin/reference-fix -- app/clients/shipping_client.py
-    - FIX_SHA=$(git rev-parse origin/reference-fix || git rev-parse reference-fix)
+    - |
+      if [ -f reports/duo_evidence.json ] && python -c "import json; d=json.load(open('reports/duo_evidence.json')); exit(0 if d.get('found') and d.get('source_branch') else 1)"; then
+        CANDIDATE_BRANCH=$(python -c "import json; print(json.load(open('reports/duo_evidence.json'))['source_branch'])")
+        echo "[+] Testing Duo-authored candidate branch: $CANDIDATE_BRANCH"
+        git fetch origin "$CANDIDATE_BRANCH"
+        git checkout "origin/$CANDIDATE_BRANCH" -- app/clients/shipping_client.py
+        FIX_SHA=$(git rev-parse "origin/$CANDIDATE_BRANCH")
+        CANDIDATE_SRC="duo-authored-mr ($CANDIDATE_BRANCH)"
+      else
+        echo "[!] No Duo-authored MR branch detected; falling back to reference-fix"
+        git fetch origin reference-fix
+        git checkout origin/reference-fix -- app/clients/shipping_client.py
+        FIX_SHA=$(git rev-parse origin/reference-fix || git rev-parse reference-fix)
+        CANDIDATE_SRC="reference-fix (not Duo-authored)"
+      fi
     - python -m uvicorn stub.mock_shipping_api:app --host 127.0.0.1 --port 8081 &
     - python -m uvicorn app.main:app --host 127.0.0.1 --port 8090 &
     - sleep 3
     - python scripts/run_fault.py --label candidate --git-sha $FIX_SHA --iterations 10 --allow-standalone-proxy --output reports/fault_run_hardened.json
-    - python scripts/evaluate_replay.py --baseline reports/fault_run_baseline.json --candidate reports/fault_run_hardened.json --output reports/replay_evaluation.json
+    - python scripts/evaluate_replay.py --baseline reports/fault_run_baseline.json --candidate reports/fault_run_hardened.json --output reports/replay_evaluation.json --candidate-source "$CANDIDATE_SRC"
     - python scripts/evidence_ledger.py --stage verify --job verify:exact_fault_replay_proof --status SUCCESS --artifacts reports/fault_run_hardened.json reports/replay_evaluation.json
   artifacts:
     name: "chaos-replay-evidence-$CI_COMMIT_SHA"
