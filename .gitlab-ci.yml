@@ -126,10 +126,11 @@ verify:exact_fault_replay_proof:
     - pip install -r requirements.txt
     - git fetch origin reference-fix
     - git checkout origin/reference-fix -- app/clients/shipping_client.py
+    - FIX_SHA=$(git rev-parse origin/reference-fix || git rev-parse reference-fix)
     - python -m uvicorn stub.mock_shipping_api:app --host 127.0.0.1 --port 8081 &
     - python -m uvicorn app.main:app --host 127.0.0.1 --port 8090 &
     - sleep 3
-    - python scripts/run_fault.py --label candidate --iterations 10 --allow-standalone-proxy --output reports/fault_run_hardened.json
+    - python scripts/run_fault.py --label candidate --git-sha $FIX_SHA --iterations 10 --allow-standalone-proxy --output reports/fault_run_hardened.json
     - python scripts/evaluate_replay.py --baseline reports/fault_run_baseline.json --candidate reports/fault_run_hardened.json --output reports/replay_evaluation.json
     - python scripts/evidence_ledger.py --stage verify --job verify:exact_fault_replay_proof --status SUCCESS --artifacts reports/fault_run_hardened.json reports/replay_evaluation.json
   artifacts:

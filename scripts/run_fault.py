@@ -147,6 +147,7 @@ def main():
     parser.add_argument("--mode", choices=["baseline", "candidate", "hardened"], default=None, help="Legacy alias for --label")
     parser.add_argument("--expect-fail", action="store_true", help="Expect the run to fail (used for baseline verification without || true)")
     parser.add_argument("--allow-standalone-proxy", action="store_true", help="Allow StandaloneChaosProxy when Toxiproxy Docker daemon is unavailable")
+    parser.add_argument("--git-sha", default=None, help="Explicit 40-char git commit SHA for provenance tracking")
     parser.add_argument("--output", default="reports/fault_run_result.json", help="Path to save probe results")
     args = parser.parse_args()
 
@@ -169,7 +170,7 @@ def main():
 
     profile_hash = compute_profile_hash(profile)
     payload_hash = compute_payload_hash(CANONICAL_PAYLOAD_TEMPLATE)
-    git_sha = get_real_git_sha()
+    git_sha = args.git_sha or get_real_git_sha()
     run_id = f"run-{uuid.uuid4().hex[:8]}"
 
     print(f"\n=================================================================")
