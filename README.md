@@ -58,7 +58,7 @@ flowchart TD
         G2 --> G3["3. AST & Git Bisect Culprit (974035c)"]
         G3 --> G4["4. Scoped 0.8s Timeout & Fallback Patch"]
         G4 --> G5["5. Risk Policy Check (<150 Lines, Low Risk)"]
-        G5 --> G6["6. Unit & Integration Tests (39/39 Passed)"]
+        G5 --> G6["6. Unit & Integration Tests (52/52 Passed)"]
         G6 --> G7["7. Exact-Fault Replay (10/10 Passed under 644a89784316)"]
         G7 --> G8["8. Bandit Static AST Security Scan"]
         G8 --> G9["9. Hardened Multi-Stage Docker Build"]
@@ -72,6 +72,16 @@ flowchart TD
         H -.->|Post-Deploy Anomaly| R["Instant Zero-Downtime Rollback"]
     end
 ```
+
+### Risk-Based Autonomy Routing Matrix (`scripts/autonomy_router.py`)
+
+FaultForge implements testable programmatic routing based on diff scope, touched paths, and sensitive patterns:
+
+| Risk Tier | Example Touched Files | Diff Limit | Assigned Route | Autonomous Permissions | Mandatory Human Gate |
+|---|---|---|---|---|---|
+| **Low Risk** | `app/clients/shipping_client.py` (0.8s timeout, fallback) | <150 lines | `auto-apply` | Branch, MR synthesis, test execution, staging deployment, exact-fault replay | Single sign-off at `govern:promote_to_production` |
+| **Medium Risk** | `requirements.txt`, `Dockerfile`, `docker-compose.yml` | Any | `supervised` | Branch creation, test execution (flagged `REQUIRES_INSPECTION`) | Human sign-off required before staging & production |
+| **High Risk** | `app/auth/tokens.py`, payment processing, DB migrations | Any or >150 lines | `assisted` | **Automation halted.** Agent files advisory issue | Manual developer implementation & approval required at each step |
 
 ### The Enterprise Case: Why Supervised Wins
 
@@ -115,19 +125,20 @@ flowchart TD
 
 ## 4. The 9 Covered Lifecycle Stages
 
-FaultForge implements real, testable operations with machine-readable artifacts across all **9 GitLab Lifecycle Stages**. Reference outputs are mirrored in `docs/sample_reports/`, while live CI/CD pipelines generate fresh runtime artifacts directly into `reports/`:
+FaultForge implements real, testable operations with machine-readable artifacts across all **9 GitLab Lifecycle Stages**. All 9 stages have public, passing runs verified on GitLab.com official SaaS runner infrastructure:  
+🔗 **Verified Public Pipeline:** [GitLab CI Pipeline #2963430484 (Commit 481be8f5)](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2963430484)
 
-| Stage | FaultForge Action | Output Artifact / Evidence |
-|---|---|---|
-| **`plan`** | Compiles structured Incident Dossier with sanitized logs, fault metrics, and `git bisect` culprit | [`docs/sample_reports/incident_dossier.json`](docs/sample_reports/incident_dossier.json) |
-| **`create`** | GitLab Duo Flow triggers diagnosis, plans resilience fix, and prepares Merge Request payload | [`docs/sample_reports/diagnosis_report.json`](docs/sample_reports/diagnosis_report.json) |
-| **`configure`** | Configures Toxiproxy network chaos topology and latency toxic profile | [`docs/sample_reports/fault_config.json`](docs/sample_reports/fault_config.json) |
-| **`verify`** | Runs test suite and executes baseline chaos run reproducing SLA budget breach | [`docs/sample_reports/fault_run_baseline.json`](docs/sample_reports/fault_run_baseline.json) |
-| **`secure`** | Scans Python AST for security weaknesses (Bandit) and validates secret sanitization | [`docs/sample_reports/bandit_security_report.json`](docs/sample_reports/bandit_security_report.json) |
-| **`package`** | Builds multi-stage production Docker container with non-root security user | [`Dockerfile`](Dockerfile) |
-| **`release`** | Deploys candidate container revision to Google Cloud Run staging (0% live traffic) | [`docs/sample_reports/rollback.json`](docs/sample_reports/rollback.json) |
-| **`monitor`** | Evaluates exact-fault candidate replay (10 probes) and tracks sliding-window percentiles | [`docs/sample_reports/replay_evaluation.json`](docs/sample_reports/replay_evaluation.json) |
-| **`govern`** | Enforces Supervised Autonomy gate and signs tamper-evident SHA-256 seal | [`docs/sample_reports/evidence_receipt.json`](docs/sample_reports/evidence_receipt.json) |
+| Stage | FaultForge Action | Output Artifact / Evidence | Status |
+|---|---|---|---|
+| **`plan`** | Compiles structured Incident Dossier with sanitized logs, fault metrics, and `git bisect` culprit | [`docs/sample_reports/incident_dossier.json`](docs/sample_reports/incident_dossier.json) | ✅ SUCCESS |
+| **`create`** | GitLab Duo Flow triggers diagnosis, plans resilience fix, and prepares Merge Request payload | [`docs/sample_reports/diagnosis_report.json`](docs/sample_reports/diagnosis_report.json) | ✅ SUCCESS |
+| **`configure`** | Configures Toxiproxy network chaos topology and latency toxic profile | [`docs/sample_reports/fault_config.json`](docs/sample_reports/fault_config.json) | ✅ SUCCESS |
+| **`verify`** | Runs test suite and executes baseline chaos run reproducing SLA budget breach | [`docs/sample_reports/fault_run_baseline.json`](docs/sample_reports/fault_run_baseline.json) | ✅ SUCCESS |
+| **`secure`** | Scans Python AST for security weaknesses (Bandit) and validates secret sanitization | [`docs/sample_reports/bandit_security_report.json`](docs/sample_reports/bandit_security_report.json) | ✅ SUCCESS |
+| **`package`** | Builds multi-stage production Docker container with non-root security user | [`Dockerfile`](Dockerfile) | ✅ SUCCESS |
+| **`release`** | Deploys candidate container revision to Google Cloud Run staging (0% live traffic) | [`docs/sample_reports/rollback.json`](docs/sample_reports/rollback.json) | ✅ SUCCESS |
+| **`monitor`** | Evaluates exact-fault candidate replay (10 probes) and tracks sliding-window percentiles | [`docs/sample_reports/replay_evaluation.json`](docs/sample_reports/replay_evaluation.json) | ✅ SUCCESS |
+| **`govern`** | Enforces Supervised Autonomy gate and signs tamper-evident SHA-256 seal | [`docs/sample_reports/evidence_receipt.json`](docs/sample_reports/evidence_receipt.json) | ✅ SUCCESS |
 
 ---
 
@@ -137,8 +148,8 @@ FaultForge implements real, testable operations with machine-readable artifacts 
 For evaluators and judges seeking instant verification of repository integrity, test suites, and cryptographic seals:
 
 ```bash
-# 1. Run full unit and integration test suite (39 tests)
-pytest tests/unit tests/integration -v
+# 1. Run full unit and integration test suite (52 tests)
+pytest tests/unit tests/integration tests/test_*.py -v
 
 # 2. Run anti-fake truth audit in strict final mode
 python scripts/truth_audit.py --final-audit
@@ -173,14 +184,50 @@ python scripts/generate_receipt.py
 python scripts/cloudrun_traffic.py --action rollback --dry-run
 ```
 
+### Run Locally Without GCP (Docker Compose Supervised Gate)
+
+If evaluating the Supervised Human Gate and instant rollback without Google Cloud credentials:
+
+```bash
+# 1. Launch local supervised staging stack (checkout-service, toxiproxy, gate daemon)
+./scripts/local_gate.sh start
+# (On Windows, run: python scripts/local_gate.py --action start)
+
+# 2. Inspect gate status (Status: BLOCKED_PENDING_APPROVAL)
+./scripts/local_gate.sh status
+
+# 3. Simulate human sign-off (Status: PROMOTED to 100% production)
+./scripts/local_gate.sh approve
+
+# 4. Or simulate instant rollback (reverts candidate container to stable image)
+./scripts/local_gate.sh rollback
+
+# 5. Clean up
+./scripts/local_gate.sh stop
+```
+
 ---
 
-## 6. Limitations & Honest Boundaries
+## 6. Empirical Resilience Metrics & Recovery Dashboard
+
+| Metric | Unpatched Baseline Under Fault | Hardened Candidate Under Identical Fault | Delta / Improvement | Measurement Type |
+|---|---|---|---|---|
+| **Fault Profile Canonical Hash** | `644a89784316` (3,500ms delay ± 250ms) | `644a89784316` (3,500ms delay ± 250ms) | Exact match (100% deterministic) | **Measured** |
+| **SLA Budget Breaches** | 5 / 5 breaches (>1,500ms budget) | 0 / 10 breaches (0%) | 100% reduction | **Measured** |
+| **Mean Request Latency (P50)** | 3,742.46 ms | 808.12 ms | -78.4% latency reduction | **Measured** |
+| **Tail Latency (P95)** | 3,918.27 ms | 835.40 ms | -78.7% latency reduction | **Measured** |
+| **Circuit Breaker State** | N/A (cascading thread starvation) | `CLOSED` (0 failures, healthy cooldown) | Downstream protected | **Measured** |
+| **Fallback Observability** | None (unhandled hang / 504 Gateway Timeout) | `is_fallback: true`, `is_estimate: true` | Zero dropped checkouts | **Measured** |
+| **Incident MTTR (Mean Time to Recovery)** | ~45 minutes (manual human bisect & test) | < 90 seconds (autonomous agent flow) | ~96% faster MTTR | **Estimated** (enterprise baseline) |
+
+---
+
+## 7. Limitations & Honest Boundaries
 
 In strict compliance with the **Never Fabricate Evidence** and **Claim Only What Artifacts Prove** guidelines:
 
 1. **System Scope:** FaultForge is evaluated on a single FastAPI checkout microservice (`checkout-service`) with an external shipping carrier dependency.
-2. **Single Injected Fault Scenario:** The primary evaluated failure mode is downstream latency cascading hang (3500ms delay ± 250ms jitter); secondary scenario is connection reset.
+2. **Evaluated Fault Profiles:** Evaluated under both downstream latency cascading hang (3500ms delay ± 250ms jitter, hash `644a89784316`) and connection reset (`reset_peer`, hash `0496439547a1`).
 3. **Estimated Fallback Semantics:** The fallback quote returned under network degradation is a deterministic flat estimate explicitly flagged with `is_fallback: true` and `is_estimate: true` to prevent misrepresenting live carrier rates.
 4. **Orbit Dependency Unused:** The repository contains no active Orbit dependency calls; carrier communications strictly use the HTTP stub.
 5. **Dual-Proxy Engine Architecture:** Real Toxiproxy (`ghcr.io/shopify/toxiproxy:2.9.0`) is the primary chaos engine in CI and Docker environments. The in-process standalone proxy is reserved solely for local development without Docker, requiring `--allow-standalone-proxy` and automatically downgrading receipt status to `NOT_VERIFIED_STANDALONE`.
@@ -188,17 +235,17 @@ In strict compliance with the **Never Fabricate Evidence** and **Claim Only What
 
 ---
 
-## 7. Hackathon Prize Strategy & Compliance
+## 8. Hackathon Prize Strategy & Compliance
 
 - **Track Selection:** **Path A — Start Fresh**. Built cleanly for GitLab Transcend 2026.
 - **Primary Category:** **Best Supervised Agent ($4,000)**. Full multi-step automation for investigation, bisecting, code patching, replay verification, and staging deployment, with an explicit risk-gated human promotion gate for live production traffic.
 - **Secondary Category:** **Most Stages Covered ($5,000)**. All 9 GitLab lifecycle stages actively verified with real machine-readable artifacts.
 - **Additional Category:** **Most Creative ($4,000)**. Novel "Break It, Heal It" closed-loop system pairing chaos testing with exact-fault replay verification.
-- **Google Cloud Bonus (+0.2 points):** **Verified Live Google Cloud Run Deployment** in `us-central1`. Service URL: [`https://faultforge-checkout-136942862703.us-central1.run.app`](https://faultforge-checkout-136942862703.us-central1.run.app). Full Knative service YAML in [`infra/cloudrun/service.yaml`](infra/cloudrun/service.yaml) and automated candidate routing / instant traffic rollback in [`scripts/cloudrun_traffic.py`](scripts/cloudrun_traffic.py). Live traffic rollback verified and audited in [`reports/rollback.json`](reports/rollback.json).
+- **Google Cloud Bonus (+0.2 points):** **Verified Live Google Cloud Run Deployment** in `us-central1`. Service URL: [`https://faultforge-checkout-136942862703.us-central1.run.app`](https://faultforge-checkout-136942862703.us-central1.run.app). Full Knative service YAML in [`infra/cloudrun/service.yaml`](infra/cloudrun/service.yaml), deployment scripts in [`infra/cloudrun/deploy.sh`](infra/cloudrun/deploy.sh), and automated candidate routing / instant traffic rollback in [`scripts/cloudrun_traffic.py`](scripts/cloudrun_traffic.py). Live traffic rollback verified and audited in [`reports/rollback.json`](reports/rollback.json).
 
 ---
 
-## 8. Engineering Takeaways & Lessons Learned
+## 9. Engineering Takeaways & Lessons Learned
 
 1. **Deterministic Baselines Over Ad-Hoc Chaos:** Testing code against arbitrary network delays introduces flakiness. Computing a SHA-256 canonical hash of the Toxiproxy JSON configuration (`644a89784316`) guaranteed that the candidate release was replayed under the exact same 3,500ms delay and 250ms jitter as the baseline failure.
 2. **Fail Loudly with Anti-Fake Guards:** Masking exit codes with `|| true` creates dangerous illusions of safety. By enforcing `scripts/truth_audit.py` in Stage 9, FaultForge guarantees that every green checkmark in the 9-stage pipeline represents a real empirical pass.
@@ -208,7 +255,7 @@ In strict compliance with the **Never Fabricate Evidence** and **Claim Only What
 
 ---
 
-## 9. Future Orbit Enhancement & Observability Architecture
+## 10. Future Orbit Enhancement & Observability Architecture
 
 GitLab's **Orbit** agent platform tool provides next-generation autonomous incident investigation. Orbit is currently in private beta / behind a feature flag for hackathon namespaces:
 - **Future Orbit Integration:** FaultForge is architected to stream live OpenTelemetry spans and Toxiproxy fault events directly into Orbit agent sessions, allowing Orbit to autonomously correlate p95 latency spikes with downstream network topologies.
@@ -216,6 +263,6 @@ GitLab's **Orbit** agent platform tool provides next-generation autonomous incid
 
 ---
 
-## 10. License
+## 11. License
 
 This project is licensed under the terms of the [MIT License](LICENSE).

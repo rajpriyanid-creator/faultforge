@@ -737,7 +737,7 @@
 
         if (resEv.ok) {
           const ev = await resEv.json();
-          const status = ev.final_status || "UNKNOWN";
+          const status = ev.final_status || "PENDING";
           const statusBadge = document.getElementById('evidence-receipt-status-badge');
           if (statusBadge) {
             statusBadge.textContent = status;
@@ -751,9 +751,13 @@
           }
 
           const sealEl = document.getElementById('evidence-seal-display');
-          if (sealEl && ev.tamper_evident_seal_sha256) {
-            sealEl.textContent = ev.tamper_evident_seal_sha256.substring(0, 16) + '...';
-            sealEl.title = ev.tamper_evident_seal_sha256;
+          if (sealEl) {
+            if (ev.tamper_evident_seal_sha256) {
+              sealEl.textContent = ev.tamper_evident_seal_sha256.substring(0, 16) + '...';
+              sealEl.title = ev.tamper_evident_seal_sha256;
+            } else {
+              sealEl.textContent = "PENDING SEAL";
+            }
           }
 
           if (ev.urls && ev.urls.pipeline_url) {
@@ -764,24 +768,28 @@
             if (pipeText && pMatch) pipeText.textContent = `GitLab Pipeline #${pMatch[1]}`;
           }
 
-          if (ev.fault_profile && ev.fault_profile.hash) {
-            const hashEl = document.getElementById('gate-hash-val');
-            if (hashEl) hashEl.textContent = ev.fault_profile.hash;
+          const hashEl = document.getElementById('gate-hash-val');
+          if (hashEl) {
+            hashEl.textContent = (ev.fault_profile && ev.fault_profile.hash) ? ev.fault_profile.hash : "PENDING";
           }
 
-          if (ev.run_history_15_probes) {
-            const probesEl = document.getElementById('gate-probes-val');
-            const candidateProbes = ev.run_history_15_probes.filter(p => p.label === 'candidate');
-            if (probesEl && candidateProbes.length > 0) {
+          const probesEl = document.getElementById('gate-probes-val');
+          if (probesEl) {
+            if (ev.run_history_15_probes && ev.run_history_15_probes.length > 0) {
+              const candidateProbes = ev.run_history_15_probes.filter(p => p.label === 'candidate');
               probesEl.textContent = `${candidateProbes.length} / ${candidateProbes.length}`;
+            } else {
+              probesEl.textContent = "PENDING";
             }
           }
 
-          if (ev.governance && ev.governance.promotion_gate) {
-            const gateEl = document.getElementById('gate-promotion-status-val');
-            if (gateEl) {
+          const gateEl = document.getElementById('gate-promotion-status-val');
+          if (gateEl) {
+            if (ev.governance && ev.governance.promotion_gate) {
               const gStatus = ev.governance.promotion_gate;
               gateEl.textContent = `${gStatus} (Human Sign-off Required)`;
+            } else {
+              gateEl.textContent = "PENDING APPROVAL";
             }
           }
         }

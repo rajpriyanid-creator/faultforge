@@ -5,7 +5,14 @@ __pycache__/
 .coverage
 htmlcov/
 venv/
+.venv/
 .env
+.env.*
+*.pem
+*.key
+credentials*.json
+service_account*.json
 .cache/
+gate_data/
 reports/*
 !reports/.gitkeep

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 from app.resilience.policy import (
     CircuitBreaker,
     CircuitState,

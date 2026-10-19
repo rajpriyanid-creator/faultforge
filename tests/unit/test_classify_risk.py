@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 import os
 import pytest
 from scripts.classify_risk import classify_diff, load_policy

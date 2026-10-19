@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 import pytest
 import httpx
 from unittest.mock import patch, AsyncMock

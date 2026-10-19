@@ -1,4 +1,5 @@
-# Contributing & Local Run Guide
+# CONTRIBUTING.md — Contribution & Developer Run Guide
+# SPDX-License-Identifier: MIT
 
 Welcome to **FaultForge: Break It, Heal It** — built for the GitLab Transcend 2026 Hackathon.
 
@@ -8,8 +9,8 @@ Welcome to **FaultForge: Break It, Heal It** — built for the GitLab Transcend 
 
 ### Prerequisites
 - Python 3.12+
-- Docker & Docker Compose (optional, for real Toxiproxy network chaos)
 - Git
+- (Optional) Docker & Docker Compose (for Shopify Toxiproxy and containerized testing)
 
 ### Installation
 ```bash
@@ -27,60 +28,73 @@ pip install -r requirements.txt
 
 ---
 
-## 2. Running the Enterprise Dashboard
+## 2. Running Locally Without Docker or GCP
 
-FaultForge includes a built-in enterprise resilience dashboard and interactive checkout test bench:
-
-```bash
-python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
-```
-
-- **Interactive Dashboard:** [http://localhost:8000/dashboard](http://localhost:8000/dashboard)
-- **Swagger / OpenAPI Documentation:** [http://localhost:8000/docs](http://localhost:8000/docs)
-- **Live Health Probe:** [http://localhost:8000/health](http://localhost:8000/health)
-- **Resilience Metrics:** [http://localhost:8000/metrics](http://localhost:8000/metrics)
-
----
-
-## 3. Running Automated Test Suites
+You can run the entire test suite and verify the API and resilience dashboard without Docker or GCP:
 
 ```bash
-# Run unit and integration tests (37 passing tests)
-pytest tests/unit tests/integration -v
+# 1. Run unit and integration tests (52 passing tests)
+pytest tests/unit tests/integration tests/test_*.py -v
 
-# Run the tamper-evident Truth Audit (Anti-Fake Guard)
+# 2. Run the anti-fake Truth Audit in strict final mode
 python scripts/truth_audit.py --final-audit
+
+# 3. Launch the resilience web dashboard locally
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8090
+# Open http://127.0.0.1:8090/dashboard in your browser
 ```
 
 ---
 
-## 4. Local Chaos Rehearsal with Docker Compose
+## 3. Running Local Supervised Gate (No GCP Required)
 
-To run the full closed-loop chaos stack locally with Shopify Toxiproxy:
+If evaluating the Supervised Human Gate and instant rollback without Google Cloud credentials:
 
 ```bash
-# 1. Start services and chaos proxy
-docker compose up -d
+# Start local supervised staging stack (checkout-service, toxiproxy, gate)
+./scripts/local_gate.sh start
+# (On Windows, run: python scripts/local_gate.py --action start)
 
-# 2. Run baseline fault injection (proves SLA breach)
-python scripts/run_fault.py --mode baseline --expect-fail --output reports/fault_run_baseline.json
+# Check gate status (Status: BLOCKED_PENDING_APPROVAL)
+./scripts/local_gate.sh status
 
-# 3. Run candidate exact-fault replay (proves recovery under identical hash 644a89784316)
-python scripts/run_fault.py --mode hardened --output reports/fault_run_hardened.json
+# Simulate human sign-off (Status: PROMOTED)
+./scripts/local_gate.sh approve
 
-# 4. Evaluate replay quality gates
-python scripts/evaluate_replay.py --baseline reports/fault_run_baseline.json --hardened reports/fault_run_hardened.json
+# Or simulate instant rollback (reverts candidate container to stable)
+./scripts/local_gate.sh rollback
 
-# 5. Generate tamper-evident Evidence Receipt
-python scripts/generate_receipt.py
+# Clean up
+./scripts/local_gate.sh stop
 ```
 
 ---
 
-## 5. CI/CD Architecture & Sustainability
+## 4. Running with Google Cloud Run (GCP Bonus)
 
-- **9 Lifecycle Stages:** `plan`, `create`, `configure`, `verify`, `secure`, `package`, `release`, `monitor`, and `govern`.
-- **Resource Optimization & Sustainability:**
-  - Pip cache keys (`.cache/pip`) reduce runner compute time by ~65%.
-  - Job execution across slim Alpine / Debian base images minimizes container footprint.
-  - Stage-by-stage ledger (`reports/stage_ledger.json`) maintains audit persistence across ephemeral containers.
+To verify the live Google Cloud Run deployment in `us-central1`:
+
+```bash
+# Verify live endpoints
+curl -sf https://faultforge-checkout-136942862703.us-central1.run.app/health
+curl -sf https://faultforge-checkout-136942862703.us-central1.run.app/api/v1/evidence
+
+# Simulate candidate deployment & rollback using scripts/cloudrun_traffic.py
+python scripts/cloudrun_traffic.py --action rollback --dry-run
+```
+
+Deployment manifests are located in `infra/cloudrun/service.yaml`.
+
+---
+
+## 5. Submitting Issues and Merge Requests
+
+We welcome contributions and bug reports!
+
+1. **Security & Guardrails:** Never alter authentication, payment processing, database schemas, secrets, or IAM policies automatically. All changes must comply with [`chaos/risk-policy.json`](chaos/risk-policy.json).
+2. **Deterministic Replay:** Any resilience change must include a regression test in `tests/chaos/test_resilience.py` and pass exact-fault replay under Toxiproxy profile hash `644a89784316`.
+3. **Branching & Commits:**
+   - Create a feature branch: `git checkout -b feature/your-enhancement`
+   - Ensure all tests pass: `pytest tests/unit tests/integration -v`
+   - Run truth audit: `python scripts/truth_audit.py --final-audit`
+   - Open a GitLab Merge Request targeting `main`.

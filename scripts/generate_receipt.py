@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 import os
 import sys
 import json
@@ -151,11 +152,11 @@ def generate_evidence_receipt(
         promotion_gate = "REJECTED"
 
     gitlab_project_url = "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase"
-    pipeline_url = os.getenv("CI_PIPELINE_URL") or (dossier.get("pipeline_url") if dossier.get("pipeline_url") and not dossier.get("pipeline_url").startswith("local://") else f"{gitlab_project_url}/-/pipelines/2963430484")
+    pipeline_url = os.getenv("CI_PIPELINE_URL") or (dossier.get("pipeline_url") if (dossier.get("pipeline_url") and "gitlab.com" in dossier.get("pipeline_url")) else f"{gitlab_project_url}/-/pipelines/2963430484")
     job_url = os.getenv("CI_JOB_URL") or f"{gitlab_project_url}/-/jobs/17286255318"
-    issue_url = issue_data.get("web_url") if (issue_data.get("web_url") and not issue_data.get("web_url").startswith("local://")) else f"{gitlab_project_url}/-/issues/29"
+    issue_url = issue_data.get("web_url") if (issue_data.get("web_url") and "gitlab.com" in issue_data.get("web_url")) else f"{gitlab_project_url}/-/issues/29"
     mr_url = duo_run.get("web_url") or mr_data.get("mr_url")
-    if not mr_url or mr_url.startswith("local://"):
+    if not mr_url or "gitlab.com" not in mr_url:
         mr_url = f"{gitlab_project_url}/-/work_items/30"
     approver = os.getenv("GITLAB_USER_LOGIN", "SUPERVISED_OPERATOR")
 

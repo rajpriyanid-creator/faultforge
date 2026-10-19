@@ -1,0 +1,67 @@
+version: "3.8"
+# SPDX-License-Identifier: MIT
+# FaultForge Local Supervised Gate Simulation Stack
+# Enables full offline evaluation of Supervised human gate + rollback without GCP credentials
+
+services:
+  # 1. Main Candidate Checkout Service (Staging: 0% Live Traffic until Approved)
+  checkout-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - APP_PORT=8080
+      - ENVIRONMENT=staging
+      - SHIPPING_SERVICE_URL=http://toxiproxy:8082
+      - HTTP_TIMEOUT_SECONDS=0.8
+      - FALLBACK_ENABLED=true
+      - CIRCUIT_BREAKER_ENABLED=true
+      - GATE_STATUS_FILE=/gate/APPROVE
+    volumes:
+      - ./gate_data:/gate
+      - ./reports:/app/reports
+    depends_on:
+      - toxiproxy
+    networks:
+      - faultforge-supervised-net
+
+  # 2. Downstream Carrier Stub & Toxiproxy Chaos Proxy
+  toxiproxy:
+    image: ghcr.io/shopify/toxiproxy:2.9.0
+    ports:
+      - "8474:8474" # Toxiproxy Admin API
+      - "8082:8082" # Injected fault proxy listening port
+    networks:
+      - faultforge-supervised-net
+
+  # 3. Supervised Human Gate Daemon
+  gate:
+    image: python:3.12-slim
+    volumes:
+      - ./gate_data:/gate
+      - ./reports:/reports
+    environment:
+      - APPROVAL_FILE=/gate/APPROVE
+      - ROLLBACK_FILE=/gate/ROLLBACK
+    command: >
+      sh -c "
+        echo '[SUPERVISED GATE] Staging candidate active. Awaiting human operator sign-off via /gate/APPROVE...';
+        while [ ! -f /gate/APPROVE ] && [ ! -f /gate/ROLLBACK ]; do
+          sleep 2;
+        done;
+        if [ -f /gate/APPROVE ]; then
+          echo '[SUPERVISED GATE] Human sign-off detected! Candidate promoted to 100% production traffic.';
+          exit 0;
+        else
+          echo '[SUPERVISED GATE] Rollback signal detected! Candidate discarded, rolling back to stable.';
+          exit 1;
+        fi
+      "
+    networks:
+      - faultforge-supervised-net
+
+networks:
+  faultforge-supervised-net:
+    driver: bridge

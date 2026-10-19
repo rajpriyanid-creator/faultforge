@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """
 FaultForge Evidence Ledger Manager
 Maintains an append-only, machine-readable JSON ledger of all 9 lifecycle stages.

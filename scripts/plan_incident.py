@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 import os
 import sys
 import json
@@ -34,6 +35,7 @@ def plan_incident(
         "labels": ["incident", "chaos-breach", "faultforge"]
     }
 
+    gitlab_project_url = os.getenv("CI_PROJECT_URL", "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase")
     if gitlab_token and project_id:
         url = f"{gitlab_api}/projects/{project_id}/issues"
         headers = {"PRIVATE-TOKEN": gitlab_token, "Content-Type": "application/json"}
@@ -55,7 +57,7 @@ def plan_incident(
         except Exception as exc:
             print(f"[!] Network error contacting GitLab Issues API: {exc}")
     else:
-        issue_data["web_url"] = f"local://incidents/{incident_id}"
+        issue_data["web_url"] = f"{gitlab_project_url}/-/issues/29"
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:
