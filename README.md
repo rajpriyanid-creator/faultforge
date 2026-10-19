@@ -34,7 +34,7 @@ Most CI pipelines only verify that unit tests pass in isolation. Because unit te
 4. **GitLab Duo Agent Platform Remediation:** Trigger a custom GitLab Duo flow (`flows/faultforge-flow.yaml`) whose Diagnostician, Resilience Healer, and Chaos Hardener synthesize a minimal scoped fix: a bounded 0.8s timeout, circuit breaker (3 failures, 10s cooldown), and deterministic fallback rate.
 5. **Replay Identical Fault:** Re-execute the **identical Toxiproxy fault profile** (`644a89784316`) against the candidate release across 10 consecutive probe iterations.
 6. **Empirical Proof:** Confirm zero SLA budget breaches, >60% latency reduction, and observable fallback responses (`is_fallback: true`, `is_estimate: true`).
-7. **Supervised Autonomy Gate:** Enforce risk-based governance, deploy candidate container to Google Cloud Run staging (0% live traffic), and require human review before live production promotion, with automated instant rollback.
+7. **Supervised Autonomy Gate:** Enforce risk-based governance, deploy candidate container to Google Cloud Run staging (0% live traffic with `--tag candidate` when GCP credentials are configured; records `SKIPPED_NO_GCP_CREDENTIALS` otherwise), and require human review before live production promotion, with automated instant rollback.
 
 > **The Differentiator:** It is not "AI says it fixed the app." **It is the before/after empirical proof under the exact same controlled failure condition.**
 
@@ -136,7 +136,7 @@ FaultForge implements real, testable operations with machine-readable artifacts 
 | **`verify`** | Runs test suite and executes baseline chaos run reproducing SLA budget breach | [`docs/sample_reports/fault_run_baseline.json`](docs/sample_reports/fault_run_baseline.json) | ✅ SUCCESS |
 | **`secure`** | Scans Python AST for security weaknesses (Bandit) and validates secret sanitization | [`docs/sample_reports/bandit_security_report.json`](docs/sample_reports/bandit_security_report.json) | ✅ SUCCESS |
 | **`package`** | Builds multi-stage production Docker container with non-root security user | [`Dockerfile`](Dockerfile) | ✅ SUCCESS |
-| **`release`** | Deploys candidate container revision to Google Cloud Run staging (0% live traffic) | [`docs/sample_reports/rollback.json`](docs/sample_reports/rollback.json) | ✅ SUCCESS |
+| **`release`** | Deploys candidate container revision to Google Cloud Run staging (`--no-traffic --tag candidate`) when GCP credentials exist; otherwise records `SKIPPED_NO_GCP_CREDENTIALS` | [`docs/sample_reports/rollback.json`](docs/sample_reports/rollback.json) | ✅ SUCCESS / SKIPPED |
 | **`monitor`** | Evaluates exact-fault candidate replay (10 probes) and tracks sliding-window percentiles | [`docs/sample_reports/replay_evaluation.json`](docs/sample_reports/replay_evaluation.json) | ✅ SUCCESS |
 | **`govern`** | Enforces Supervised Autonomy gate and signs tamper-evident SHA-256 seal | [`docs/sample_reports/evidence_receipt.json`](docs/sample_reports/evidence_receipt.json) | ✅ SUCCESS |
 
@@ -241,7 +241,7 @@ In strict compliance with the **Never Fabricate Evidence** and **Claim Only What
 - **Primary Category:** **Best Supervised Agent ($4,000)**. Full multi-step automation for investigation, bisecting, code patching, replay verification, and staging deployment, with an explicit risk-gated human promotion gate for live production traffic.
 - **Secondary Category:** **Most Stages Covered ($5,000)**. All 9 GitLab lifecycle stages actively verified with real machine-readable artifacts.
 - **Additional Category:** **Most Creative ($4,000)**. Novel "Break It, Heal It" closed-loop system pairing chaos testing with exact-fault replay verification.
-- **Google Cloud Bonus (+0.2 points):** **Verified Live Google Cloud Run Deployment** in `us-central1`. Service URL: [`https://faultforge-checkout-136942862703.us-central1.run.app`](https://faultforge-checkout-136942862703.us-central1.run.app). Full Knative service YAML in [`infra/cloudrun/service.yaml`](infra/cloudrun/service.yaml), deployment scripts in [`infra/cloudrun/deploy.sh`](infra/cloudrun/deploy.sh), and automated candidate routing / instant traffic rollback in [`scripts/cloudrun_traffic.py`](scripts/cloudrun_traffic.py). Live traffic rollback verified and audited in [`reports/rollback.json`](reports/rollback.json).
+- **Google Cloud Bonus (+0.2 points):** **Verified Live Google Cloud Run Deployment** in `us-central1`. Service URL: [`https://faultforge-checkout-136942862703.us-central1.run.app`](https://faultforge-checkout-136942862703.us-central1.run.app). Full Knative service YAML in [`infra/cloudrun/service.yaml`](infra/cloudrun/service.yaml), deployment scripts in [`infra/cloudrun/deploy.sh`](infra/cloudrun/deploy.sh), and automated candidate routing / instant traffic rollback in [`scripts/cloudrun_traffic.py`](scripts/cloudrun_traffic.py). In GitLab CI, `release:cloudrun_candidate_deploy` executes a real deployment with `--no-traffic --tag candidate` whenever `GCP_PROJECT` and `GCP_SA_KEY` CI variables are present; otherwise, it records `SKIPPED_NO_GCP_CREDENTIALS` and links to the live reference deployment without fabricating success.
 
 ---
 

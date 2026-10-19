@@ -203,8 +203,14 @@ package:container_build:
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
   script:
     - docker build -t $DOCKER_IMAGE .
+    - |
+      if [ -n "$CI_REGISTRY_USER" ] && [ -n "$CI_REGISTRY_PASSWORD" ]; then
+        docker push $DOCKER_IMAGE
+      fi
     - mkdir -p reports
     - docker inspect --format='{{index .Id}}' $DOCKER_IMAGE > reports/image_digest.txt
+    - apk add --no-cache python3
+    - python3 scripts/evidence_ledger.py --stage package --job package:container_build --status SUCCESS --artifacts reports/image_digest.txt
   artifacts:
     expire_in: 30 days
     paths:
@@ -217,19 +223,52 @@ package:container_build:
 # -------------------------------------------------------------
 release:cloudrun_candidate_deploy:
   stage: release
-  image: python:3.12-slim
+  image: google/cloud-sdk:slim
   dependencies:
     - package:container_build
   script:
-    - pip install -r requirements.txt
-    - python scripts/cloudrun_traffic.py --action verify --url "http://127.0.0.1:8090" --dry-run
-    - python scripts/evidence_ledger.py --stage package --job package:container_build --status SUCCESS --artifacts reports/image_digest.txt
-    - python scripts/evidence_ledger.py --stage release --job release:cloudrun_candidate_deploy --status SUCCESS --artifacts reports/release.json
+    - mkdir -p reports
+    - |
+      if [ -n "$GCP_PROJECT" ] && [ -n "$GCP_SA_KEY" ]; then
+        echo "[+] GCP credentials detected. Authenticating Service Account..."
+        if [ -f "$GCP_SA_KEY" ]; then
+          gcloud auth activate-service-account --key-file="$GCP_SA_KEY"
+        else
+          echo "$GCP_SA_KEY" > /tmp/sa_key.json
+          gcloud auth activate-service-account --key-file=/tmp/sa_key.json
+          rm -f /tmp/sa_key.json
+        fi
+        gcloud config set project "$GCP_PROJECT"
+        
+        echo "[+] Deploying candidate revision to Cloud Run with --no-traffic --tag candidate..."
+        gcloud run deploy "$SERVICE_NAME" \
+          --image "$DOCKER_IMAGE" \
+          --region "$GCP_REGION" \
+          --platform managed \
+          --no-traffic \
+          --tag candidate
+        
+        CANDIDATE_URL=$(gcloud run services describe "$SERVICE_NAME" --region "$GCP_REGION" --format="value(status.traffic[?tag=='candidate'].url)")
+        REVISION_NAME=$(gcloud run services describe "$SERVICE_NAME" --region "$GCP_REGION" --format="value(status.traffic[?tag=='candidate'].revisionName)")
+        
+        echo "CANDIDATE_URL=${CANDIDATE_URL:-https://faultforge-checkout-136942862703.us-central1.run.app}" >> deploy.env
+        
+        pip install --no-cache-dir requests
+        python3 scripts/cloudrun_traffic.py --action verify --url "$CANDIDATE_URL" --expected-revision "$REVISION_NAME"
+        python3 scripts/evidence_ledger.py --stage release --job release:cloudrun_candidate_deploy --status SUCCESS --artifacts reports/release.json
+      else
+        echo "[!] GCP_PROJECT or GCP_SA_KEY not configured. Skipping live Cloud Run candidate staging deployment."
+        python3 -c "import json, time; json.dump({'provider': 'cloudrun', 'status': 'SKIPPED_NO_GCP_CREDENTIALS', 'reason': 'GCP_PROJECT or GCP_SA_KEY not configured in CI/CD variables', 'timestamp': time.time()}, open('reports/release.json', 'w'), indent=2)"
+        echo "CANDIDATE_URL=https://faultforge-checkout-136942862703.us-central1.run.app" >> deploy.env
+        python3 scripts/evidence_ledger.py --stage release --job release:cloudrun_candidate_deploy --status SKIPPED --artifacts reports/release.json
+      fi
   environment:
     name: staging
-    url: https://faultforge-staging.run.app
+    url: $CANDIDATE_URL
   artifacts:
     expire_in: 30 days
+    reports:
+      dotenv: deploy.env
     paths:
       - reports/release.json
       - reports/stage_ledger.json
@@ -293,15 +332,30 @@ govern:audit_receipt_and_gate:
 # Supervised Human Approval Gate for Live Production Promotion
 govern:promote_to_production:
   stage: govern
-  image: python:3.12-slim
+  image: google/cloud-sdk:slim
   needs:
     - job: govern:audit_receipt_and_gate
       artifacts: true
   script:
-    - pip install -r requirements.txt
-    - python scripts/cloudrun_traffic.py --action route --service $SERVICE_NAME --revisions "$SERVICE_NAME-$CI_COMMIT_SHA=100" --dry-run
+    - |
+      if [ -n "$GCP_PROJECT" ] && [ -n "$GCP_SA_KEY" ]; then
+        echo "[+] GCP credentials detected. Authenticating Service Account..."
+        if [ -f "$GCP_SA_KEY" ]; then
+          gcloud auth activate-service-account --key-file="$GCP_SA_KEY"
+        else
+          echo "$GCP_SA_KEY" > /tmp/sa_key.json
+          gcloud auth activate-service-account --key-file=/tmp/sa_key.json
+          rm -f /tmp/sa_key.json
+        fi
+        gcloud config set project "$GCP_PROJECT"
+        echo "[+] Routing 100% production traffic to candidate revision..."
+        gcloud run services update-traffic "$SERVICE_NAME" --region "$GCP_REGION" --to-tags candidate=100
+      else
+        echo "[!] GCP credentials missing. Performing dry-run promotion validation."
+        python3 scripts/cloudrun_traffic.py --action route --service "$SERVICE_NAME" --revisions "$SERVICE_NAME-${CI_COMMIT_SHORT_SHA:-staging}=100" --dry-run
+      fi
   when: manual
   allow_failure: false
   environment:
     name: production
-    url: https://faultforge-checkout.run.app
+    url: https://faultforge-checkout-136942862703.us-central1.run.app

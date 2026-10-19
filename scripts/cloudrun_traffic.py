@@ -50,6 +50,7 @@ def route_traffic(service: str, region: str, revisions_and_percents: str, dry_ru
         f"--to-revisions={revisions_and_percents}"
     ]
     if dry_run:
+        print("DRY RUN: no action taken")
         print(f"[+] Dry run mode: [DRY-RUN] {' '.join(cmd)}")
         return f"[DRY-RUN] {' '.join(cmd)}"
     return run_cmd(cmd)
@@ -75,6 +76,8 @@ def rollback_to_stable(
         ]
         if dry_run or not shutil.which("gcloud"):
             print("[*] Execution mode: validating traffic rollback without cloud credentials.")
+            if dry_run:
+                print("DRY RUN: no action taken")
             cmd_out = f"[DRY-RUN] {' '.join(cmd)}"
         else:
             cmd_out = run_cmd(cmd)
@@ -126,19 +129,38 @@ def main():
         print(f"[*] Provider auto-detected: {active_provider}")
 
     if args.action == "verify":
-        if args.dry_run or not shutil.which("gcloud"):
-            print(f"[+] Staging verification ({active_provider}): candidate revision staging verified successfully")
-            os.makedirs("reports", exist_ok=True)
-            with open("reports/release.json", "w", encoding="utf-8") as f:
-                json.dump({
-                    "provider": active_provider,
-                    "revision": f"{args.service}-{os.getenv('CI_COMMIT_SHA', 'staging')[:8]}",
-                    "status": "STAGED",
-                    "timestamp": time.time()
-                }, f, indent=2)
+        if args.dry_run:
+            print("DRY RUN: no action taken")
             sys.exit(0)
+
         success = verify_live_health(args.url, expected_revision=args.expected_revision)
-        sys.exit(0 if success else 1)
+        os.makedirs("reports", exist_ok=True)
+        if success:
+            record = {
+                "provider": active_provider,
+                "revision": args.expected_revision or f"{args.service}-{os.getenv('CI_COMMIT_SHA', 'staging')[:8]}",
+                "url": args.url,
+                "status": "STAGED",
+                "timestamp": time.time(),
+                "health_probe": True
+            }
+            with open("reports/release.json", "w", encoding="utf-8") as f:
+                json.dump(record, f, indent=2)
+            print(f"[+] Staging verification ({active_provider}): candidate revision staging verified successfully at {args.url}")
+            sys.exit(0)
+        else:
+            record = {
+                "provider": active_provider,
+                "revision": args.expected_revision,
+                "url": args.url,
+                "status": "FAILED",
+                "timestamp": time.time(),
+                "health_probe": False
+            }
+            with open("reports/release.json", "w", encoding="utf-8") as f:
+                json.dump(record, f, indent=2)
+            print(f"[-] Staging verification failed: health probe at {args.url} returned unhealthy")
+            sys.exit(1)
     elif args.action == "route":
         if not args.revisions:
             print("[-] --revisions required for action 'route'")

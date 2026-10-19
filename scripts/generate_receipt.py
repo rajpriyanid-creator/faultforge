@@ -104,13 +104,17 @@ def generate_evidence_receipt(
     cloud_run_revision = None
     if os.path.exists(release_path):
         with open(release_path, "r", encoding="utf-8") as f:
-            cloud_run_revision = json.load(f).get("revision")
+            rel = json.load(f)
+            if rel.get("status") == "STAGED":
+                cloud_run_revision = rel.get("revision")
     elif os.getenv("K_REVISION"):
         cloud_run_revision = os.getenv("K_REVISION")
     elif os.path.exists(os.path.join(reports_dir, "rollback.json")):
         try:
             with open(os.path.join(reports_dir, "rollback.json"), "r", encoding="utf-8") as rf:
-                cloud_run_revision = json.load(rf).get("restored_revision")
+                rb = json.load(rf)
+                if not rb.get("dry_run"):
+                    cloud_run_revision = rb.get("restored_revision")
         except Exception:
             pass
 
