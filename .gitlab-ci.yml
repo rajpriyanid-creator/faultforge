@@ -2,6 +2,9 @@
 # Complete 9 Lifecycle Stages: plan, create, configure, verify, secure, package, release, monitor, govern
 # Verified against GitLab Transcend 2026 specification
 
+include:
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+
 stages:
   - plan
   - create
@@ -12,6 +15,11 @@ stages:
   - release
   - monitor
   - govern
+
+secret_detection:
+  stage: secure
+  allow_failure: false
+
 
 variables:
   GIT_DEPTH: 0
