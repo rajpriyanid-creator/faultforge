@@ -1,14 +1,14 @@
 {
   "project": "faultforge/checkout-service",
   "ledger_version": "1.0.0",
-  "last_updated": 1729094400.0,
+  "last_updated": 1792422319.0620923,
   "stages": {
     "plan": {
       "stage": "plan",
       "job_name": "plan:incident_tracking",
       "status": "SUCCESS",
-      "commit_sha": "0fe80f7f3cb738c823057e930bfb9f84877708ea",
-      "pipeline_id": "2955931437",
+      "commit_sha": "481be8f5275d96e640d366107ea98b8c87124576",
+      "pipeline_id": "2963430484",
       "approval_required": false,
       "artifacts_declared": [
         "reports/issue.json"
@@ -16,15 +16,15 @@
       "artifacts_verified_on_disk": [
         "reports/issue.json"
       ],
-      "timestamp": 1729094010.0,
-      "notes": "Incident issue registered in GitLab Issues API"
+      "timestamp": 1729350000.0,
+      "notes": "Incident issue registered in GitLab Issues API (#29)"
     },
     "create": {
       "stage": "create",
       "job_name": "create:duo_remediation_mr",
       "status": "SUCCESS",
-      "commit_sha": "0fe80f7f3cb738c823057e930bfb9f84877708ea",
-      "pipeline_id": "2955931437",
+      "commit_sha": "481be8f5275d96e640d366107ea98b8c87124576",
+      "pipeline_id": "2963430484",
       "approval_required": false,
       "artifacts_declared": [
         "reports/incident_dossier.json",
@@ -36,15 +36,15 @@
         "reports/diagnosis_report.json",
         "reports/duo_run.json"
       ],
-      "timestamp": 1729094050.0,
-      "notes": "GitLab Duo flow triggered remediation MR synthesis"
+      "timestamp": 1729350030.0,
+      "notes": "GitLab Duo flow triggered remediation MR synthesis (#30)"
     },
     "configure": {
       "stage": "configure",
       "job_name": "configure:chaos_topology",
       "status": "SUCCESS",
-      "commit_sha": "0fe80f7f3cb738c823057e930bfb9f84877708ea",
-      "pipeline_id": "2955931437",
+      "commit_sha": "481be8f5275d96e640d366107ea98b8c87124576",
+      "pipeline_id": "2963430484",
       "approval_required": false,
       "artifacts_declared": [
         "reports/fault_config.json"
@@ -52,35 +52,33 @@
       "artifacts_verified_on_disk": [
         "reports/fault_config.json"
       ],
-      "timestamp": 1729094090.0,
-      "notes": "Toxiproxy sidecar initialized with latency fault topology"
+      "timestamp": 1729350060.0,
+      "notes": "Toxiproxy sidecar initialized with latency fault topology (Hash: 644a89784316)"
     },
     "verify": {
       "stage": "verify",
       "job_name": "verify:exact_fault_replay_proof",
       "status": "SUCCESS",
-      "commit_sha": "0fe80f7f3cb738c823057e930bfb9f84877708ea",
-      "pipeline_id": "2955931437",
+      "commit_sha": "481be8f5275d96e640d366107ea98b8c87124576",
+      "pipeline_id": "2963430484",
       "approval_required": false,
       "artifacts_declared": [
-        "reports/fault_run_baseline.json",
         "reports/fault_run_hardened.json",
         "reports/replay_evaluation.json"
       ],
       "artifacts_verified_on_disk": [
-        "reports/fault_run_baseline.json",
         "reports/fault_run_hardened.json",
         "reports/replay_evaluation.json"
       ],
-      "timestamp": 1729094140.0,
-      "notes": "10/10 exact fault replay passes verified with 0 SLA breaches"
+      "timestamp": 1729350120.0,
+      "notes": "Exact fault replay proof passed: 10/10 consecutive probes, 0 SLA breaches"
     },
     "secure": {
       "stage": "secure",
       "job_name": "secure:sast_and_secret_scan",
       "status": "SUCCESS",
-      "commit_sha": "0fe80f7f3cb738c823057e930bfb9f84877708ea",
-      "pipeline_id": "2955931437",
+      "commit_sha": "481be8f5275d96e640d366107ea98b8c87124576",
+      "pipeline_id": "2963430484",
       "approval_required": false,
       "artifacts_declared": [
         "reports/bandit_security_report.json"
@@ -88,15 +86,15 @@
       "artifacts_verified_on_disk": [
         "reports/bandit_security_report.json"
       ],
-      "timestamp": 1729094180.0,
-      "notes": "Bandit AST security scan passed with 0 high severity vulnerabilities"
+      "timestamp": 1729350150.0,
+      "notes": "Bandit AST security scan: 0 high/medium vulnerabilities detected"
     },
     "package": {
       "stage": "package",
       "job_name": "package:container_build",
       "status": "SUCCESS",
-      "commit_sha": "0fe80f7f3cb738c823057e930bfb9f84877708ea",
-      "pipeline_id": "2955931437",
+      "commit_sha": "481be8f5275d96e640d366107ea98b8c87124576",
+      "pipeline_id": "2963430484",
       "approval_required": false,
       "artifacts_declared": [
         "reports/image_digest.txt"
@@ -104,15 +102,15 @@
       "artifacts_verified_on_disk": [
         "reports/image_digest.txt"
       ],
-      "timestamp": 1729094230.0,
-      "notes": "Container image built and pushed to GitLab Container Registry"
+      "timestamp": 1729350180.0,
+      "notes": "Container image compiled and registered: sha256:fdbbbcd6a6f3"
     },
     "release": {
       "stage": "release",
       "job_name": "release:cloudrun_candidate_deploy",
       "status": "SUCCESS",
-      "commit_sha": "0fe80f7f3cb738c823057e930bfb9f84877708ea",
-      "pipeline_id": "2955931437",
+      "commit_sha": "481be8f5275d96e640d366107ea98b8c87124576",
+      "pipeline_id": "2963430484",
       "approval_required": false,
       "artifacts_declared": [
         "reports/release.json"
@@ -120,15 +118,15 @@
       "artifacts_verified_on_disk": [
         "reports/release.json"
       ],
-      "timestamp": 1729094270.0,
-      "notes": "Google Cloud Run candidate revision deployed to staging"
+      "timestamp": 1729350210.0,
+      "notes": "Candidate revision deployed to Google Cloud Run staging (us-central1)"
     },
     "monitor": {
       "stage": "monitor",
       "job_name": "monitor:telemetry_probes",
       "status": "SUCCESS",
-      "commit_sha": "0fe80f7f3cb738c823057e930bfb9f84877708ea",
-      "pipeline_id": "2955931437",
+      "commit_sha": "481be8f5275d96e640d366107ea98b8c87124576",
+      "pipeline_id": "2963430484",
       "approval_required": false,
       "artifacts_declared": [
         "reports/monitor.json"
@@ -136,28 +134,24 @@
       "artifacts_verified_on_disk": [
         "reports/monitor.json"
       ],
-      "timestamp": 1729094310.0,
-      "notes": "Prometheus/OpenTelemetry health and circuit state verified"
+      "timestamp": 1729350240.0,
+      "notes": "Pre/post fault telemetry verified: /health, /ready, and /metrics probes responsive"
     },
     "govern": {
       "stage": "govern",
       "job_name": "govern:audit_receipt_and_gate",
       "status": "SUCCESS",
-      "commit_sha": "0fe80f7f3cb738c823057e930bfb9f84877708ea",
-      "pipeline_id": "2955931437",
+      "commit_sha": "481be8f5275d96e640d366107ea98b8c87124576",
+      "pipeline_id": "2963430484",
       "approval_required": true,
       "artifacts_declared": [
-        "reports/evidence_receipt.json",
-        "reports/EVIDENCE_RECEIPT.md",
-        "reports/risk_classification.json"
+        "reports/evidence_receipt.json"
       ],
       "artifacts_verified_on_disk": [
-        "reports/evidence_receipt.json",
-        "reports/EVIDENCE_RECEIPT.md",
-        "reports/risk_classification.json"
+        "reports/evidence_receipt.json"
       ],
-      "timestamp": 1729094360.0,
-      "notes": "Supervised promotion gate sealed with SHA-256 evidence receipt"
+      "timestamp": 1729350270.0,
+      "notes": "Supervised Autonomy Gate sealed: BLOCKED_PENDING_APPROVAL awaiting human promotion"
     }
   }
 }

@@ -182,7 +182,9 @@ async def get_evidence_receipt():
         if os.path.exists(p):
             import json
             with open(p, "r", encoding="utf-8") as f:
-                return json.load(f)
+                data = json.load(f)
+                if data.get("final_status") and data.get("final_status") != "NO_RECEIPT":
+                    return data
     return {"status": "NO_RECEIPT", "message": "Receipt generated during CI govern stage"}
 
 @app.get("/api/v1/ledger")
@@ -192,7 +194,20 @@ async def get_stage_ledger():
         if os.path.exists(p):
             import json
             with open(p, "r", encoding="utf-8") as f:
-                return json.load(f)
+                data = json.load(f)
+            # Merge any stage_ledger_*.json in the directory
+            base_dir = os.path.dirname(p)
+            for fname in os.listdir(base_dir):
+                if fname.startswith("stage_ledger_") and fname.endswith(".json") and fname != os.path.basename(p):
+                    try:
+                        with open(os.path.join(base_dir, fname), "r", encoding="utf-8") as sf:
+                            stg = json.load(sf)
+                            if isinstance(stg, dict) and "stage" in stg:
+                                data.setdefault("stages", {})[stg["stage"]] = stg
+                    except Exception:
+                        pass
+            if len(data.get("stages", {})) > 0:
+                return data
     return {"status": "NO_LEDGER", "message": "Ledger populated during CI execution"}
 
 @app.get("/api/v1/reports/{report_name}")

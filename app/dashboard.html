@@ -77,8 +77,8 @@
           <span>OpenAPI / Swagger</span>
           <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
         </a>
-        <a href="https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2955592322" target="_blank" class="px-3 py-1.5 rounded bg-emerald-900/60 hover:bg-emerald-800/80 text-emerald-200 border border-emerald-700 transition flex items-center gap-1.5">
-          <span>GitLab Pipeline #2955592322</span>
+        <a id="nav-pipeline-link" href="https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2963430484" target="_blank" class="px-3 py-1.5 rounded bg-emerald-900/60 hover:bg-emerald-800/80 text-emerald-200 border border-emerald-700 transition flex items-center gap-1.5">
+          <span id="nav-pipeline-text">GitLab Pipeline #2963430484</span>
           <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
         </a>
       </div>
@@ -377,13 +377,13 @@
         <div>
           <div class="flex items-center gap-2">
             <h2 class="text-base font-semibold text-white">Cryptographic Evidence Receipt & 11 Quality Gates</h2>
-            <span class="text-xs px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 font-mono border border-emerald-800">RECOVERED_AND_VERIFIED</span>
+            <span id="evidence-receipt-status-badge" class="text-xs px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 font-mono border border-emerald-800">RECOVERED_AND_VERIFIED</span>
           </div>
           <p class="text-xs text-slate-400 mt-0.5">Machine-verifiable SHA-256 sealed run history generated in Stage 9 (Govern)</p>
         </div>
         <div class="flex items-center gap-2 font-mono text-xs">
           <span class="text-slate-400">Cryptographic Seal:</span>
-          <span class="px-2 py-1 bg-slate-950 rounded border border-slate-800 text-sky-400 font-bold text-[11px] truncate max-w-[260px]" title="706f7ca7450ee032e36128cf7fb1f977d29ae5534c5be7b71329cbf9bf6ee3f1">
+          <span id="evidence-seal-display" class="px-2 py-1 bg-slate-950 rounded border border-slate-800 text-sky-400 font-bold text-[11px] truncate max-w-[260px]" title="706f7ca7450ee032e36128cf7fb1f977d29ae5534c5be7b71329cbf9bf6ee3f1">
             706f7ca7450ee032...
           </span>
         </div>
@@ -411,7 +411,7 @@
           <span class="text-emerald-400 font-bold mt-0.5">✓</span>
           <div>
             <div class="font-semibold text-slate-200">3. Profile Hash Match</div>
-            <div class="text-[11px] text-slate-400">Exact match <span class="text-sky-300">644a89784316</span> verified</div>
+            <div class="text-[11px] text-slate-400">Exact match <span id="gate-hash-val" class="text-sky-300">644a89784316</span> verified</div>
           </div>
         </div>
 
@@ -419,7 +419,7 @@
           <span class="text-emerald-400 font-bold mt-0.5">✓</span>
           <div>
             <div class="font-semibold text-slate-200">4. Consecutive Passes</div>
-            <div class="text-[11px] text-slate-400">10 / 10 probes passed under fault</div>
+            <div class="text-[11px] text-slate-400"><span id="gate-probes-val">10 / 10</span> probes passed under fault</div>
           </div>
         </div>
 
@@ -475,7 +475,7 @@
           <span class="text-emerald-400 font-bold mt-0.5">✓</span>
           <div>
             <div class="font-semibold text-slate-200">11. Supervised Gate</div>
-            <div class="text-[11px] text-slate-400">Policy enforced human operator sign-off</div>
+            <div id="gate-promotion-status-val" class="text-[11px] text-slate-400">BLOCKED_PENDING_APPROVAL (Human Sign-off Required)</div>
           </div>
         </div>
 
@@ -496,54 +496,54 @@
           <h2 class="text-base font-semibold text-white">GitLab Transcend CI/CD Lifecycle (9 Stages Covered)</h2>
           <p class="text-xs text-slate-400">Fully passing on GitLab.com official SaaS runner infrastructure</p>
         </div>
-        <span class="text-xs px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 font-mono border border-emerald-800">11 / 11 JOBS PASSED</span>
+        <span id="stages-count-badge" class="text-xs px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 font-mono border border-emerald-800">9 / 9 STAGES COVERED</span>
       </div>
 
       <div class="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-2 text-center text-xs font-mono">
-        <div class="bg-slate-950 p-3 rounded border border-emerald-800/60 text-slate-200">
+        <div id="stage-card-plan" class="bg-slate-950 p-3 rounded border border-emerald-800/60 text-slate-200">
           <div class="text-[10px] text-emerald-400">STAGE 1</div>
           <div class="font-bold text-white mt-0.5">PLAN</div>
-          <div class="text-[9px] text-slate-400 mt-1">Incident Tracking</div>
+          <div class="stage-subtext text-[9px] text-slate-400 mt-1">Incident Tracking</div>
         </div>
-        <div class="bg-slate-950 p-3 rounded border border-emerald-800/60 text-slate-200">
+        <div id="stage-card-create" class="bg-slate-950 p-3 rounded border border-emerald-800/60 text-slate-200">
           <div class="text-[10px] text-emerald-400">STAGE 2</div>
           <div class="font-bold text-white mt-0.5">CREATE</div>
-          <div class="text-[9px] text-slate-400 mt-1">Duo Remediation</div>
+          <div class="stage-subtext text-[9px] text-slate-400 mt-1">Duo Remediation</div>
         </div>
-        <div class="bg-slate-950 p-3 rounded border border-emerald-800/60 text-slate-200">
+        <div id="stage-card-configure" class="bg-slate-950 p-3 rounded border border-emerald-800/60 text-slate-200">
           <div class="text-[10px] text-emerald-400">STAGE 3</div>
           <div class="font-bold text-white mt-0.5">CONFIGURE</div>
-          <div class="text-[9px] text-slate-400 mt-1">Chaos Topology</div>
+          <div class="stage-subtext text-[9px] text-slate-400 mt-1">Chaos Topology</div>
         </div>
-        <div class="bg-slate-950 p-3 rounded border border-emerald-800/60 text-slate-200">
+        <div id="stage-card-verify" class="bg-slate-950 p-3 rounded border border-emerald-800/60 text-slate-200">
           <div class="text-[10px] text-emerald-400">STAGE 4</div>
           <div class="font-bold text-white mt-0.5">VERIFY</div>
-          <div class="text-[9px] text-slate-400 mt-1">Replay Proof (10x)</div>
+          <div class="stage-subtext text-[9px] text-slate-400 mt-1">Replay Proof (10x)</div>
         </div>
-        <div class="bg-slate-950 p-3 rounded border border-emerald-800/60 text-slate-200">
+        <div id="stage-card-secure" class="bg-slate-950 p-3 rounded border border-emerald-800/60 text-slate-200">
           <div class="text-[10px] text-emerald-400">STAGE 5</div>
           <div class="font-bold text-white mt-0.5">SECURE</div>
-          <div class="text-[9px] text-slate-400 mt-1">Bandit & Secrets</div>
+          <div class="stage-subtext text-[9px] text-slate-400 mt-1">Bandit & Secrets</div>
         </div>
-        <div class="bg-slate-950 p-3 rounded border border-emerald-800/60 text-slate-200">
+        <div id="stage-card-package" class="bg-slate-950 p-3 rounded border border-emerald-800/60 text-slate-200">
           <div class="text-[10px] text-emerald-400">STAGE 6</div>
           <div class="font-bold text-white mt-0.5">PACKAGE</div>
-          <div class="text-[9px] text-slate-400 mt-1">Container Build</div>
+          <div class="stage-subtext text-[9px] text-slate-400 mt-1">Container Build</div>
         </div>
-        <div class="bg-slate-950 p-3 rounded border border-emerald-800/60 text-slate-200">
+        <div id="stage-card-release" class="bg-slate-950 p-3 rounded border border-emerald-800/60 text-slate-200">
           <div class="text-[10px] text-emerald-400">STAGE 7</div>
           <div class="font-bold text-white mt-0.5">RELEASE</div>
-          <div class="text-[9px] text-slate-400 mt-1">Cloud Run Staging</div>
+          <div class="stage-subtext text-[9px] text-slate-400 mt-1">Cloud Run Staging</div>
         </div>
-        <div class="bg-slate-950 p-3 rounded border border-emerald-800/60 text-slate-200">
+        <div id="stage-card-monitor" class="bg-slate-950 p-3 rounded border border-emerald-800/60 text-slate-200">
           <div class="text-[10px] text-emerald-400">STAGE 8</div>
           <div class="font-bold text-white mt-0.5">MONITOR</div>
-          <div class="text-[9px] text-slate-400 mt-1">Telemetry Probes</div>
+          <div class="stage-subtext text-[9px] text-slate-400 mt-1">Telemetry Probes</div>
         </div>
-        <div class="bg-slate-950 p-3 rounded border border-emerald-800/60 text-slate-200">
+        <div id="stage-card-govern" class="bg-slate-950 p-3 rounded border border-emerald-800/60 text-slate-200">
           <div class="text-[10px] text-emerald-400">STAGE 9</div>
           <div class="font-bold text-white mt-0.5">GOVERN</div>
-          <div class="text-[9px] text-slate-400 mt-1">Receipt & Human Gate</div>
+          <div class="stage-subtext text-[9px] text-slate-400 mt-1">Receipt & Human Gate</div>
         </div>
       </div>
     </section>
@@ -727,9 +727,94 @@
       }
     }
 
-    // Poll live metrics every 3 seconds
+    // Live Evidence & Ledger Polling
+    async function updateLiveEvidenceAndLedger() {
+      try {
+        const [resEv, resLedger] = await Promise.all([
+          fetch('/api/v1/evidence'),
+          fetch('/api/v1/ledger')
+        ]);
+
+        if (resEv.ok) {
+          const ev = await resEv.json();
+          const status = ev.final_status || "UNKNOWN";
+          const statusBadge = document.getElementById('evidence-receipt-status-badge');
+          if (statusBadge) {
+            statusBadge.textContent = status;
+            if (status === "RECOVERED_AND_VERIFIED") {
+              statusBadge.className = "text-xs px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 font-mono border border-emerald-800";
+            } else if (status === "CONTAINED_NEEDS_REVIEW") {
+              statusBadge.className = "text-xs px-2 py-0.5 rounded bg-amber-950 text-amber-400 font-mono border border-amber-800";
+            } else {
+              statusBadge.className = "text-xs px-2 py-0.5 rounded bg-rose-950 text-rose-400 font-mono border border-rose-800";
+            }
+          }
+
+          const sealEl = document.getElementById('evidence-seal-display');
+          if (sealEl && ev.tamper_evident_seal_sha256) {
+            sealEl.textContent = ev.tamper_evident_seal_sha256.substring(0, 16) + '...';
+            sealEl.title = ev.tamper_evident_seal_sha256;
+          }
+
+          if (ev.urls && ev.urls.pipeline_url) {
+            const pipeLink = document.getElementById('nav-pipeline-link');
+            const pipeText = document.getElementById('nav-pipeline-text');
+            if (pipeLink) pipeLink.href = ev.urls.pipeline_url;
+            const pMatch = ev.urls.pipeline_url.match(/pipelines\/(\d+)/);
+            if (pipeText && pMatch) pipeText.textContent = `GitLab Pipeline #${pMatch[1]}`;
+          }
+
+          if (ev.fault_profile && ev.fault_profile.hash) {
+            const hashEl = document.getElementById('gate-hash-val');
+            if (hashEl) hashEl.textContent = ev.fault_profile.hash;
+          }
+
+          if (ev.run_history_15_probes) {
+            const probesEl = document.getElementById('gate-probes-val');
+            const candidateProbes = ev.run_history_15_probes.filter(p => p.label === 'candidate');
+            if (probesEl && candidateProbes.length > 0) {
+              probesEl.textContent = `${candidateProbes.length} / ${candidateProbes.length}`;
+            }
+          }
+
+          if (ev.governance && ev.governance.promotion_gate) {
+            const gateEl = document.getElementById('gate-promotion-status-val');
+            if (gateEl) {
+              const gStatus = ev.governance.promotion_gate;
+              gateEl.textContent = `${gStatus} (Human Sign-off Required)`;
+            }
+          }
+        }
+
+        if (resLedger.ok) {
+          const led = await resLedger.json();
+          const stages = led.stages || {};
+          const stageKeys = Object.keys(stages);
+          const stageBadge = document.getElementById('stages-count-badge');
+          if (stageBadge && stageKeys.length > 0) {
+            stageBadge.textContent = `${stageKeys.length} / 9 STAGES COVERED`;
+          }
+          for (const [stgName, stgData] of Object.entries(stages)) {
+            const cardEl = document.getElementById(`stage-card-${stgName}`);
+            if (cardEl) {
+              const subEl = cardEl.querySelector('.stage-subtext');
+              if (subEl && stgData.job_name) {
+                const jShort = stgData.job_name.includes(':') ? stgData.job_name.split(':')[1] : stgData.job_name;
+                subEl.textContent = jShort;
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Live evidence/ledger poll failed:", err);
+      }
+    }
+
+    // Poll live metrics and evidence
     setInterval(updateLiveMetrics, 3000);
+    setInterval(updateLiveEvidenceAndLedger, 10000);
     updateLiveMetrics();
+    updateLiveEvidenceAndLedger();
   </script>
 </body>
 </html>

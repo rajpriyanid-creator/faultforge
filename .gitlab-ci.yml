@@ -42,6 +42,7 @@ plan:incident_tracking:
     paths:
       - reports/issue.json
       - reports/stage_ledger.json
+      - reports/stage_ledger_*.json
 
 # -------------------------------------------------------------
 # 2. CREATE STAGE: Duo Remediation & Branch/MR Synthesis
@@ -71,6 +72,7 @@ create:duo_remediation_mr:
       - reports/diagnosis_report.json
       - reports/duo_run.json
       - reports/stage_ledger.json
+      - reports/stage_ledger_*.json
 
 # -------------------------------------------------------------
 # 3. CONFIGURE STAGE: Toxiproxy Setup & Chaos Network Wiring
@@ -94,6 +96,7 @@ configure:chaos_topology:
     paths:
       - reports/fault_config.json
       - reports/stage_ledger.json
+      - reports/stage_ledger_*.json
 
 # -------------------------------------------------------------
 # 4. VERIFY STAGE: Unit, Integration & Exact-Fault Replay Verification
@@ -141,6 +144,7 @@ verify:exact_fault_replay_proof:
       - reports/fault_run_hardened.json
       - reports/replay_evaluation.json
       - reports/stage_ledger.json
+      - reports/stage_ledger_*.json
 
 # -------------------------------------------------------------
 # 5. SECURE STAGE: Static Analysis & Secret Detection
@@ -159,6 +163,7 @@ secure:sast_and_secret_scan:
     paths:
       - reports/bandit_security_report.json
       - reports/stage_ledger.json
+      - reports/stage_ledger_*.json
 
 # -------------------------------------------------------------
 # 6. PACKAGE STAGE: Multi-Stage Container Build & Registry Push
@@ -183,6 +188,7 @@ package:container_build:
     paths:
       - reports/image_digest.txt
       - reports/stage_ledger.json
+      - reports/stage_ledger_*.json
 
 # -------------------------------------------------------------
 # 7. RELEASE STAGE: Google Cloud Run Candidate Revision Deployment
@@ -205,6 +211,7 @@ release:cloudrun_candidate_deploy:
     paths:
       - reports/release.json
       - reports/stage_ledger.json
+      - reports/stage_ledger_*.json
 
 # -------------------------------------------------------------
 # 8. MONITOR STAGE: Pre & Post Fault Telemetry & Health Probes
@@ -226,6 +233,7 @@ monitor:telemetry_probes:
     paths:
       - reports/monitor.json
       - reports/stage_ledger.json
+      - reports/stage_ledger_*.json
 
 # -------------------------------------------------------------
 # 9. GOVERN STAGE: Supervised Autonomy Gate & Audit Receipt
@@ -258,6 +266,7 @@ govern:audit_receipt_and_gate:
       - reports/EVIDENCE_RECEIPT.md
       - reports/risk_classification.json
       - reports/stage_ledger.json
+      - reports/stage_ledger_*.json
 
 # Supervised Human Approval Gate for Live Production Promotion
 govern:promote_to_production:

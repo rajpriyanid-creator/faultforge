@@ -13,18 +13,37 @@ from typing import Dict, Any, List
 LEDGER_PATH = "reports/stage_ledger.json"
 
 def load_ledger() -> Dict[str, Any]:
-    if os.path.exists(LEDGER_PATH):
-        try:
-            with open(LEDGER_PATH, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception:
-            pass
-    return {
+    ledger = {
         "project": "faultforge/checkout-service",
         "ledger_version": "1.0.0",
         "last_updated": time.time(),
         "stages": {}
     }
+    if os.path.exists(LEDGER_PATH):
+        try:
+            with open(LEDGER_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, dict):
+                    ledger["project"] = data.get("project", ledger["project"])
+                    ledger["stages"] = data.get("stages", {})
+        except Exception:
+            pass
+
+    # Merge any individual stage ledger files present in reports/
+    reports_dir = os.path.dirname(LEDGER_PATH) or "."
+    if os.path.exists(reports_dir):
+        for fname in os.listdir(reports_dir):
+            if fname.startswith("stage_ledger_") and fname.endswith(".json") and fname != "stage_ledger.json":
+                fpath = os.path.join(reports_dir, fname)
+                try:
+                    with open(fpath, "r", encoding="utf-8") as sf:
+                        stg_data = json.load(sf)
+                        if isinstance(stg_data, dict) and "stage" in stg_data:
+                            ledger["stages"][stg_data["stage"]] = stg_data
+                except Exception:
+                    pass
+
+    return ledger
 
 def record_stage(
     stage: str,
@@ -57,6 +76,12 @@ def record_stage(
     ledger["last_updated"] = time.time()
 
     os.makedirs(os.path.dirname(LEDGER_PATH), exist_ok=True)
+    # 1. Save individual stage record for non-conflicting multi-runner artifact aggregation
+    stage_file = os.path.join(os.path.dirname(LEDGER_PATH), f"stage_ledger_{stage}.json")
+    with open(stage_file, "w", encoding="utf-8") as f:
+        json.dump(stage_entry, f, indent=2)
+
+    # 2. Save aggregated ledger
     with open(LEDGER_PATH, "w", encoding="utf-8") as f:
         json.dump(ledger, f, indent=2)
 
