@@ -105,9 +105,13 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8090
 - `pip install -r requirements.txt`
 - (Optional for full Docker mode) Docker Desktop / Compose
 
-### Step 1: Run the Unit & Integration Tests
+### Step 1: Run Unit, Integration & Playwright E2E Tests
 ```bash
+# Run unit and integration test suite (39 tests)
 pytest tests/unit tests/integration -v
+
+# Run Playwright automated browser validation against live web deployment (7 tests)
+pytest tests/e2e -v
 ```
 
 ### Step 2: Demonstrate Baseline Vulnerability Under Chaos
