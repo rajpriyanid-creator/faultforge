@@ -10,4 +10,4 @@ python-dotenv==1.0.1
 requests==2.32.3
 jsonschema==4.23.0
 pyyaml==6.0.2
-bandit==1.7.10
+bandit==1.9.4

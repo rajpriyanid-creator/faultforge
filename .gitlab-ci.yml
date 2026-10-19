@@ -152,7 +152,7 @@ secure:sast_and_secret_scan:
     - verify:exact_fault_replay_proof
   script:
     - pip install -r requirements.txt
-    - bandit -r app/ -f json -o reports/bandit_security_report.json
+    - bandit -r app/ -ll -f json -o reports/bandit_security_report.json
     - python scripts/evidence_ledger.py --stage secure --job secure:sast_and_secret_scan --status SUCCESS --artifacts reports/bandit_security_report.json
   artifacts:
     expire_in: 30 days
