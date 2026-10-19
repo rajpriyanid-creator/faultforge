@@ -7,7 +7,15 @@
 [![GitLab Duo Agent Platform](https://img.shields.io/badge/GitLab_Duo-Custom_Flow-orange.svg)](flows/faultforge-flow.yaml)
 [![Autonomy Model](https://img.shields.io/badge/Autonomy-Supervised-brightgreen.svg)](docs/safety-policy.md)
 [![Lifecycle Stages](https://img.shields.io/badge/Stages-9_Covered-brightgreen.svg)](.gitlab-ci.yml)
-[![Deployment](https://img.shields.io/badge/Deployment-Cloud_Run_%26_Compose-blue.svg)](infra/cloudrun/)
+[![Google Cloud Run](https://img.shields.io/badge/Google_Cloud_Run-Live_Active-success.svg)](https://faultforge-checkout-136942862703.us-central1.run.app/dashboard)
+
+> [!TIP]
+> **Live Google Cloud Run Deployment (Google Cloud Bonus):**  
+> 🌐 **Interactive Dashboard:** [https://faultforge-checkout-136942862703.us-central1.run.app/dashboard](https://faultforge-checkout-136942862703.us-central1.run.app/dashboard)  
+> 🩺 **Live Health Probe:** [https://faultforge-checkout-136942862703.us-central1.run.app/health](https://faultforge-checkout-136942862703.us-central1.run.app/health)  
+> 📜 **Cryptographic Evidence Receipt:** [https://faultforge-checkout-136942862703.us-central1.run.app/api/v1/evidence](https://faultforge-checkout-136942862703.us-central1.run.app/api/v1/evidence)  
+> 📊 **Telemetry Metrics:** [https://faultforge-checkout-136942862703.us-central1.run.app/metrics](https://faultforge-checkout-136942862703.us-central1.run.app/metrics)  
+> 🛡️ **Chaos Interception Probe:** `POST /api/v1/checkout/test-resilience`
 
 ---
 
@@ -159,7 +167,7 @@ In strict compliance with the **Never Fabricate Evidence** and **Claim Only What
 - **Primary Category:** **Best Supervised Agent ($4,000)**. Full automation for investigation, bisecting, MR generation, and staging deployment, with an explicit risk-gated human promotion gate for live production traffic.
 - **Secondary Category:** **Most Stages Covered ($5,000)**. All 9 GitLab lifecycle stages actively verified with real machine-readable artifacts.
 - **Additional Category:** **Most Creative ($4,000)**. Novel "Break It, Heal It" closed-loop system pairing chaos testing with exact-fault replay verification.
-- **Google Cloud Bonus:** Google Cloud Run Knative deployment and traffic management automation committed in [`infra/cloudrun/`](infra/cloudrun/) and [`scripts/cloudrun_traffic.py`](scripts/cloudrun_traffic.py).
+- **Google Cloud Bonus (+0.2 points):** **Verified Live Google Cloud Run Deployment** in `us-central1`. Service URL: [`https://faultforge-checkout-136942862703.us-central1.run.app`](https://faultforge-checkout-136942862703.us-central1.run.app). Full Knative service YAML in [`infra/cloudrun/service.yaml`](infra/cloudrun/service.yaml) and automated candidate routing / instant traffic rollback in [`scripts/cloudrun_traffic.py`](scripts/cloudrun_traffic.py). Live traffic rollback verified and audited in [`reports/rollback.json`](reports/rollback.json).
 
 ---
 
