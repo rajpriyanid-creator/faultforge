@@ -59,23 +59,38 @@ flowchart TD
 
 ## 3. The 9 Covered Lifecycle Stages
 
-FaultForge implements real, testable operations with machine-readable artifacts across all **9 GitLab Lifecycle Stages**:
+FaultForge implements real, testable operations with machine-readable artifacts across all **9 GitLab Lifecycle Stages**. Reference outputs are mirrored in `docs/sample_reports/`, while live CI/CD pipelines generate fresh runtime artifacts directly into `reports/`:
 
 | Stage | FaultForge Action | Output Artifact / Evidence |
 |---|---|---|
-| **`plan`** | Compiles structured Incident Dossier with sanitized logs, fault metrics, and `git bisect` culprit | [`reports/incident_dossier.json`](reports/incident_dossier.json) |
-| **`create`** | GitLab Duo Flow triggers diagnosis, plans resilience fix, and prepares Merge Request payload | [`reports/merge_request_payload.json`](reports/merge_request_payload.json) |
-| **`configure`** | Configures Toxiproxy network chaos topology and latency toxic profile | [`chaos/profiles/latency_cascading_hang.json`](chaos/profiles/latency_cascading_hang.json) |
-| **`verify`** | Runs test suite and executes baseline chaos run reproducing SLA budget breach | [`reports/fault_run_baseline.json`](reports/fault_run_baseline.json) |
-| **`secure`** | Scans Python AST for security weaknesses (Bandit) and validates secret sanitization | [`reports/bandit_security_report.json`](reports/bandit_security_report.json) |
+| **`plan`** | Compiles structured Incident Dossier with sanitized logs, fault metrics, and `git bisect` culprit | [`docs/sample_reports/incident_dossier.json`](docs/sample_reports/incident_dossier.json) |
+| **`create`** | GitLab Duo Flow triggers diagnosis, plans resilience fix, and prepares Merge Request payload | [`docs/sample_reports/diagnosis_report.json`](docs/sample_reports/diagnosis_report.json) |
+| **`configure`** | Configures Toxiproxy network chaos topology and latency toxic profile | [`docs/sample_reports/fault_config.json`](docs/sample_reports/fault_config.json) |
+| **`verify`** | Runs test suite and executes baseline chaos run reproducing SLA budget breach | [`docs/sample_reports/fault_run_baseline.json`](docs/sample_reports/fault_run_baseline.json) |
+| **`secure`** | Scans Python AST for security weaknesses (Bandit) and validates secret sanitization | [`docs/sample_reports/bandit_security_report.json`](docs/sample_reports/bandit_security_report.json) |
 | **`package`** | Builds multi-stage production Docker container with non-root security user | [`Dockerfile`](Dockerfile) |
-| **`release`** | Deploys candidate container revision to Google Cloud Run staging (0% live traffic) | [`infra/cloudrun/service.yaml`](infra/cloudrun/service.yaml) |
-| **`monitor`** | Evaluates exact-fault candidate replay (10 probes) and tracks sliding-window percentiles | [`reports/replay_evaluation.json`](reports/replay_evaluation.json) |
-| **`govern`** | Enforces Supervised Autonomy gate and signs tamper-evident SHA-256 seal | [`reports/evidence_receipt.json`](reports/evidence_receipt.json) |
+| **`release`** | Deploys candidate container revision to Google Cloud Run staging (0% live traffic) | [`docs/sample_reports/rollback.json`](docs/sample_reports/rollback.json) |
+| **`monitor`** | Evaluates exact-fault candidate replay (10 probes) and tracks sliding-window percentiles | [`docs/sample_reports/replay_evaluation.json`](docs/sample_reports/replay_evaluation.json) |
+| **`govern`** | Enforces Supervised Autonomy gate and signs tamper-evident SHA-256 seal | [`docs/sample_reports/evidence_receipt.json`](docs/sample_reports/evidence_receipt.json) |
 
 ---
 
-## 4. Quickstart: Rehearse & Heal Locally
+## 4. Quickstart & Judge Reproducibility
+
+### Single-Command Full Verification
+For evaluators and judges seeking instant verification of repository integrity, test suites, and cryptographic seals:
+
+```bash
+# 1. Run full unit and integration test suite (37 tests)
+pytest tests/unit tests/integration -v
+
+# 2. Run anti-fake truth audit in strict final mode
+python scripts/truth_audit.py --final-audit
+
+# 3. Launch the resilience web dashboard locally
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8090
+# Open http://127.0.0.1:8090/dashboard in your browser
+```
 
 ### Prerequisites
 - Python 3.12+

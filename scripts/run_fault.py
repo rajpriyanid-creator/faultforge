@@ -4,6 +4,7 @@ import sys
 import time
 import json
 import uuid
+import random
 import hashlib
 import argparse
 import subprocess
@@ -137,6 +138,7 @@ def run_probe(target_url: str, iterations: int = 5, timeout_sec: float = 6.0) ->
     }
 
 def main():
+    random.seed(42)
     parser = argparse.ArgumentParser(description="FaultForge Chaos Experiment Runner")
     parser.add_argument("--profile", default="chaos/profiles/latency_cascading_hang.json", help="Path to chaos fault profile")
     parser.add_argument("--target", default="http://127.0.0.1:8090", help="Target application URL")

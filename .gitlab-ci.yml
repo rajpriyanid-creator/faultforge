@@ -38,7 +38,7 @@ plan:incident_tracking:
     - python scripts/evidence_ledger.py --stage plan --job plan:incident_tracking --status SUCCESS --artifacts reports/issue.json
   artifacts:
     name: "incident-plan-$CI_COMMIT_SHA"
-    expire_in: 7 days
+    expire_in: 30 days
     paths:
       - reports/issue.json
       - reports/stage_ledger.json
@@ -54,16 +54,23 @@ create:duo_remediation_mr:
   script:
     - apt-get update -qq && apt-get install -y -qq git
     - pip install -r requirements.txt
+    - python -m uvicorn stub.mock_shipping_api:app --host 127.0.0.1 --port 8081 &
+    - python -m uvicorn app.main:app --host 127.0.0.1 --port 8090 &
+    - sleep 2
+    - python scripts/run_fault.py --label baseline --iterations 5 --expect-fail --allow-standalone-proxy --output reports/fault_run_baseline.json
     - python scripts/collect_evidence.py
     - python scripts/diagnose_and_bisect.py
     - python scripts/trigger_duo_flow.py
+    - python scripts/evidence_ledger.py --stage create --job create:duo_remediation_mr --status SUCCESS --artifacts reports/fault_run_baseline.json reports/incident_dossier.json reports/diagnosis_report.json reports/duo_run.json
   artifacts:
     name: "remediation-mr-$CI_COMMIT_SHA"
-    expire_in: 7 days
+    expire_in: 30 days
     paths:
+      - reports/fault_run_baseline.json
       - reports/incident_dossier.json
       - reports/diagnosis_report.json
       - reports/duo_run.json
+      - reports/stage_ledger.json
 
 # -------------------------------------------------------------
 # 3. CONFIGURE STAGE: Toxiproxy Setup & Chaos Network Wiring
@@ -76,12 +83,17 @@ configure:chaos_topology:
       alias: toxiproxy
   variables:
     TOXIPROXY_URL: "http://toxiproxy:8474"
+  dependencies:
+    - create:duo_remediation_mr
   script:
     - pip install -r requirements.txt
     - python scripts/configure_chaos.py
+    - python scripts/evidence_ledger.py --stage configure --job configure:chaos_topology --status SUCCESS --artifacts reports/fault_config.json
   artifacts:
+    expire_in: 30 days
     paths:
       - reports/fault_config.json
+      - reports/stage_ledger.json
 
 # -------------------------------------------------------------
 # 4. VERIFY STAGE: Unit, Integration & Exact-Fault Replay Verification
@@ -93,6 +105,7 @@ verify:unit_and_integration:
     - pip install -r requirements.txt
     - pytest tests/unit tests/integration -v --junitxml=reports/junit_tests.xml
   artifacts:
+    expire_in: 30 days
     reports:
       junit: reports/junit_tests.xml
 
@@ -118,13 +131,15 @@ verify:exact_fault_replay_proof:
     - sleep 3
     - python scripts/run_fault.py --label candidate --iterations 10 --allow-standalone-proxy --output reports/fault_run_hardened.json
     - python scripts/evaluate_replay.py --baseline reports/fault_run_baseline.json --candidate reports/fault_run_hardened.json --output reports/replay_evaluation.json
+    - python scripts/evidence_ledger.py --stage verify --job verify:exact_fault_replay_proof --status SUCCESS --artifacts reports/fault_run_hardened.json reports/replay_evaluation.json
   artifacts:
     name: "chaos-replay-evidence-$CI_COMMIT_SHA"
-    expire_in: 7 days
+    expire_in: 30 days
     paths:
       - reports/fault_run_baseline.json
       - reports/fault_run_hardened.json
       - reports/replay_evaluation.json
+      - reports/stage_ledger.json
 
 # -------------------------------------------------------------
 # 5. SECURE STAGE: Static Analysis & Secret Detection
@@ -132,12 +147,17 @@ verify:exact_fault_replay_proof:
 secure:sast_and_secret_scan:
   stage: secure
   image: python:3.12-slim
+  dependencies:
+    - verify:exact_fault_replay_proof
   script:
-    - pip install bandit
+    - pip install -r requirements.txt
     - bandit -r app/ -f json -o reports/bandit_security_report.json
+    - python scripts/evidence_ledger.py --stage secure --job secure:sast_and_secret_scan --status SUCCESS --artifacts reports/bandit_security_report.json
   artifacts:
+    expire_in: 30 days
     paths:
       - reports/bandit_security_report.json
+      - reports/stage_ledger.json
 
 # -------------------------------------------------------------
 # 6. PACKAGE STAGE: Multi-Stage Container Build & Registry Push
@@ -149,6 +169,8 @@ package:container_build:
     - docker:24.0.5-dind
   variables:
     DOCKER_TLS_CERTDIR: ""
+  dependencies:
+    - secure:sast_and_secret_scan
   before_script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
   script:
@@ -156,8 +178,10 @@ package:container_build:
     - mkdir -p reports
     - docker inspect --format='{{index .Id}}' $DOCKER_IMAGE > reports/image_digest.txt
   artifacts:
+    expire_in: 30 days
     paths:
       - reports/image_digest.txt
+      - reports/stage_ledger.json
 
 # -------------------------------------------------------------
 # 7. RELEASE STAGE: Google Cloud Run Candidate Revision Deployment
@@ -165,15 +189,21 @@ package:container_build:
 release:cloudrun_candidate_deploy:
   stage: release
   image: python:3.12-slim
+  dependencies:
+    - package:container_build
   script:
     - pip install -r requirements.txt
     - python scripts/cloudrun_traffic.py --action verify --url "http://127.0.0.1:8090" --dry-run
+    - python scripts/evidence_ledger.py --stage package --job package:container_build --status SUCCESS --artifacts reports/image_digest.txt
+    - python scripts/evidence_ledger.py --stage release --job release:cloudrun_candidate_deploy --status SUCCESS --artifacts reports/release.json
   environment:
     name: staging
     url: https://faultforge-staging.run.app
   artifacts:
+    expire_in: 30 days
     paths:
       - reports/release.json
+      - reports/stage_ledger.json
 
 # -------------------------------------------------------------
 # 8. MONITOR STAGE: Pre & Post Fault Telemetry & Health Probes
@@ -182,15 +212,19 @@ monitor:telemetry_probes:
   stage: monitor
   image: python:3.12-slim
   dependencies:
+    - release:cloudrun_candidate_deploy
     - verify:exact_fault_replay_proof
   script:
     - pip install -r requirements.txt
     - python -m uvicorn app.main:app --host 127.0.0.1 --port 8090 &
     - sleep 2
     - python scripts/monitor_service.py
+    - python scripts/evidence_ledger.py --stage monitor --job monitor:telemetry_probes --status SUCCESS --artifacts reports/monitor.json
   artifacts:
+    expire_in: 30 days
     paths:
       - reports/monitor.json
+      - reports/stage_ledger.json
 
 # -------------------------------------------------------------
 # 9. GOVERN STAGE: Supervised Autonomy Gate & Audit Receipt
@@ -201,9 +235,12 @@ govern:audit_receipt_and_gate:
   dependencies:
     - plan:incident_tracking
     - create:duo_remediation_mr
+    - configure:chaos_topology
     - verify:exact_fault_replay_proof
+    - secure:sast_and_secret_scan
     - package:container_build
     - release:cloudrun_candidate_deploy
+    - monitor:telemetry_probes
   script:
     - apt-get update -qq && apt-get install -y -qq git
     - pip install -r requirements.txt

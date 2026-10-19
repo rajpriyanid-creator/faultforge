@@ -1,0 +1,13 @@
+{
+  "rollback_executed": true,
+  "dry_run": true,
+  "target_service": "faultforge-checkout",
+  "region": "us-central1",
+  "restored_revision": "faultforge-checkout-00001",
+  "traffic_allocation": {
+    "faultforge-checkout-00001": 100
+  },
+  "health_reverified": true,
+  "timestamp": 1792115382.9924393,
+  "command_output": "[DRY-RUN] gcloud run services update-traffic faultforge-checkout --region us-central1 --to-revisions=faultforge-checkout-00001=100"
+}

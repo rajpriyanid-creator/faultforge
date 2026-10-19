@@ -1,0 +1,111 @@
+{
+  "receipt_id": "rcpt-a924d06a7614",
+  "generated_at": 1792160300.8079896,
+  "final_status": "NOT_VERIFIED",
+  "project": "faultforge/checkout-service",
+  "commit_sha": "c44795c9f9f22a1f515918731471f1a72ecfdd05",
+  "autonomy_model": "SUPERVISED",
+  "risk_classification": "LOW",
+  "approver": "SUPERVISED_OPERATOR",
+  "urls": {
+    "pipeline_url": "local://pipeline",
+    "job_url": "local://job",
+    "issue_url": "local://issue",
+    "merge_request_url": "local://mr"
+  },
+  "fault_profile": {
+    "name": "latency_cascading_hang",
+    "type": "latency",
+    "hash": null,
+    "identical_replay_confirmed": false
+  },
+  "duo_execution": {
+    "run_id": null,
+    "trigger_mechanism": "PENDING",
+    "status": "UNCONFIRMED"
+  },
+  "diagnosis_summary": {
+    "status": "CONFIRMED_REGRESSION",
+    "confidence": "HIGH",
+    "culprit_sha": "974035c6e45e7c177452df260a155b6508b828e9",
+    "target_component": "app/clients/shipping_client.py"
+  },
+  "evaluation_gates": {},
+  "run_history_15_probes": [
+    {
+      "label": "baseline",
+      "probe_index": 1,
+      "order_id": "ORD-8107cb90",
+      "latency_ms": 3728.46,
+      "status_code": 200,
+      "is_fallback": false,
+      "is_estimate": false,
+      "error": null
+    },
+    {
+      "label": "baseline",
+      "probe_index": 2,
+      "order_id": "ORD-52ee2797",
+      "latency_ms": 3520.83,
+      "status_code": 200,
+      "is_fallback": false,
+      "is_estimate": false,
+      "error": null
+    },
+    {
+      "label": "baseline",
+      "probe_index": 3,
+      "order_id": "ORD-b4471935",
+      "latency_ms": 3764.64,
+      "status_code": 200,
+      "is_fallback": false,
+      "is_estimate": false,
+      "error": null
+    },
+    {
+      "label": "baseline",
+      "probe_index": 4,
+      "order_id": "ORD-8be3e213",
+      "latency_ms": 3918.27,
+      "status_code": 200,
+      "is_fallback": false,
+      "is_estimate": false,
+      "error": null
+    },
+    {
+      "label": "baseline",
+      "probe_index": 5,
+      "order_id": "ORD-45cc568f",
+      "latency_ms": 3780.09,
+      "status_code": 200,
+      "is_fallback": false,
+      "is_estimate": false,
+      "error": null
+    }
+  ],
+  "metrics_raw": {},
+  "deployment": {
+    "image_digest": null,
+    "cloud_run_revision": null
+  },
+  "pipeline_artifacts": {
+    "incident_dossier_sha256": "3db47669a8bafcec9feca3d93e367858d59c30e29a29ef3f481080011f844a92",
+    "diagnosis_report_sha256": "d58ad1cf4a7d26e5d7f7b5a4ecbff0b2e327a07797a9d280cafa30b5c57b7732",
+    "mr_payload_sha256": "N/A",
+    "replay_evaluation_sha256": "N/A",
+    "risk_classification_sha256": "N/A"
+  },
+  "not_established": [
+    "Exact fault profile hash match could not be established across baseline and hardened runs.",
+    "Dossier commit SHA (e53f1d35) differs from current HEAD (c44795c9).",
+    "GitLab Duo remote run ID unconfirmed (local or API trigger pending).",
+    "Complete 15-probe run evidence incomplete (found 5/15).",
+    "Container image digest unconfirmed from package stage.",
+    "Cloud Run revision deployment unconfirmed from release stage."
+  ],
+  "governance": {
+    "requires_human_approval_to_promote": true,
+    "promotion_gate": "REJECTED"
+  },
+  "tamper_evident_seal_sha256": "391e8824de808f1190d7af3e23f3673080a4c6e662f2ce56e661e7135511bc31"
+}

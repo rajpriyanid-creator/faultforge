@@ -9,6 +9,3 @@ venv/
 .cache/
 reports/*
 !reports/.gitkeep
-!reports/fault_run_baseline.json
-!reports/incident_dossier.json
-!reports/diagnosis_report.json

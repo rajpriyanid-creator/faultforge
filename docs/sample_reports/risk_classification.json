@@ -1,0 +1,10 @@
+{
+  "tier": "MEDIUM",
+  "lines_changed": 0,
+  "files_changed": [],
+  "reasons": [
+    "Merge request does not include or update regression tests under tests/."
+  ],
+  "requires_human_approval": true,
+  "allowed_automation": "Manual review required"
+}

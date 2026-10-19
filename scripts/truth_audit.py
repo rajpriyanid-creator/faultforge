@@ -3,6 +3,7 @@ import os
 import re
 import sys
 import json
+import hashlib
 import subprocess
 from typing import List, Tuple
 
@@ -114,13 +115,27 @@ def audit_chaos_mocks() -> List[str]:
 
     return violations
 
-def audit_report_consistency() -> List[str]:
+def audit_report_consistency(final_mode: bool = False) -> List[str]:
     violations = []
     reports_dir = "reports"
-    if not os.path.exists(reports_dir):
-        return violations
+    sample_dir = os.path.join("docs", "sample_reports")
+
+    # Verify sample reports exist for reference documentation
+    required_samples = ["evidence_receipt.json", "incident_dossier.json", "stage_ledger.json"]
+    for s_file in required_samples:
+        p = os.path.join(sample_dir, s_file)
+        if not os.path.exists(p):
+            violations.append(f"Missing documentation sample report: {p}")
 
     receipt_file = os.path.join(reports_dir, "evidence_receipt.json")
+    ledger_file = os.path.join(reports_dir, "stage_ledger.json")
+
+    if final_mode:
+        if not os.path.exists(receipt_file):
+            violations.append(f"Final audit requires active {receipt_file} to exist and be generated at runtime")
+        if not os.path.exists(ledger_file):
+            violations.append(f"Final audit requires active {ledger_file} to exist and record pipeline stages")
+
     if os.path.exists(receipt_file):
         try:
             with open(receipt_file, "r", encoding="utf-8") as f:
@@ -133,15 +148,39 @@ def audit_report_consistency() -> List[str]:
                         violations.append(f"reports/evidence_receipt.json commit_sha '{sha}' does not exist in git history")
                 except FileNotFoundError:
                     pass  # Git CLI not present in minimal container image
+
+            # Verify cryptographic seal
+            seal = receipt.get("tamper_evident_seal_sha256")
+            if seal:
+                copied = dict(receipt)
+                copied.pop("tamper_evident_seal_sha256", None)
+                computed = hashlib.sha256(json.dumps(copied, sort_keys=True).encode("utf-8")).hexdigest()
+                if computed != seal:
+                    violations.append(f"Evidence receipt SHA-256 seal mismatch: expected {seal}, computed {computed}")
         except Exception as exc:
             violations.append(f"Could not parse evidence_receipt.json: {exc}")
+
+    if os.path.exists(ledger_file):
+        try:
+            with open(ledger_file, "r", encoding="utf-8") as f:
+                ledger = json.load(f)
+            stages = ledger.get("stages", {})
+            if final_mode and len(stages) < 1:
+                violations.append("Stage ledger has no recorded stages in final mode")
+        except Exception as exc:
+            violations.append(f"Could not parse stage_ledger.json: {exc}")
 
     return violations
 
 def audit_docs_claims() -> List[str]:
     violations = []
     baseline_path = "reports/fault_run_baseline.json"
+    if not os.path.exists(baseline_path):
+        baseline_path = "docs/sample_reports/fault_run_baseline.json"
+
     receipt_path = "reports/evidence_receipt.json"
+    if not os.path.exists(receipt_path):
+        receipt_path = "docs/sample_reports/evidence_receipt.json"
 
     baseline_data = {}
     if os.path.exists(baseline_path):
@@ -218,7 +257,7 @@ def main():
     violations.extend(audit_flow_yaml())
     violations.extend(audit_gitlab_ci_todos(final_mode=final_audit))
     violations.extend(audit_chaos_mocks())
-    violations.extend(audit_report_consistency())
+    violations.extend(audit_report_consistency(final_mode=final_audit))
     violations.extend(audit_docs_claims())
 
     if violations:

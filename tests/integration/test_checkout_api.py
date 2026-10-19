@@ -99,4 +99,20 @@ async def test_evidence_endpoint():
         res = await client.get("/api/v1/evidence")
         assert res.status_code == 200
 
+@pytest.mark.asyncio
+async def test_ledger_endpoint():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        res = await client.get("/api/v1/ledger")
+        assert res.status_code == 200
+
+@pytest.mark.asyncio
+async def test_reports_endpoint():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        res = await client.get("/api/v1/reports/evidence_receipt")
+        assert res.status_code == 200
+        res_404 = await client.get("/api/v1/reports/nonexistent_report_xyz")
+        assert res_404.status_code == 404
+
 

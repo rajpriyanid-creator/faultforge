@@ -34,7 +34,15 @@ def main():
         ])
         print("[+] Chaos suite baseline verification PASSED: Real failure confirmed without masks.")
     finally:
-        print("[*] Tearing down chaos stack...")
+        print("[*] Tearing down chaos stack and ensuring toxics reset...")
+        try:
+            sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+            from chaos.toxiproxy_helper import ChaosEngine
+            engine = ChaosEngine()
+            engine.clear()
+            engine.stop()
+        except Exception:
+            pass
         subprocess.run(["docker", "compose", "-f", compose_file, "down", "-v", "--remove-orphans"])
 
 if __name__ == "__main__":
