@@ -1,6 +1,32 @@
 # GitLab Duo Agent Platform: Execution & Verification Guide
 # SPDX-License-Identifier: MIT
 
+---
+
+## HUMAN CHECKLIST: Executing a Real GitLab Duo Agent Flow
+
+Follow these exact steps if you have available GitLab Duo Agent Platform credits and wish to execute a real Duo-authored Merge Request:
+
+1. **Configure CI/CD Variables:**
+   - In GitLab: Navigate to **Settings → CI/CD → Variables**.
+   - Add `FF_GITLAB_TOKEN` (Masked): A GitLab Personal Access Token or Project Access Token with `api` and `read_api` scopes.
+   - Verify `CI_PROJECT_ID` is present (GitLab provides this automatically).
+2. **Trigger the Duo Flow on Incident Issue #42:**
+   - Open Incident Issue #42: [`https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/work_items/42`](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/work_items/42)
+   - In the comment thread, post:
+     ```markdown
+     @ai-faultforge_resilience_flow Please run resilience flow flows/faultforge-flow.yaml to repair the shipping client timeout.
+     ```
+   - Wait for the Duo Agent service account (`ai-faultforge_resilience_flow`) to run the flow, synthesize the fix in `app/clients/` and `app/resilience/`, and open a candidate Merge Request targeting `main` (e.g. branch `fix/resilience-shipping-timeout`).
+3. **Rerun the Pipeline on Main:**
+   - In GitLab: Navigate to **Build → Pipelines → Run Pipeline** on `main`.
+   - CI stage `create:duo_remediation_mr` executes `scripts/record_duo_evidence.py`, detecting the new Duo MR and run URL.
+   - Stage `verify:exact_fault_replay_proof` checks out the Duo candidate branch, runs exact Toxiproxy replay, and seals the receipt with `candidate_source: "duo-authored (MR !<iid>)"`.
+4. **Fallback Note (If Credits Are Depleted):**
+   - If Duo Agent Platform credits show *"No credits remain for this billing period"*, FaultForge gracefully degrades to `reference-fix (not Duo-authored)` with status `NOT_EXECUTED_NO_CREDENTIALS`. The entire pipeline remains green, fully audited, and truth-compliant without fabricating evidence.
+
+---
+
 This guide provides step-by-step instructions to register and execute the **FaultForge Custom Flow** (`flows/faultforge-flow.yaml`) on GitLab, creating the official Duo-authored Merge Request for hackathon evaluation.
 
 ---

@@ -135,13 +135,13 @@ verify:exact_fault_replay_proof:
     - pip install -r requirements.txt
     - python scripts/start_toxiproxy.py
     - |
-      if [ -f reports/duo_evidence.json ] && python -c "import json; d=json.load(open('reports/duo_evidence.json')); exit(0 if d.get('found') and d.get('source_branch') else 1)"; then
+      if [ -f reports/duo_evidence.json ] && python -c "import json; d=json.load(open('reports/duo_evidence.json')); exit(0 if str(d.get('candidate_source', '')).startswith('duo-authored') and d.get('source_branch') else 1)"; then
         CANDIDATE_BRANCH=$(python -c "import json; print(json.load(open('reports/duo_evidence.json'))['source_branch'])")
-        echo "[+] Testing Duo-authored candidate branch: $CANDIDATE_BRANCH"
+        CANDIDATE_SRC=$(python -c "import json; print(json.load(open('reports/duo_evidence.json'))['candidate_source'])")
+        echo "[+] Testing Duo-authored candidate branch: $CANDIDATE_BRANCH ($CANDIDATE_SRC)"
         git fetch origin "$CANDIDATE_BRANCH"
         git checkout "origin/$CANDIDATE_BRANCH" -- app/clients/shipping_client.py
         FIX_SHA=$(git rev-parse "origin/$CANDIDATE_BRANCH")
-        CANDIDATE_SRC="duo-authored-mr ($CANDIDATE_BRANCH)"
       else
         echo "[!] No Duo-authored MR branch detected; falling back to reference-fix"
         git fetch origin reference-fix

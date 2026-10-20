@@ -45,6 +45,9 @@ FaultForge closes the loop between chaos engineering, AI-assisted diagnosis, and
 7. **Signs Audit Receipt:** Generates a cryptographic SHA-256 sealed Evidence Receipt with full run history.
 8. **Supervised Gate:** Enforces risk policy and requires human developer approval before promoting Cloud Run candidate revisions to live traffic.
 
+### Duo Execution & Fallback Wording
+If GitLab Duo custom flow did not execute on the cloud runner due to namespace credit or environment constraints, the Duo flow (`flows/faultforge-flow.yaml`) is described as implemented and verified for specification validity, and the pipeline operates as agent-agnostic verification of any candidate fix. The candidate fix is truthfully reported as `reference-fix (not Duo-authored)` unless `duo_run.json` confirms `executed: true`.
+
 ### Limitations & Honest Boundaries
 - Evaluated on a focused FastAPI checkout microservice with an external shipping carrier dependency.
 - Primary fault scenario is a 3500ms dependency latency toxic (hash `644a89784316`); secondary scenario is connection reset.

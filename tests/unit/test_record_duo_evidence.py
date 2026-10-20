@@ -2,7 +2,42 @@
 import os
 import json
 import pytest
-from scripts.record_duo_evidence import query_duo_evidence
+from scripts.record_duo_evidence import query_duo_evidence, determine_candidate_source
+
+def test_determine_candidate_source_duo_authored():
+    evidence = {
+        "found": True,
+        "author_username": "ai-faultforge_resilience_flow",
+        "run_url": "https://gitlab.com/test/runs/101",
+        "mr_iid": 42
+    }
+    src = determine_candidate_source(evidence)
+    assert src == "duo-authored (MR !42)"
+
+def test_determine_candidate_source_missing_run_url():
+    evidence = {
+        "found": True,
+        "author_username": "ai-faultforge_resilience_flow",
+        "run_url": None,
+        "mr_iid": 42
+    }
+    src = determine_candidate_source(evidence)
+    assert src == "reference-fix (not Duo-authored)"
+
+def test_determine_candidate_source_human_author():
+    evidence = {
+        "found": True,
+        "author_username": "rajpriyanid",
+        "run_url": "https://gitlab.com/test/runs/101",
+        "mr_iid": 42
+    }
+    src = determine_candidate_source(evidence)
+    assert src == "reference-fix (not Duo-authored)"
+
+def test_determine_candidate_source_not_found():
+    evidence = {"found": False}
+    src = determine_candidate_source(evidence)
+    assert src == "reference-fix (not Duo-authored)"
 
 def test_record_duo_evidence_no_credentials(tmp_path):
     output_file = str(tmp_path / "duo_evidence.json")

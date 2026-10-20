@@ -16,6 +16,29 @@ import argparse
 import requests
 from typing import Dict, Any, Optional
 
+def determine_candidate_source(evidence: Dict[str, Any]) -> str:
+    """
+    Returns 'duo-authored (MR !<iid>)' ONLY when:
+    - found is True
+    - author is Duo/service account (contains 'duo' or 'ai-')
+    - run_url exists and is non-empty
+    Otherwise returns 'reference-fix (not Duo-authored)'.
+    """
+    if not isinstance(evidence, dict):
+        return "reference-fix (not Duo-authored)"
+
+    found = bool(evidence.get("found"))
+    author = str(evidence.get("author_username") or "").lower()
+    is_duo_author = "duo" in author or "ai-" in author
+    run_url = evidence.get("run_url")
+    mr_iid = evidence.get("mr_iid")
+
+    if found and is_duo_author and run_url:
+        iid_str = f"!{mr_iid}" if mr_iid else "!unknown"
+        return f"duo-authored (MR {iid_str})"
+
+    return "reference-fix (not Duo-authored)"
+
 def query_duo_evidence(
     token: Optional[str],
     project_id: Optional[str],
@@ -108,6 +131,7 @@ def query_duo_evidence(
     except Exception:
         pass
 
+    evidence["candidate_source"] = determine_candidate_source(evidence)
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(evidence, f, indent=2)

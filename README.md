@@ -234,7 +234,7 @@ In strict compliance with the **Never Fabricate Evidence** and **Claim Only What
 3. **Estimated Fallback Semantics:** The fallback quote returned under network degradation is a deterministic flat estimate explicitly flagged with `is_fallback: true` and `is_estimate: true` to prevent misrepresenting live carrier rates.
 4. **Orbit Dependency Unused:** The repository contains no active Orbit dependency calls; carrier communications strictly use the HTTP stub.
 5. **Dual-Proxy Engine Architecture:** CI downloads and runs the official Shopify Toxiproxy v2.9.0 binary inside the job container (`scripts/start_toxiproxy.py`); Docker Compose runs the container image; the in-process standalone proxy exists only for local dev with `--allow-standalone-proxy` and downgrades the receipt to `NOT_VERIFIED_STANDALONE`.
-6. **GitLab Duo Flow Requirements:** Automated Duo Flow execution relies on GitLab Duo Agent Platform enabled on the GitLab instance or namespace. If API credits or platform access are unconfigured, `scripts/trigger_duo_flow.py` falls back to Issue Mention/Assignment or manual workflow execution without generating fake MR payloads.
+6. **GitLab Duo Flow Requirements & Fallback Wording:** Automated Duo Flow execution relies on GitLab Duo Agent Platform enabled on the GitLab instance or namespace. If API credits or platform access are unconfigured, `scripts/trigger_duo_flow.py` falls back to Issue Mention/Assignment or manual workflow execution without generating fake MR payloads. If Duo did not execute, describe the Duo flow as implemented and verified for spec validity, and the pipeline as agent-agnostic verification of any candidate fix. FaultForge never claims Duo authored the fix unless `duo_run.json` confirms `executed: true`.
 
 ---
 

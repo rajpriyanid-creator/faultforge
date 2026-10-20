@@ -26,10 +26,10 @@ prompts:
       Review AGENTS.md, the Diagnostician output, and reports/incident_dossier.json.
       Synthesize the smallest scoped resilience patch:
       1. Add strict 0.8s bounded timeout on httpx.AsyncClient call in app/clients/shipping_client.py.
-      2. Wire graceful fallback with is_fallback=True and is_estimate=True when timeout occurs.
+      2. Wire graceful fallback with is_fallback=True and is_estimate=True when timeout occurs using policy in app/resilience/policy.py.
       3. Ensure checkout order status reflects CONFIRMED_ESTIMATED_SHIPPING under fallback.
-      4. Reinstate circuit breaker if justified to shed degraded dependency load.
-      5. Open a new branch 'fix/resilience-shipping-timeout' and commit the scoped resilience fix.
+      4. Reinstate circuit breaker in app/resilience/policy.py to shed degraded dependency load.
+      5. Open a new branch 'fix/resilience-shipping-timeout' targeting app/clients/, app/resilience/ and tests/chaos/test_resilience.py.
       6. Safety constraints: NEVER alter authentication, authorization, payment, database schemas, secrets, or IAM. Max 2 patch attempts.
 
   hardener_prompt:
