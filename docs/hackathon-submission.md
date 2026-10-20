@@ -15,7 +15,7 @@
 - **Primary Prize Category:** **Best Supervised Agent ($4,000)**
   - Full automation for chaos injection, AST bisecting, MR generation, and staging deployment, paired with a mandatory human approval gate for live traffic.
 - **Secondary Prize Category:** **Most Stages Covered ($5,000)**
-  - All 9 GitLab lifecycle stages (`plan`, `create`, `configure`, `verify`, `secure`, `package`, `release`, `monitor`, `govern`) actively executed with verifiable machine-readable artifacts.
+  - Executes 11 agent quality checks across all 9 GitLab lifecycle stages (`plan`, `create`, `configure`, `verify`, `secure`, `package`, `release`, `monitor`, `govern`) actively with verifiable machine-readable artifacts.
 - **Additional Prize Opportunity:** **Most Creative ($4,000)**
   - First closed-loop system combining chaos engineering, GitLab Duo custom flows, and empirical exact-fault replay verification.
 - **Google Cloud Deployment Bonus:** (+0.2 Points)

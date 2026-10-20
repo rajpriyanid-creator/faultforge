@@ -63,8 +63,8 @@ The Supervised Agent autonomously clears 11 quality gates before presenting the 
 | **Gate 2** | `plan` | Sanitized Incident Dossier | `scripts/collect_evidence.py` strips all secrets and tokens |
 | **Gate 3** | `create` | AST & Bisect Culprit Isolation | `scripts/diagnose_and_bisect.py` isolates commit `974035c` |
 | **Gate 4** | `create` | Scoped Resilience Patching | `flows/faultforge-flow.yaml` synthesizes 0.8s bounded timeout |
-| **Gate 5** | `configure` | Risk Classification Check | `scripts/classify_risk.py` verifies diff is LOW tier (<150 lines) |
-| **Gate 6** | `verify` | Unit & Integration Test Suite | `pytest tests/unit tests/integration` (39/39 passing) |
+| **Gate 5** | `configure` | Risk Classification Check | `scripts/classify_risk.py` classifies diff as MEDIUM tier (routes to Supervised gate) |
+| **Gate 6** | `verify` | Unit & Integration Test Suite | `pytest tests/unit tests/integration` (70+ passing) |
 | **Gate 7** | `verify` | Exact-Fault Replay Verification | `scripts/evaluate_replay.py` confirms 10/10 probes pass under hash `644a89784316` |
 | **Gate 8** | `secure` | Static AST Security Audit | Bandit scan confirms 0 high/medium security issues |
 | **Gate 9** | `package` | Multi-Stage Docker Build | Hardened non-root container packaging with SHA-256 digest |

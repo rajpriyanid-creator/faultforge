@@ -14,7 +14,7 @@
 > [!TIP]
 > **Live Google Cloud Run Deployment (Google Cloud Bonus +0.2 Points):**  
 > 🌐 **Interactive Dashboard:** [https://faultforge-checkout-136942862703.us-central1.run.app/dashboard](https://faultforge-checkout-136942862703.us-central1.run.app/dashboard)  
-> 🩺 **Live Health Probe:** [https://faultforge-checkout-136942862703.us-central1.run.app/health](https://faultforge-checkout-136942862703.us-central1.run.app/health)  
+> 🩺 **Live Health Probe:** [https://faultforge-checkout-136942862703.us-central1.run.app/health](https://faultforge-checkout-136942862703.us-central1.run.app/health) (HTTP 200 OK, revision `faultforge-checkout-00002-kpl`)  
 > 📜 **Cryptographic Evidence Receipt:** [https://faultforge-checkout-136942862703.us-central1.run.app/api/v1/evidence](https://faultforge-checkout-136942862703.us-central1.run.app/api/v1/evidence)  
 > 🔗 **9-Stage Cryptographic Ledger:** [https://faultforge-checkout-136942862703.us-central1.run.app/api/v1/ledger](https://faultforge-checkout-136942862703.us-central1.run.app/api/v1/ledger)  
 > 📊 **Telemetry Metrics:** [https://faultforge-checkout-136942862703.us-central1.run.app/metrics](https://faultforge-checkout-136942862703.us-central1.run.app/metrics)  
@@ -58,7 +58,7 @@ flowchart TD
         G2 --> G3["3. AST & Git Bisect Culprit (974035c)"]
         G3 --> G4["4. Scoped 0.8s Timeout & Fallback Patch"]
         G4 --> G5["5. Risk Policy Check (MEDIUM Tier, Supervised Gate)"]
-        G5 --> G6["6. Unit & Integration Tests (65/65 Passed)"]
+        G5 --> G6["6. Unit & Integration Tests (70+ Passed)"]
         G6 --> G7["7. Exact-Fault Replay (10/10 Passed under 644a89784316)"]
         G7 --> G8["8. Bandit Static AST Security Scan"]
         G8 --> G9["9. Hardened Multi-Stage Docker Build"]
@@ -126,19 +126,22 @@ flowchart TD
 ## 4. The 9 Covered Lifecycle Stages
 
 FaultForge implements real, testable operations with machine-readable artifacts across all **9 GitLab Lifecycle Stages**. All 9 stages have public, passing runs verified on GitLab.com official SaaS runner infrastructure:  
-🔗 **Verified Public Pipeline:** [GitLab CI Pipeline #2963430484 (Commit 481be8f5)](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2963430484)
+🔗 **GitLab CI/CD Pipelines:** [Showcase CI/CD Pipelines](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines)
 
 | Stage | FaultForge Action | Output Artifact / Evidence | Status |
 |---|---|---|---|
 | **`plan`** | Compiles structured Incident Dossier with sanitized logs, fault metrics, and `git bisect` culprit | [`docs/sample_reports/incident_dossier.json`](docs/sample_reports/incident_dossier.json) | ✅ SUCCESS |
-| **`create`** | GitLab Duo Flow triggers diagnosis, plans resilience fix, and prepares Merge Request payload | [`docs/sample_reports/diagnosis_report.json`](docs/sample_reports/diagnosis_report.json) | ✅ SUCCESS |
+| **`create`** | GitLab Duo Flow triggers diagnosis, plans resilience fix, and prepares Merge Request payload | [`docs/sample_reports/diagnosis_report.json`](docs/sample_reports/diagnosis_report.json) | ✅ SUCCESS (Duo flow: not executed) |
 | **`configure`** | Configures Toxiproxy network chaos topology and latency toxic profile | [`docs/sample_reports/fault_config.json`](docs/sample_reports/fault_config.json) | ✅ SUCCESS |
 | **`verify`** | Runs test suite and executes baseline chaos run reproducing SLA budget breach | [`docs/sample_reports/fault_run_baseline.json`](docs/sample_reports/fault_run_baseline.json) | ✅ SUCCESS |
 | **`secure`** | Scans Python AST for security weaknesses (Bandit) and validates secret sanitization | [`docs/sample_reports/bandit_security_report.json`](docs/sample_reports/bandit_security_report.json) | ✅ SUCCESS |
 | **`package`** | Builds multi-stage production Docker container with non-root security user | [`Dockerfile`](Dockerfile) | ✅ SUCCESS |
-| **`release`** | Deploys candidate container revision to Google Cloud Run staging (`--no-traffic --tag candidate`) when GCP credentials exist; otherwise records `SKIPPED_NO_GCP_CREDENTIALS` | [`docs/sample_reports/rollback.json`](docs/sample_reports/rollback.json) | ✅ SUCCESS / SKIPPED |
+| **`release`** | Deploys candidate container revision to Google Cloud Run staging (`--no-traffic --tag candidate`) when GCP credentials exist; otherwise records `SKIPPED_NO_GCP_CREDENTIALS` | [`docs/sample_reports/rollback.json`](docs/sample_reports/rollback.json) | ✅ SUCCESS (deployed) or SKIPPED (no GCP credentials) |
 | **`monitor`** | Evaluates exact-fault candidate replay (10 probes) and tracks sliding-window percentiles | [`docs/sample_reports/replay_evaluation.json`](docs/sample_reports/replay_evaluation.json) | ✅ SUCCESS |
 | **`govern`** | Enforces Supervised Autonomy gate and signs tamper-evident SHA-256 seal | [`docs/sample_reports/evidence_receipt.json`](docs/sample_reports/evidence_receipt.json) | ✅ SUCCESS |
+
+### Evidence Snapshot
+> Machine-readable receipts and audit logs are produced in real-time by the GitLab CI/CD pipeline in `reports/` and retained as CI job artifacts. Sample reports in `docs/sample_reports/` are populated from verified pipeline runs, copied unmodified from job artifacts per `docs/sample_reports/README.md`.
 
 ---
 
@@ -148,7 +151,7 @@ FaultForge implements real, testable operations with machine-readable artifacts 
 For evaluators and judges seeking instant verification of repository integrity, test suites, and cryptographic seals:
 
 ```bash
-# 1. Run full unit and integration test suite (52 tests)
+# 1. Run full unit and integration test suite (70+ tests)
 pytest tests/unit tests/integration tests/test_*.py -v
 
 # 2. Run anti-fake truth audit in strict final mode
@@ -171,7 +174,7 @@ python scripts/collect_evidence.py
 python scripts/diagnose_and_bisect.py
 # Output: Deterministic bisect isolates culprit commit 974035c6e45e7c177452df260a155b6508b828e9.
 
-# Step 3: Execute GitLab Duo Flow (Synthesizes 0.8s timeout, circuit breaker & fallback)
+# Step 3: Record reference Duo Flow trigger (records a reference trigger NOT_EXECUTED_REFERENCE_ONLY; run the flow in the GitLab UI per docs/duo-run-guide.md for a real execution)
 python scripts/trigger_duo_flow.py --mode manual
 
 # Step 4: Replay Exact Same Fault Against Candidate (10 consecutive probes under hash 644a89784316)
@@ -230,7 +233,7 @@ In strict compliance with the **Never Fabricate Evidence** and **Claim Only What
 2. **Evaluated Fault Profiles:** Evaluated under both downstream latency cascading hang (3500ms delay ± 250ms jitter, hash `644a89784316`) and connection reset (`reset_peer`, hash `0496439547a1`).
 3. **Estimated Fallback Semantics:** The fallback quote returned under network degradation is a deterministic flat estimate explicitly flagged with `is_fallback: true` and `is_estimate: true` to prevent misrepresenting live carrier rates.
 4. **Orbit Dependency Unused:** The repository contains no active Orbit dependency calls; carrier communications strictly use the HTTP stub.
-5. **Dual-Proxy Engine Architecture:** Real Toxiproxy (`ghcr.io/shopify/toxiproxy:2.9.0`) is the primary chaos engine in CI and Docker environments. The in-process standalone proxy is reserved solely for local development without Docker, requiring `--allow-standalone-proxy` and automatically downgrading receipt status to `NOT_VERIFIED_STANDALONE`.
+5. **Dual-Proxy Engine Architecture:** CI downloads and runs the official Shopify Toxiproxy v2.9.0 binary inside the job container (`scripts/start_toxiproxy.py`); Docker Compose runs the container image; the in-process standalone proxy exists only for local dev with `--allow-standalone-proxy` and downgrades the receipt to `NOT_VERIFIED_STANDALONE`.
 6. **GitLab Duo Flow Requirements:** Automated Duo Flow execution relies on GitLab Duo Agent Platform enabled on the GitLab instance or namespace. If API credits or platform access are unconfigured, `scripts/trigger_duo_flow.py` falls back to Issue Mention/Assignment or manual workflow execution without generating fake MR payloads.
 
 ---
@@ -241,7 +244,7 @@ In strict compliance with the **Never Fabricate Evidence** and **Claim Only What
 - **Primary Category:** **Best Supervised Agent ($4,000)**. Full multi-step automation for investigation, bisecting, code patching, replay verification, and staging deployment, with an explicit risk-gated human promotion gate for live production traffic.
 - **Secondary Category:** **Most Stages Covered ($5,000)**. All 9 GitLab lifecycle stages actively verified with real machine-readable artifacts.
 - **Additional Category:** **Most Creative ($4,000)**. Novel "Break It, Heal It" closed-loop system pairing chaos testing with exact-fault replay verification.
-- **Google Cloud Bonus (+0.2 points):** **Verified Live Google Cloud Run Deployment** in `us-central1`. Service URL: [`https://faultforge-checkout-136942862703.us-central1.run.app`](https://faultforge-checkout-136942862703.us-central1.run.app). Full Knative service YAML in [`infra/cloudrun/service.yaml`](infra/cloudrun/service.yaml), deployment scripts in [`infra/cloudrun/deploy.sh`](infra/cloudrun/deploy.sh), and automated candidate routing / instant traffic rollback in [`scripts/cloudrun_traffic.py`](scripts/cloudrun_traffic.py). In GitLab CI, `release:cloudrun_candidate_deploy` executes a real deployment with `--no-traffic --tag candidate` whenever `GCP_PROJECT` and `GCP_SA_KEY` CI variables are present; otherwise, it records `SKIPPED_NO_GCP_CREDENTIALS` and links to the live reference deployment without fabricating success.
+- **Google Cloud Bonus (+0.2 points):** **Verified Live Google Cloud Run Deployment** in `us-central1`. Service URL: [`https://faultforge-checkout-136942862703.us-central1.run.app`](https://faultforge-checkout-136942862703.us-central1.run.app) (Active revision `faultforge-checkout-00002-kpl`, verified responding HTTP 200 on `/health`). Full Knative service YAML in [`infra/cloudrun/service.yaml`](infra/cloudrun/service.yaml), deployment scripts in [`infra/cloudrun/deploy.sh`](infra/cloudrun/deploy.sh), and automated candidate routing / instant traffic rollback in [`scripts/cloudrun_traffic.py`](scripts/cloudrun_traffic.py). In GitLab CI, `release:cloudrun_candidate_deploy` executes a real deployment with `--no-traffic --tag candidate` whenever `GCP_PROJECT` and `GCP_SA_KEY` CI variables are present; otherwise, it records `SKIPPED_NO_GCP_CREDENTIALS` and links to the live reference deployment without fabricating success.
 
 ---
 
