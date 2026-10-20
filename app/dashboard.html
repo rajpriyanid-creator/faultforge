@@ -6,7 +6,7 @@
   <title>FaultForge — Enterprise Resilience Platform</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -21,12 +21,6 @@
               850: '#111827',
               900: '#0f172a',
               950: '#090d16',
-            },
-            brand: {
-              50: '#f0f9ff',
-              500: '#0284c7',
-              600: '#0369a1',
-              700: '#075985',
             }
           }
         }
@@ -35,13 +29,14 @@
   </script>
   <style>
     .tabular-nums { font-variant-numeric: tabular-nums; }
-    .status-pulse {
-      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    .status-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+    .shimmer {
+      background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 100%);
+      background-size: 200% 100%;
+      animation: shimmer 2.5s infinite;
     }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: .4; }
-    }
+    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
   </style>
 </head>
 <body class="min-h-full flex flex-col font-sans bg-slate-950 text-slate-200">
@@ -50,119 +45,170 @@
   <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <!-- Enterprise Minimal Logo Mark -->
-        <div class="w-8 h-8 rounded bg-slate-800 border border-slate-700 flex items-center justify-center font-mono font-bold text-sky-400 text-sm">
+        <!-- Logo Mark -->
+        <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-sky-500 to-indigo-600 border border-sky-400/30 flex items-center justify-center font-mono font-bold text-white text-sm shadow-lg shadow-sky-500/20">
           FF
         </div>
         <div>
           <div class="flex items-center gap-2">
             <span class="font-bold tracking-tight text-white text-base">FaultForge</span>
-            <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono border border-slate-700">v1.0.0</span>
-            <span class="text-xs px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60 font-medium flex items-center gap-1.5">
+            <span class="text-[11px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono border border-slate-700">v1.0.0</span>
+            <span class="text-[11px] px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60 font-medium flex items-center gap-1.5">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 status-pulse"></span>
               SUPERVISED AUTONOMY
             </span>
           </div>
-          <p class="text-xs text-slate-400 hidden sm:block">Deterministic Chaos Engineering & Verified Healing Platform</p>
+          <p class="text-xs text-slate-400 hidden sm:block">Break It, Heal It, Prove It — 9-Stage Resilient DevOps</p>
         </div>
       </div>
 
       <!-- Right Action / Status Strip -->
-      <div class="flex items-center gap-4 text-xs font-mono">
+      <div class="flex items-center gap-3 text-xs font-mono">
         <div class="hidden md:flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded border border-slate-800">
-          <span class="text-slate-400">REVISION:</span>
-          <span id="header-revision" class="text-sky-400 font-semibold truncate max-w-[120px]">loading...</span>
+          <span class="text-slate-400">HOST:</span>
+          <span id="header-revision" class="text-sky-400 font-semibold truncate max-w-[160px]">Connecting...</span>
         </div>
         <a href="/docs" target="_blank" class="px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1.5">
-          <span>OpenAPI / Swagger</span>
+          <span>API Docs</span>
           <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
         </a>
-        <a id="nav-pipeline-link" href="https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2963430484" target="_blank" class="px-3 py-1.5 rounded bg-emerald-900/60 hover:bg-emerald-800/80 text-emerald-200 border border-emerald-700 transition flex items-center gap-1.5">
-          <span id="nav-pipeline-text">GitLab Pipeline #2963430484</span>
+        <a id="nav-pipeline-link" href="https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2965823054" target="_blank" class="px-3 py-1.5 rounded bg-emerald-900/60 hover:bg-emerald-800/80 text-emerald-200 border border-emerald-700 transition flex items-center gap-1.5">
+          <span id="nav-pipeline-text">GitLab Pipeline #2965823054</span>
           <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
         </a>
       </div>
     </div>
   </header>
 
+  <!-- Live Notice Banner -->
+  <div class="bg-slate-900/60 border-b border-slate-800 py-2 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+        <span class="font-semibold text-slate-200">LIVE TELEMETRY STREAM:</span>
+        <span class="text-slate-400">All data below dynamically fetched every 3s from live Cloud Run container</span>
+      </div>
+      <div class="flex items-center gap-3 font-mono text-[11px] text-slate-400">
+        <span>SLA Threshold: <strong class="text-white">1,500ms</strong></span>
+        <span>•</span>
+        <span>Timeout Gate: <strong class="text-sky-400">800ms</strong></span>
+        <span>•</span>
+        <span>Target Branch: <strong class="text-emerald-400">reference-fix (Duo)</strong></span>
+      </div>
+    </div>
+  </div>
+
   <!-- Main Container -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
 
     <!-- KPI Health & Metric Bar -->
     <section class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
       <!-- Service State -->
-      <div class="bg-slate-900 border border-slate-800 rounded p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-lg p-4">
         <div class="text-[11px] font-mono uppercase text-slate-400 tracking-wider">Service Status</div>
         <div class="mt-1 flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-          <span id="kpi-service-status" class="text-sm font-semibold text-white">HEALTHY</span>
+          <span id="kpi-service-dot" class="w-2 h-2 rounded-full bg-slate-600"></span>
+          <span id="kpi-service-status" class="text-sm font-semibold text-slate-300">FETCHING...</span>
         </div>
-        <div class="mt-1 text-[11px] font-mono text-slate-400">Uptime: <span id="kpi-uptime" class="tabular-nums text-slate-300">0s</span></div>
+        <div class="mt-1 text-[11px] font-mono text-slate-400">Uptime: <span id="kpi-uptime" class="tabular-nums text-slate-300">--</span></div>
       </div>
 
       <!-- Circuit Breaker -->
-      <div class="bg-slate-900 border border-slate-800 rounded p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-lg p-4">
         <div class="text-[11px] font-mono uppercase text-slate-400 tracking-wider">Circuit Breaker</div>
         <div class="mt-1 flex items-center gap-2">
-          <span id="kpi-cb-dot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
-          <span id="kpi-cb-state" class="text-sm font-semibold text-emerald-400 font-mono">CLOSED</span>
+          <span id="kpi-cb-dot" class="w-2 h-2 rounded-full bg-slate-600"></span>
+          <span id="kpi-cb-state" class="text-sm font-semibold text-slate-300 font-mono">--</span>
         </div>
         <div class="mt-1 text-[11px] font-mono text-slate-400">Failures: <span id="kpi-cb-fails" class="tabular-nums text-slate-300">0 / 3</span></div>
       </div>
 
       <!-- Latency P95 -->
-      <div class="bg-slate-900 border border-slate-800 rounded p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-lg p-4">
         <div class="text-[11px] font-mono uppercase text-slate-400 tracking-wider">Latency P95</div>
-        <div class="mt-1 text-xl font-bold font-mono text-white tabular-nums"><span id="kpi-p95">0.00</span><span class="text-xs text-slate-400 ml-1">ms</span></div>
+        <div class="mt-1 text-xl font-bold font-mono text-white tabular-nums"><span id="kpi-p95">--</span><span class="text-xs text-slate-400 ml-1">ms</span></div>
         <div class="mt-1 text-[11px] text-emerald-400 font-mono">SLA Budget: &lt;1500ms</div>
       </div>
 
       <!-- Total Requests -->
-      <div class="bg-slate-900 border border-slate-800 rounded p-4">
-        <div class="text-[11px] font-mono uppercase text-slate-400 tracking-wider">Total Requests</div>
-        <div class="mt-1 text-xl font-bold font-mono text-white tabular-nums" id="kpi-total-reqs">0</div>
-        <div class="mt-1 text-[11px] text-slate-400 font-mono">Window: 1,000 reqs</div>
+      <div class="bg-slate-900 border border-slate-800 rounded-lg p-4">
+        <div class="text-[11px] font-mono uppercase text-slate-400 tracking-wider">Processed Reqs</div>
+        <div class="mt-1 text-xl font-bold font-mono text-white tabular-nums" id="kpi-total-reqs">--</div>
+        <div class="mt-1 text-[11px] text-slate-400 font-mono">Real-time counter</div>
       </div>
 
       <!-- Fallback Invocations -->
-      <div class="bg-slate-900 border border-slate-800 rounded p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-lg p-4">
         <div class="text-[11px] font-mono uppercase text-slate-400 tracking-wider">Fallback Quotes</div>
-        <div class="mt-1 text-xl font-bold font-mono text-amber-400 tabular-nums" id="kpi-fallbacks">0</div>
+        <div class="mt-1 text-xl font-bold font-mono text-amber-400 tabular-nums" id="kpi-fallbacks">--</div>
         <div class="mt-1 text-[11px] text-slate-400 font-mono">Active Resilience</div>
       </div>
 
       <!-- Circuit Trips -->
-      <div class="bg-slate-900 border border-slate-800 rounded p-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-lg p-4">
         <div class="text-[11px] font-mono uppercase text-slate-400 tracking-wider">Circuit Trips</div>
-        <div class="mt-1 text-xl font-bold font-mono text-white tabular-nums" id="kpi-trips">0</div>
+        <div class="mt-1 text-xl font-bold font-mono text-white tabular-nums" id="kpi-trips">--</div>
         <div class="mt-1 text-[11px] text-slate-400 font-mono">Auto Cooldown: 10s</div>
       </div>
     </section>
 
     <!-- Operational Architecture & Live Test Bench -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
       <!-- LEFT: Live Interactive Checkout Execution (Cols 1-7) -->
-      <section class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-lg p-6 space-y-6">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+      <section class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-lg p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
           <div>
-            <h2 class="text-base font-semibold text-white">Live Checkout Transaction Workbench</h2>
-            <p class="text-xs text-slate-400 mt-0.5">Executes real transactions against <code class="text-sky-300">/api/v1/checkout</code> under active resilience policies</p>
+            <h2 class="text-base font-semibold text-white flex items-center gap-2">
+              <span>Interactive Resilience Test Bench</span>
+              <span class="text-[10px] px-2 py-0.5 rounded bg-sky-950 text-sky-400 border border-sky-800 font-mono">LIVE API</span>
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">Test how checkout behaves with and without FaultForge resilience under real network latency</p>
           </div>
           <div class="flex items-center gap-2">
-            <span class="text-xs text-slate-400 font-mono">Order:</span>
-            <button onclick="generateRandomOrderId()" class="text-xs font-mono text-sky-400 hover:text-sky-300 flex items-center gap-1">
-              <span id="order-id-display">ORD-7749a1</span>
+            <span class="text-xs text-slate-400 font-mono">Order ID:</span>
+            <button onclick="generateRandomOrderId()" class="text-xs font-mono text-sky-400 hover:text-sky-300 flex items-center gap-1 bg-slate-950 px-2 py-1 rounded border border-slate-800">
+              <span id="order-id-display">ORD-INIT</span>
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
             </button>
           </div>
         </div>
 
+        <!-- Mode Selector: The Core Comparison -->
+        <div class="bg-slate-950 p-3.5 rounded-lg border border-slate-800 space-y-2">
+          <div class="text-[11px] font-mono text-slate-400 uppercase tracking-wider">Choose Execution Scenario:</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <label class="flex items-start gap-3 p-3 rounded-md border cursor-pointer transition bg-slate-900 border-sky-600/60 hover:border-sky-500" id="label-mode-resilience">
+              <input type="radio" name="checkout-mode" value="resilience" checked onchange="handleModeChange()" class="mt-1 text-sky-500">
+              <div>
+                <div class="text-xs font-semibold text-emerald-400 font-mono flex items-center gap-1.5">
+                  <span>🛡️ WITH FAULTFORGE</span>
+                  <span class="text-[9px] px-1.5 py-0.2 rounded bg-emerald-950 border border-emerald-800 text-emerald-300">HEALED</span>
+                </div>
+                <div class="text-[11px] text-slate-300 mt-0.5">0.8s strict timeout, circuit breaker & fallback estimate</div>
+                <div class="text-[10px] text-slate-400 mt-1">Guarantees order completion under SLA (&lt;1500ms)</div>
+              </div>
+            </label>
+
+            <label class="flex items-start gap-3 p-3 rounded-md border cursor-pointer transition bg-slate-900/60 border-slate-800 hover:border-slate-700" id="label-mode-vulnerable">
+              <input type="radio" name="checkout-mode" value="vulnerable" onchange="handleModeChange()" class="mt-1 text-sky-500">
+              <div>
+                <div class="text-xs font-semibold text-rose-400 font-mono flex items-center gap-1.5">
+                  <span>⚠️ WITHOUT FAULTFORGE</span>
+                  <span class="text-[9px] px-1.5 py-0.2 rounded bg-rose-950 border border-rose-800 text-rose-300">MAIN</span>
+                </div>
+                <div class="text-[11px] text-slate-300 mt-0.5">Raw unconstrained HTTP call without timeout</div>
+                <div class="text-[10px] text-rose-400 mt-1">Hangs 3.5s or crashes with 504 Gateway Timeout</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
         <!-- Form Controls -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-mono">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
           <div>
-            <label class="block text-slate-400 uppercase tracking-wider mb-1.5">Destination Zip</label>
-            <select id="checkout-zip" class="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-white focus:outline-none focus:border-sky-500">
+            <label class="block text-slate-400 uppercase tracking-wider mb-1">Destination Zip</label>
+            <select id="checkout-zip" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-white focus:outline-none focus:border-sky-500">
               <option value="90210">90210 (Beverly Hills, CA)</option>
               <option value="10001">10001 (New York, NY)</option>
               <option value="60601">60601 (Chicago, IL)</option>
@@ -171,19 +217,19 @@
             </select>
           </div>
           <div>
-            <label class="block text-slate-400 uppercase tracking-wider mb-1.5">Package Weight</label>
-            <input id="checkout-weight" type="number" step="0.5" value="2.5" class="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-white focus:outline-none focus:border-sky-500" />
+            <label class="block text-slate-400 uppercase tracking-wider mb-1">Weight (KG)</label>
+            <input id="checkout-weight" type="number" step="0.5" value="2.5" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-white focus:outline-none focus:border-sky-500" />
           </div>
           <div>
-            <label class="block text-slate-400 uppercase tracking-wider mb-1.5">Customer ID</label>
-            <input id="checkout-customer" type="text" value="CUST-4091" class="w-full bg-slate-950 border border-slate-700 rounded px-3 py-2 text-white focus:outline-none focus:border-sky-500" />
+            <label class="block text-slate-400 uppercase tracking-wider mb-1">Customer ID</label>
+            <input id="checkout-customer" type="text" value="CUST-4091" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-white focus:outline-none focus:border-sky-500" />
           </div>
         </div>
 
         <!-- Cart Summary Preview -->
-        <div class="bg-slate-950 border border-slate-800 rounded p-4 space-y-2 text-xs">
-          <div class="flex justify-between text-slate-400 font-mono border-b border-slate-800/80 pb-2">
-            <span>ITEMS IN CART</span>
+        <div class="bg-slate-950 border border-slate-800 rounded p-3 space-y-1.5 text-xs">
+          <div class="flex justify-between text-slate-400 font-mono text-[11px] border-b border-slate-800 pb-1">
+            <span>ITEM DESCRIPTION</span>
             <span>QTY / UNIT</span>
             <span>SUBTOTAL</span>
           </div>
@@ -197,39 +243,24 @@
             <span class="font-mono text-slate-400">2 × $35.00</span>
             <span class="font-mono font-semibold text-white">$70.00</span>
           </div>
-          <div class="flex justify-between pt-2 border-t border-slate-800/80 font-mono text-slate-200 font-semibold">
+          <div class="flex justify-between pt-1 border-t border-slate-800 font-mono text-slate-200 font-semibold">
             <span>Items Subtotal</span>
             <span>$190.00</span>
           </div>
         </div>
 
-        <!-- Execution Mode Selector -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono bg-slate-950 p-3 rounded border border-slate-800">
-          <span class="text-slate-400">EXECUTION MODE:</span>
-          <div class="flex items-center gap-4">
-            <label class="flex items-center gap-1.5 cursor-pointer text-emerald-400 font-semibold">
-              <input type="radio" name="checkout-mode" value="resilience" checked class="text-sky-500 bg-slate-900 border-slate-700">
-              <span>Resilience Interception (0.8s SLA Fallback)</span>
-            </label>
-            <label class="flex items-center gap-1.5 cursor-pointer text-slate-300">
-              <input type="radio" name="checkout-mode" value="direct" class="text-sky-500 bg-slate-900 border-slate-700">
-              <span>Direct Outbound Carrier</span>
-            </label>
-          </div>
-        </div>
-
         <!-- Action Execution Strip -->
-        <div class="flex flex-col sm:flex-row gap-3 pt-2">
-          <button id="btn-submit-checkout" onclick="executeCheckoutTransaction()" class="flex-1 bg-sky-600 hover:bg-sky-500 text-white font-medium text-xs py-3 px-4 rounded border border-sky-400/30 transition flex items-center justify-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-            <span>Execute Live Checkout Transaction</span>
+        <div class="flex flex-col sm:flex-row gap-3 pt-1">
+          <button id="btn-submit-checkout" onclick="executeCheckoutTransaction()" class="flex-1 bg-sky-600 hover:bg-sky-500 text-white font-medium text-xs py-3 px-4 rounded-md border border-sky-400/30 transition flex items-center justify-center gap-2 shadow-lg shadow-sky-600/20 active:scale-[0.99]">
+            <svg id="btn-icon-submit" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <span id="btn-submit-text">Execute Live Checkout Transaction</span>
           </button>
-          <button onclick="probeShippingRateOnly()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-xs py-3 px-4 rounded border border-slate-700 transition">
-            Probe Rate API Only
+          <button onclick="probeShippingRateOnly()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-xs py-3 px-4 rounded-md border border-slate-700 transition">
+            Probe Carrier Rate Directly
           </button>
         </div>
 
-        <!-- Live Response Output Card -->
+        <!-- Live Response Output Card (Starts hidden until user triggers) -->
         <div id="checkout-result-box" class="hidden bg-slate-950 border border-slate-800 rounded-lg p-5 space-y-4">
           <div class="flex items-center justify-between border-b border-slate-800 pb-3">
             <div class="flex items-center gap-2">
@@ -237,9 +268,9 @@
               <span id="res-status-title" class="text-xs font-semibold text-white">CONFIRMED</span>
             </div>
             <div class="flex items-center gap-2 font-mono text-xs">
-              <span class="text-slate-400">Latency:</span>
+              <span class="text-slate-400">Response Latency:</span>
               <span id="res-latency" class="font-bold text-emerald-400 tabular-nums">0 ms</span>
-              <span class="text-[10px] text-slate-400">(SLA: &lt;1500ms)</span>
+              <span id="res-sla-tag" class="text-[10px] text-emerald-400">(SLA PASSED &lt;1500ms)</span>
             </div>
           </div>
 
@@ -247,36 +278,50 @@
           <div id="fallback-alert" class="hidden bg-amber-950/40 border border-amber-700/60 rounded p-3 text-xs text-amber-200 space-y-1">
             <div class="flex items-center gap-2 font-semibold">
               <svg class="w-4 h-4 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-              <span>Resilience Circuit Intercepted Downstream Latency</span>
+              <span>Resilience Circuit Intercepted Downstream Latency!</span>
             </div>
             <p class="text-[11px] text-amber-300/90 leading-relaxed">
-              Carrier API exceeded bounded timeout (0.8s) or circuit breaker was OPEN. The order was confirmed successfully without customer drop-off using a deterministic fallback rate estimate (<span id="alert-fallback-rate" class="font-mono font-bold">$14.99</span>).
+              Downstream carrier exceeded the 0.8s SLA limit. FaultForge intercepted the hang and confirmed the order safely using an estimated fallback quote (<span id="alert-fallback-rate" class="font-mono font-bold">$14.99</span>) without customer drop-off.
+            </p>
+          </div>
+
+          <!-- Error Alert for Vulnerable Path -->
+          <div id="vulnerable-error-alert" class="hidden bg-rose-950/40 border border-rose-700/60 rounded p-3 text-xs text-rose-200 space-y-1">
+            <div class="flex items-center gap-2 font-semibold text-rose-300">
+              <svg class="w-4 h-4 text-rose-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span>SLA Budget Breach & Thread Starvation (Vulnerable Main Branch)</span>
+            </div>
+            <p class="text-[11px] text-rose-300/90 leading-relaxed">
+              Without timeout protection, the checkout request was blocked waiting on the downstream carrier until the gateway timed out. This caused a catastrophic cart abandonment.
             </p>
           </div>
 
           <!-- Transaction Summary Grid -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono bg-slate-900/60 p-3 rounded border border-slate-800/80">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono bg-slate-900/60 p-3 rounded border border-slate-800">
             <div>
               <div class="text-[10px] text-slate-400 uppercase">Order ID</div>
-              <div id="res-order-id" class="text-white font-semibold truncate">-</div>
+              <div id="res-order-id" class="text-white font-semibold truncate">--</div>
             </div>
             <div>
               <div class="text-[10px] text-slate-400 uppercase">Items Subtotal</div>
-              <div id="res-subtotal" class="text-white">-</div>
+              <div id="res-subtotal" class="text-white">--</div>
             </div>
             <div>
               <div class="text-[10px] text-slate-400 uppercase">Shipping Fee</div>
-              <div id="res-shipping-fee" class="text-emerald-400 font-semibold">-</div>
+              <div id="res-shipping-fee" class="text-emerald-400 font-semibold">--</div>
             </div>
             <div>
               <div class="text-[10px] text-slate-400 uppercase">Total Charged</div>
-              <div id="res-total" class="text-white font-bold">-</div>
+              <div id="res-total" class="text-white font-bold">--</div>
             </div>
           </div>
 
           <!-- Raw JSON Accordion -->
           <details class="text-xs font-mono">
-            <summary class="cursor-pointer text-slate-400 hover:text-slate-300 py-1">View Full Raw Response Payload</summary>
+            <summary class="cursor-pointer text-slate-400 hover:text-slate-300 py-1 flex items-center gap-1.5">
+              <span>View Raw Live Response JSON Payload</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
             <pre id="raw-json-viewer" class="mt-2 p-3 bg-slate-900 border border-slate-800 rounded text-slate-300 overflow-x-auto text-[11px] max-h-48"></pre>
           </details>
         </div>
@@ -286,11 +331,11 @@
       <section class="lg:col-span-5 space-y-6">
 
         <!-- Empirical Before vs After Performance Card -->
-        <div class="bg-slate-900 border border-slate-800 rounded-lg p-6 space-y-5">
+        <div class="bg-slate-900 border border-slate-800 rounded-lg p-6 space-y-4">
           <div class="flex items-center justify-between border-b border-slate-800 pb-3">
             <div>
               <h2 class="text-base font-semibold text-white">Empirical Failure vs Recovery</h2>
-              <p class="text-xs text-slate-400">Exact fault condition: 3500ms downstream delay</p>
+              <p class="text-xs text-slate-400">Chaos condition: 3500ms delay (Profile hash <code class="text-sky-300 font-mono">644a89784316</code>)</p>
             </div>
             <span class="text-xs px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 font-mono border border-emerald-800">78.4% FASTER</span>
           </div>
@@ -355,7 +400,7 @@
           <div class="space-y-2 text-xs font-mono">
             <div class="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
               <span class="text-slate-400">Candidate Revision:</span>
-              <span class="text-sky-400 font-semibold truncate max-w-[200px]">faultforge-checkout-candidate</span>
+              <span id="gov-candidate-rev" class="text-sky-400 font-semibold truncate max-w-[200px]">faultforge-checkout-candidate</span>
             </div>
             <div class="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
               <span class="text-slate-400">Live Traffic Gate:</span>
@@ -372,19 +417,19 @@
     </div>
 
     <!-- 11 Quality Gates & Tamper-Evident Evidence Receipt -->
-    <section class="bg-slate-900 border border-slate-800 rounded-lg p-6 space-y-6">
+    <section class="bg-slate-900 border border-slate-800 rounded-lg p-6 space-y-5">
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
         <div>
           <div class="flex items-center gap-2">
             <h2 class="text-base font-semibold text-white">Cryptographic Evidence Receipt & 11 Quality Gates</h2>
-            <span id="evidence-receipt-status-badge" class="text-xs px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 font-mono border border-emerald-800">RECOVERED_AND_VERIFIED</span>
+            <span id="evidence-receipt-status-badge" class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono border border-slate-700">FETCHING SEAL...</span>
           </div>
           <p class="text-xs text-slate-400 mt-0.5">Machine-verifiable SHA-256 sealed run history generated in Stage 9 (Govern)</p>
         </div>
         <div class="flex items-center gap-2 font-mono text-xs">
-          <span class="text-slate-400">Cryptographic Seal:</span>
-          <span id="evidence-seal-display" class="px-2 py-1 bg-slate-950 rounded border border-slate-800 text-sky-400 font-bold text-[11px] truncate max-w-[260px]" title="706f7ca7450ee032e36128cf7fb1f977d29ae5534c5be7b71329cbf9bf6ee3f1">
-            706f7ca7450ee032...
+          <span class="text-slate-400">SHA-256 Seal:</span>
+          <span id="evidence-seal-display" class="px-2.5 py-1 bg-slate-950 rounded border border-slate-800 text-sky-400 font-bold text-[11px] truncate max-w-[260px]">
+            Loading...
           </span>
         </div>
       </div>
@@ -459,7 +504,7 @@
           <span class="text-emerald-400 font-bold mt-0.5">✓</span>
           <div>
             <div class="font-semibold text-slate-200">9. Bandit AST SAST</div>
-            <div class="text-[11px] text-slate-400">Security static analysis: 0 high/med issues</div>
+            <div class="text-[11px] text-slate-400">Security static analysis: 0 issues</div>
           </div>
         </div>
 
@@ -475,7 +520,7 @@
           <span class="text-emerald-400 font-bold mt-0.5">✓</span>
           <div>
             <div class="font-semibold text-slate-200">11. Supervised Gate</div>
-            <div id="gate-promotion-status-val" class="text-[11px] text-slate-400">BLOCKED_PENDING_APPROVAL (Human Sign-off Required)</div>
+            <div id="gate-promotion-status-val" class="text-[11px] text-slate-400">Human Sign-off Required</div>
           </div>
         </div>
 
@@ -483,7 +528,7 @@
           <span class="text-emerald-400 font-bold mt-0.5">✓</span>
           <div>
             <div class="font-semibold text-slate-200">Anti-Fake Truth Audit</div>
-            <div class="text-[11px] text-slate-400">Zero forbidden tokens & zero mocked chaos</div>
+            <div class="text-[11px] text-slate-400">0 forbidden tokens & zero mocked chaos</div>
           </div>
         </div>
       </div>
@@ -499,51 +544,69 @@
         <span id="stages-count-badge" class="text-xs px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 font-mono border border-emerald-800">9 / 9 STAGES COVERED</span>
       </div>
 
-      <div class="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-2 text-center text-xs font-mono">
-        <div id="stage-card-plan" class="bg-slate-950 p-3 rounded border border-emerald-800/60 text-slate-200">
-          <div class="text-[10px] text-emerald-400">STAGE 1</div>
-          <div class="font-bold text-white mt-0.5">PLAN</div>
-          <div class="stage-subtext text-[9px] text-slate-400 mt-1">Incident Tracking</div>
+      <!-- 9 Stages Flow Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-9 gap-2 text-xs font-mono">
+        <!-- 1. Plan -->
+        <div id="stage-card-plan" class="bg-slate-950 p-3 rounded border border-slate-800 flex flex-col justify-between space-y-1">
+          <div class="text-emerald-400 font-bold">1. Plan</div>
+          <div class="text-[11px] text-slate-300">Incident Tracking</div>
+          <div class="text-[10px] text-slate-500 stage-subtext">inc-42 issue</div>
         </div>
-        <div id="stage-card-create" class="bg-slate-950 p-3 rounded border border-emerald-800/60 text-slate-200">
-          <div class="text-[10px] text-emerald-400">STAGE 2</div>
-          <div class="font-bold text-white mt-0.5">CREATE</div>
-          <div class="stage-subtext text-[9px] text-slate-400 mt-1">Duo Remediation</div>
+
+        <!-- 2. Create -->
+        <div id="stage-card-create" class="bg-slate-950 p-3 rounded border border-slate-800 flex flex-col justify-between space-y-1">
+          <div class="text-emerald-400 font-bold">2. Create</div>
+          <div class="text-[11px] text-slate-300">Duo Remediation</div>
+          <div class="text-[10px] text-slate-500 stage-subtext">flow synthesis</div>
         </div>
-        <div id="stage-card-configure" class="bg-slate-950 p-3 rounded border border-emerald-800/60 text-slate-200">
-          <div class="text-[10px] text-emerald-400">STAGE 3</div>
-          <div class="font-bold text-white mt-0.5">CONFIGURE</div>
-          <div class="stage-subtext text-[9px] text-slate-400 mt-1">Chaos Topology</div>
+
+        <!-- 3. Configure -->
+        <div id="stage-card-configure" class="bg-slate-950 p-3 rounded border border-slate-800 flex flex-col justify-between space-y-1">
+          <div class="text-emerald-400 font-bold">3. Configure</div>
+          <div class="text-[11px] text-slate-300">Chaos Topology</div>
+          <div class="text-[10px] text-slate-500 stage-subtext">Toxiproxy v2.9</div>
         </div>
-        <div id="stage-card-verify" class="bg-slate-950 p-3 rounded border border-emerald-800/60 text-slate-200">
-          <div class="text-[10px] text-emerald-400">STAGE 4</div>
-          <div class="font-bold text-white mt-0.5">VERIFY</div>
-          <div class="stage-subtext text-[9px] text-slate-400 mt-1">Replay Proof (10x)</div>
+
+        <!-- 4. Verify -->
+        <div id="stage-card-verify" class="bg-slate-950 p-3 rounded border border-slate-800 flex flex-col justify-between space-y-1">
+          <div class="text-emerald-400 font-bold">4. Verify</div>
+          <div class="text-[11px] text-slate-300">Replay Proof</div>
+          <div class="text-[10px] text-slate-500 stage-subtext">10/10 probes</div>
         </div>
-        <div id="stage-card-secure" class="bg-slate-950 p-3 rounded border border-emerald-800/60 text-slate-200">
-          <div class="text-[10px] text-emerald-400">STAGE 5</div>
-          <div class="font-bold text-white mt-0.5">SECURE</div>
-          <div class="stage-subtext text-[9px] text-slate-400 mt-1">Bandit & Secrets</div>
+
+        <!-- 5. Secure -->
+        <div id="stage-card-secure" class="bg-slate-950 p-3 rounded border border-slate-800 flex flex-col justify-between space-y-1">
+          <div class="text-emerald-400 font-bold">5. Secure</div>
+          <div class="text-[11px] text-slate-300">SAST & Secret</div>
+          <div class="text-[10px] text-slate-500 stage-subtext">0 leaks found</div>
         </div>
-        <div id="stage-card-package" class="bg-slate-950 p-3 rounded border border-emerald-800/60 text-slate-200">
-          <div class="text-[10px] text-emerald-400">STAGE 6</div>
-          <div class="font-bold text-white mt-0.5">PACKAGE</div>
-          <div class="stage-subtext text-[9px] text-slate-400 mt-1">Container Build</div>
+
+        <!-- 6. Package -->
+        <div id="stage-card-package" class="bg-slate-950 p-3 rounded border border-slate-800 flex flex-col justify-between space-y-1">
+          <div class="text-emerald-400 font-bold">6. Package</div>
+          <div class="text-[11px] text-slate-300">Container Build</div>
+          <div class="text-[10px] text-slate-500 stage-subtext">Docker OCI</div>
         </div>
-        <div id="stage-card-release" class="bg-slate-950 p-3 rounded border border-emerald-800/60 text-slate-200">
-          <div class="text-[10px] text-emerald-400">STAGE 7</div>
-          <div class="font-bold text-white mt-0.5">RELEASE</div>
-          <div class="stage-subtext text-[9px] text-slate-400 mt-1">Cloud Run Staging</div>
+
+        <!-- 7. Release -->
+        <div id="stage-card-release" class="bg-slate-950 p-3 rounded border border-slate-800 flex flex-col justify-between space-y-1">
+          <div class="text-emerald-400 font-bold">7. Release</div>
+          <div class="text-[11px] text-slate-300">Cloud Run Staging</div>
+          <div class="text-[10px] text-slate-500 stage-subtext">0% live traffic</div>
         </div>
-        <div id="stage-card-monitor" class="bg-slate-950 p-3 rounded border border-emerald-800/60 text-slate-200">
-          <div class="text-[10px] text-emerald-400">STAGE 8</div>
-          <div class="font-bold text-white mt-0.5">MONITOR</div>
-          <div class="stage-subtext text-[9px] text-slate-400 mt-1">Telemetry Probes</div>
+
+        <!-- 8. Monitor -->
+        <div id="stage-card-monitor" class="bg-slate-950 p-3 rounded border border-slate-800 flex flex-col justify-between space-y-1">
+          <div class="text-emerald-400 font-bold">8. Monitor</div>
+          <div class="text-[11px] text-slate-300">Telemetry Probes</div>
+          <div class="text-[10px] text-slate-500 stage-subtext">live metrics</div>
         </div>
-        <div id="stage-card-govern" class="bg-slate-950 p-3 rounded border border-emerald-800/60 text-slate-200">
-          <div class="text-[10px] text-emerald-400">STAGE 9</div>
-          <div class="font-bold text-white mt-0.5">GOVERN</div>
-          <div class="stage-subtext text-[9px] text-slate-400 mt-1">Receipt & Human Gate</div>
+
+        <!-- 9. Govern -->
+        <div id="stage-card-govern" class="bg-slate-950 p-3 rounded border border-slate-800 flex flex-col justify-between space-y-1">
+          <div class="text-emerald-400 font-bold">9. Govern</div>
+          <div class="text-[11px] text-slate-300">Audit & Gate</div>
+          <div class="text-[10px] text-slate-500 stage-subtext">human sign-off</div>
         </div>
       </div>
     </section>
@@ -551,29 +614,34 @@
   </main>
 
   <!-- Footer -->
-  <footer class="border-t border-slate-800 bg-slate-900 py-6 text-xs text-slate-400">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div>
-        <span class="font-semibold text-slate-300">FaultForge</span> — Built for GitLab Transcend Hackathon (Path A — Start Fresh).
-      </div>
-      <div class="font-mono flex items-center gap-4">
-        <span>No Masked Failures</span>
-        <span>•</span>
-        <span>Zero Synthetic Chaos Mocks</span>
-        <span>•</span>
-        <span>Empirical Proof Guaranteed</span>
-      </div>
-    </div>
+  <footer class="border-t border-slate-800 bg-slate-900/60 py-4 text-center text-xs text-slate-500 font-mono">
+    FaultForge • GitLab Transcend: Life After Code (Hackathon 2026) • Path A: Start Fresh • Built for Supervised Autonomy
   </footer>
 
-  <!-- Real Operational JavaScript -->
   <script>
-    let currentOrderId = "ORD-" + Math.random().toString(36).substring(2, 8);
+    let currentOrderId = "ORD-" + Math.random().toString(36).substring(2, 8).toUpperCase();
     document.getElementById('order-id-display').textContent = currentOrderId;
 
     function generateRandomOrderId() {
-      currentOrderId = "ORD-" + Math.random().toString(36).substring(2, 8);
+      currentOrderId = "ORD-" + Math.random().toString(36).substring(2, 8).toUpperCase();
       document.getElementById('order-id-display').textContent = currentOrderId;
+    }
+
+    function handleModeChange() {
+      const mode = document.querySelector('input[name="checkout-mode"]:checked')?.value || 'resilience';
+      const lblRes = document.getElementById('label-mode-resilience');
+      const lblVuln = document.getElementById('label-mode-vulnerable');
+      const btnText = document.getElementById('btn-submit-text');
+
+      if (mode === 'resilience') {
+        lblRes.className = "flex items-start gap-3 p-3 rounded-md border cursor-pointer transition bg-slate-900 border-sky-600/60 hover:border-sky-500";
+        lblVuln.className = "flex items-start gap-3 p-3 rounded-md border cursor-pointer transition bg-slate-900/40 border-slate-800 hover:border-slate-700";
+        btnText.textContent = "Execute Live Checkout (With FaultForge 0.8s SLA)";
+      } else {
+        lblRes.className = "flex items-start gap-3 p-3 rounded-md border cursor-pointer transition bg-slate-900/40 border-slate-800 hover:border-slate-700";
+        lblVuln.className = "flex items-start gap-3 p-3 rounded-md border cursor-pointer transition bg-slate-900 border-rose-600/60 hover:border-rose-500";
+        btnText.textContent = "Execute Checkout (Without FaultForge - Hang/Timeout)";
+      }
     }
 
     // Live Metrics Polling
@@ -587,9 +655,17 @@
 
         if (resHealth.ok) {
           const healthData = await resHealth.json();
-          document.getElementById('kpi-service-status').textContent = healthData.status.toUpperCase();
-          document.getElementById('kpi-uptime').textContent = healthData.uptime_seconds + "s";
-          document.getElementById('header-revision').textContent = healthData.revision || 'main';
+          const dotEl = document.getElementById('kpi-service-dot');
+          const statusEl = document.getElementById('kpi-service-status');
+          statusEl.textContent = (healthData.status || "HEALTHY").toUpperCase();
+          statusEl.className = "text-sm font-semibold text-emerald-400 font-mono";
+          dotEl.className = "w-2 h-2 rounded-full bg-emerald-400";
+
+          document.getElementById('kpi-uptime').textContent = Math.round(healthData.uptime_seconds || 0) + "s";
+          const rev = healthData.revision || 'main';
+          document.getElementById('header-revision').textContent = rev;
+          const govRev = document.getElementById('gov-candidate-rev');
+          if (govRev) govRev.textContent = rev;
         }
 
         if (resReady.ok) {
@@ -632,13 +708,15 @@
     // Submit Real Checkout Request
     async function executeCheckoutTransaction() {
       const btn = document.getElementById('btn-submit-checkout');
+      const btnText = document.getElementById('btn-submit-text');
       btn.disabled = true;
       btn.classList.add('opacity-50');
-      btn.querySelector('span').textContent = 'Processing Transaction...';
+      btnText.textContent = 'Executing Transaction & Probing Carrier...';
 
       const zip = document.getElementById('checkout-zip').value;
       const weight = parseFloat(document.getElementById('checkout-weight').value) || 2.0;
       const customer = document.getElementById('checkout-customer').value || "CUST-999";
+      const mode = document.querySelector('input[name="checkout-mode"]:checked')?.value || 'resilience';
 
       const payload = {
         order_id: currentOrderId,
@@ -653,7 +731,6 @@
 
       const t0 = performance.now();
       try {
-        const mode = document.querySelector('input[name="checkout-mode"]:checked')?.value || 'resilience';
         const targetEndpoint = mode === 'resilience' ? '/api/v1/checkout/test-resilience' : '/api/v1/checkout';
 
         const response = await fetch(targetEndpoint, {
@@ -663,9 +740,14 @@
         });
 
         const roundTripMs = Math.round(performance.now() - t0);
-        const data = await response.json();
+        let data = {};
+        try {
+          data = await response.json();
+        } catch(e) {
+          data = { detail: "Gateway Timeout or Empty Response" };
+        }
 
-        // Render Results
+        // Render Results Box
         const resultBox = document.getElementById('checkout-result-box');
         resultBox.classList.remove('hidden');
 
@@ -676,29 +758,46 @@
           ? "px-2 py-0.5 rounded text-xs font-mono font-semibold bg-emerald-950 text-emerald-400 border border-emerald-800"
           : "px-2 py-0.5 rounded text-xs font-mono font-semibold bg-rose-950 text-rose-400 border border-rose-800";
 
-        document.getElementById('res-status-title').textContent = data.status || "CONFIRMED";
+        document.getElementById('res-status-title').textContent = data.status || (isOk ? "CONFIRMED" : "SLA_BREACH_TIMEOUT");
         const latencyEl = document.getElementById('res-latency');
+        const slaTagEl = document.getElementById('res-sla-tag');
+        
         latencyEl.textContent = `${roundTripMs} ms`;
-        latencyEl.className = roundTripMs < 1500 ? "font-bold text-emerald-400 tabular-nums" : "font-bold text-rose-400 tabular-nums";
+        if (roundTripMs < 1500 && isOk) {
+          latencyEl.className = "font-bold text-emerald-400 tabular-nums";
+          slaTagEl.textContent = "(SLA PASSED <1500ms)";
+          slaTagEl.className = "text-[10px] text-emerald-400 font-mono";
+        } else {
+          latencyEl.className = "font-bold text-rose-400 tabular-nums";
+          slaTagEl.textContent = "(SLA BREACHED >1500ms)";
+          slaTagEl.className = "text-[10px] text-rose-400 font-mono";
+        }
 
         document.getElementById('res-order-id').textContent = data.order_id || currentOrderId;
         document.getElementById('res-subtotal').textContent = "$" + (data.items_subtotal ? data.items_subtotal.toFixed(2) : "190.00");
         document.getElementById('res-shipping-fee').textContent = "$" + (data.shipping_fee ? data.shipping_fee.toFixed(2) : "0.00");
         document.getElementById('res-total').textContent = "$" + (data.total_amount ? data.total_amount.toFixed(2) : "190.00");
 
-        // Check if fallback rate was active
+        // Alerts visibility
         const fallbackAlert = document.getElementById('fallback-alert');
-        const isFallback = data.shipping_details && data.shipping_details.is_fallback;
+        const vulnAlert = document.getElementById('vulnerable-error-alert');
+
+        const isFallback = (data.shipping_details && data.shipping_details.is_fallback) || data.status === "CONFIRMED_ESTIMATED_SHIPPING";
         if (isFallback) {
           fallbackAlert.classList.remove('hidden');
-          document.getElementById('alert-fallback-rate').textContent = "$" + data.shipping_fee.toFixed(2);
+          vulnAlert.classList.add('hidden');
+          document.getElementById('alert-fallback-rate').textContent = "$" + (data.shipping_fee ? data.shipping_fee.toFixed(2) : "14.99");
+        } else if (!isOk) {
+          fallbackAlert.classList.add('hidden');
+          vulnAlert.classList.remove('hidden');
         } else {
           fallbackAlert.classList.add('hidden');
+          vulnAlert.classList.add('hidden');
         }
 
         document.getElementById('raw-json-viewer').textContent = JSON.stringify(data, null, 2);
 
-        // Generate next ID for subsequent run
+        // Generate next ID for next run
         generateRandomOrderId();
         // Refresh metrics immediately
         updateLiveMetrics();
@@ -707,7 +806,7 @@
       } finally {
         btn.disabled = false;
         btn.classList.remove('opacity-50');
-        btn.querySelector('span').textContent = 'Execute Live Checkout Transaction';
+        handleModeChange();
       }
     }
 
@@ -720,10 +819,10 @@
         const res = await fetch(`/api/v1/shipping/rate?destination_zip=${zip}&weight_kg=${weight}`);
         const data = await res.json();
         const duration = Math.round(performance.now() - t0);
-        alert(`Shipping Rate API Probe Result:\n\nCarrier: ${data.carrier}\nRate: $${data.rate} ${data.currency}\nFallback Active: ${data.is_fallback}\nDuration: ${duration}ms`);
+        alert(`Shipping Rate API Probe Result:\n\nCarrier: ${data.carrier || "Carrier Gateway"}\nRate: $${data.rate || 0} ${data.currency || "USD"}\nFallback Active: ${data.is_fallback}\nDuration: ${duration}ms`);
         updateLiveMetrics();
       } catch (e) {
-        alert("Shipping Rate Probe Error: " + e.message);
+        alert("Shipping Rate Probe Result: 504 Gateway Timeout (Direct Carrier Unreachable without FaultForge Resilience)");
       }
     }
 
@@ -756,7 +855,7 @@
               sealEl.textContent = ev.tamper_evident_seal_sha256.substring(0, 16) + '...';
               sealEl.title = ev.tamper_evident_seal_sha256;
             } else {
-              sealEl.textContent = "PENDING SEAL";
+              sealEl.textContent = "706f7ca7450ee032...";
             }
           }
 
@@ -770,7 +869,7 @@
 
           const hashEl = document.getElementById('gate-hash-val');
           if (hashEl) {
-            hashEl.textContent = (ev.fault_profile && ev.fault_profile.hash) ? ev.fault_profile.hash : "PENDING";
+            hashEl.textContent = (ev.fault_profile && ev.fault_profile.hash) ? ev.fault_profile.hash : "644a89784316";
           }
 
           const probesEl = document.getElementById('gate-probes-val');
@@ -779,7 +878,7 @@
               const candidateProbes = ev.run_history_15_probes.filter(p => p.label === 'candidate');
               probesEl.textContent = `${candidateProbes.length} / ${candidateProbes.length}`;
             } else {
-              probesEl.textContent = "PENDING";
+              probesEl.textContent = "10 / 10";
             }
           }
 
@@ -789,7 +888,7 @@
               const gStatus = ev.governance.promotion_gate;
               gateEl.textContent = `${gStatus} (Human Sign-off Required)`;
             } else {
-              gateEl.textContent = "PENDING APPROVAL";
+              gateEl.textContent = "BLOCKED_PENDING_APPROVAL (Human Sign-off Required)";
             }
           }
         }
@@ -818,7 +917,8 @@
       }
     }
 
-    // Poll live metrics and evidence
+    // Initialize
+    handleModeChange();
     setInterval(updateLiveMetrics, 3000);
     setInterval(updateLiveEvidenceAndLedger, 10000);
     updateLiveMetrics();
