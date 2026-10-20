@@ -72,7 +72,7 @@
   python scripts/generate_receipt.py
   ```
 - **Narrator:**
-  > "Because we operate under Supervised Autonomy, our risk policy classifies this change as LOW risk, allowing automated staging deployment at zero live traffic.
+  > "Because we operate under Supervised Autonomy, our risk policy classifies this change as MEDIUM risk, allowing automated staging deployment at zero live traffic.
   > But live production traffic promotion strictly requires explicit human developer authorization.
   > If candidate health probes ever degrade, `cloudrun_traffic.py` executes an instant traffic rollback to the previous revision in seconds.
   > Finally, FaultForge emits a tamper-evident Evidence Receipt sealed with a cryptographic SHA-256 hash.

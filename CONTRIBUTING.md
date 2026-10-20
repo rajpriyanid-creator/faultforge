@@ -98,3 +98,11 @@ We welcome contributions and bug reports!
    - Ensure all tests pass: `pytest tests/unit tests/integration -v`
    - Run truth audit: `python scripts/truth_audit.py --final-audit`
    - Open a GitLab Merge Request targeting `main`.
+
+---
+
+## 6. Secrets Handling Policy
+
+- **Zero Hardcoded Secrets:** Tokens, API keys, passwords, private certificates, and credentials must never be committed to git, logged in CI outputs, or embedded in Docker images.
+- **GitLab CI/CD Variables:** All secrets (such as `FF_GITLAB_TOKEN`, `GCP_PROJECT`, and `GCP_SA_KEY`) must strictly reside in GitLab project settings (**Settings → CI/CD → Variables**), configured as **Masked** and **Protected**.
+- **Local Development:** Store secrets only in uncommitted `.env` files (excluded by `.gitignore` and `.dockerignore`). Never commit `.env` or credentials JSON files.

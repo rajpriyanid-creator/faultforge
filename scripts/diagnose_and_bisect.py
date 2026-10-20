@@ -4,6 +4,8 @@ import os
 import sys
 import ast
 import json
+import shutil
+import tempfile
 import subprocess
 from typing import Dict, Any, List, Optional
 
@@ -84,6 +86,19 @@ def run_git_bisect_analysis() -> Dict[str, Any]:
     # Verify that probe returns GOOD on root and BAD on head before bisecting
     probe_script = os.path.abspath(os.path.join(os.path.dirname(__file__), "bisect_probe.py"))
 
+    # Preserve reports directory across bisect checkout operations
+    reports_dir = os.path.abspath("reports")
+    backup_dir = tempfile.mkdtemp(prefix="ff_reports_backup_")
+    has_reports = os.path.isdir(reports_dir)
+    if has_reports:
+        for item in os.listdir(reports_dir):
+            s = os.path.join(reports_dir, item)
+            d = os.path.join(backup_dir, item)
+            if os.path.isdir(s):
+                shutil.copytree(s, d)
+            else:
+                shutil.copy2(s, d)
+
     try:
         # Run git bisect
         subprocess.run(["git", "bisect", "reset"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -110,8 +125,6 @@ def run_git_bisect_analysis() -> Dict[str, Any]:
         author_name = meta_parts[0] if len(meta_parts) > 0 else "Unknown"
         subject = meta_parts[2] if len(meta_parts) > 2 else "Unknown"
 
-        subprocess.run(["git", "bisect", "reset"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
         return {
             "bisect_executed": True,
             "status": "CONFIRMED_REGRESSION",
@@ -122,12 +135,25 @@ def run_git_bisect_analysis() -> Dict[str, Any]:
         }
 
     except Exception as exc:
-        subprocess.run(["git", "bisect", "reset"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return {
             "bisect_executed": False,
             "status": "SUSPECTED_WEAKNESS",
             "reason": f"Git bisect did not isolate a boundary: {exc}"
         }
+    finally:
+        subprocess.run(["git", "bisect", "reset"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        if has_reports:
+            os.makedirs(reports_dir, exist_ok=True)
+            for item in os.listdir(backup_dir):
+                s = os.path.join(backup_dir, item)
+                d = os.path.join(reports_dir, item)
+                if os.path.isdir(s):
+                    if os.path.exists(d):
+                        shutil.rmtree(d)
+                    shutil.copytree(s, d)
+                else:
+                    shutil.copy2(s, d)
+            shutil.rmtree(backup_dir, ignore_errors=True)
 
 def diagnose(
     dossier_path: str = "reports/incident_dossier.json",

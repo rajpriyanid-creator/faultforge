@@ -158,6 +158,11 @@ def audit_report_consistency(final_mode: bool = False) -> List[str]:
                 computed = hashlib.sha256(json.dumps(copied, sort_keys=True).encode("utf-8")).hexdigest()
                 if computed != seal:
                     violations.append(f"Evidence receipt SHA-256 seal mismatch: expected {seal}, computed {computed}")
+
+            # Enforce honest Duo execution claims
+            duo_exec = receipt.get("duo_execution", {})
+            if duo_exec.get("executed") is False and receipt.get("final_status") == "RECOVERED_AND_VERIFIED":
+                violations.append("Evidence receipt claims RECOVERED_AND_VERIFIED despite unexecuted Duo flow (executed: false)")
         except Exception as exc:
             violations.append(f"Could not parse evidence_receipt.json: {exc}")
 

@@ -14,13 +14,13 @@
     },
     "identical_profile_hash": {
       "passed": true,
-      "baseline_hash": "hash-abc-123",
-      "hardened_hash": "hash-abc-123"
+      "baseline_hash": "644a89784316",
+      "hardened_hash": "644a89784316"
     },
     "identical_payload_hash": {
       "passed": true,
-      "baseline_payload": "payload-xyz-999",
-      "hardened_payload": "payload-xyz-999"
+      "baseline_payload": "ab41be6ea964",
+      "hardened_payload": "ab41be6ea964"
     },
     "identical_toxic_readback": {
       "passed": true,

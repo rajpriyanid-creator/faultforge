@@ -9,5 +9,12 @@ __pycache__
 htmlcov
 venv
 .venv
+.env
+.env.*
+*.pem
+*.key
+credentials*.json
+service_account*.json
+gate_data/
 *.zip
 *.log

@@ -27,7 +27,8 @@ def evaluate_replay(
     baseline_path: str = "reports/fault_run_baseline.json",
     hardened_path: str = "reports/fault_run_hardened.json",
     output_path: str = "reports/replay_evaluation.json",
-    criteria_path: str = "chaos/criteria.json"
+    criteria_path: str = "chaos/criteria.json",
+    candidate_source: str = "duo-authored-mr"
 ) -> Dict[str, Any]:
     if not os.path.exists(baseline_path) or not os.path.exists(hardened_path):
         print(f"[-] Missing input report: baseline='{baseline_path}' or hardened='{hardened_path}'", file=sys.stderr)
@@ -125,6 +126,7 @@ def evaluate_replay(
     evaluation = {
         "evaluation_status": final_status,
         "verified": all_gates_passed,
+        "candidate_source": candidate_source,
         "gates": {
             "valid_git_shas": {
                 "passed": gate_valid_shas,
@@ -226,6 +228,7 @@ if __name__ == "__main__":
     parser.add_argument("--candidate", dest="hardened", help="Alias for --hardened")
     parser.add_argument("--output", default="reports/replay_evaluation.json")
     parser.add_argument("--criteria", default="chaos/criteria.json")
+    parser.add_argument("--candidate-source", default=os.getenv("FF_CANDIDATE_SOURCE", "duo-authored-mr"), help="Provenance of candidate under test")
     args = parser.parse_args()
 
-    evaluate_replay(args.baseline, args.hardened, args.output, args.criteria)
+    evaluate_replay(args.baseline, args.hardened, args.output, args.criteria, args.candidate_source)
