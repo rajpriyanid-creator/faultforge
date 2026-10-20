@@ -2,14 +2,19 @@
   "run_id": "run-hard-fixture-01",
   "label": "candidate",
   "git_sha": "a1702b002ea1fbc5a10bc0aa0a24158073b70eac",
-  "profile_hash": "hash-abc-123",
-  "payload_hash": "payload-xyz-999",
+  "proxy_engine": "toxiproxy",
+  "toxiproxy_version": "2.9.0",
+  "profile_name": "latency_cascading_hang",
+  "profile_hash": "644a89784316",
+  "payload_hash": "ab41be6ea964",
+  "fault_type": "latency",
   "toxic_readback": {
     "latency": 3500,
     "jitter": 250
   },
   "sla_budget_ms": 1500,
   "sla_breaches": 0,
+  "passed_sla": true,
   "metrics": {
     "total_probes": 10,
     "successful_probes": 10,

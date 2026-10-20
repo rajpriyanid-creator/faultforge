@@ -68,3 +68,26 @@ If the REST endpoint is restricted or flow requires webhooks:
 - Current `HEAD` verified fragile (unbounded client call).
 - Deterministic `git bisect run scripts/bisect_probe.py` isolates exact culprit:
   `974035c6e45e7c177452df260a155b6508b828e9` ("perf: reuse client, simplify error handling").
+
+---
+
+## 5. Toxiproxy Architecture & CI Runner Networking
+
+### Context & Problem
+In GitLab CI/CD shared runner environments with standard Docker executor, containers declared under `services:` run in independent network namespaces. While the job container can reach the Toxiproxy service on `http://toxiproxy:8474`, the Toxiproxy service container cannot reach `127.0.0.1:8081` (where the mock carrier stub runs inside the job container).
+
+### Evaluated Architectural Options
+1. **Multi-Container Services:** Package and publish the shipping stub as a container image and run both stub and Toxiproxy as CI services.
+   - *Trade-off:* High build and pull latency; tight coupling to external image registries; complex inter-service DNS configuration.
+2. **Docker-in-Docker (DinD) with Docker Compose:** Run the entire test stack inside a `docker:dind` container.
+   - *Trade-off:* Adds 2-3 minutes of Docker daemon bootstrap overhead per pipeline job; requires privileged runner modes; introduces Docker-layer cache misses.
+3. **Official Shopify `toxiproxy-server` Binary in Job Container:** Bootstrap the official Shopify Toxiproxy `v2.9.0` Linux binary directly in the job container via `scripts/start_toxiproxy.py`.
+   - *Trade-off:* Requires downloading the official 7.7MB binary on cache-miss (takes ~1-2 seconds).
+
+### Decision
+**Adopt Option 3 (Official `toxiproxy-server` Binary via Bootstrapper).**
+Running the official Shopify Toxiproxy binary directly within the job container provides:
+- **100% Deterministic Loopback Networking:** The mock carrier (`127.0.0.1:8081`), Toxiproxy proxy (`127.0.0.1:8082`), and application service (`127.0.0.1:8090`) all communicate over local loopback (`127.0.0.1`), eliminating inter-container network failure modes.
+- **Official Shopify Engine Integrity:** The daemon runs the exact official Shopify Toxiproxy `2.9.0` release binary, returning real API version `2.9.0` and supporting live toxic read-backs.
+- **Sub-Second Job Startup:** Avoids heavy container orchestration overhead on shared SaaS runners.
+- **Zero Standalone Proxy in CI:** Enables complete removal of `--allow-standalone-proxy` from all CI jobs (`create`, `configure`, `verify`). All CI evidence receipts reflect real Toxiproxy verification.

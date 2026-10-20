@@ -63,10 +63,11 @@ create:duo_remediation_mr:
   script:
     - apt-get update -qq && apt-get install -y -qq git
     - pip install -r requirements.txt
+    - python scripts/start_toxiproxy.py
     - python -m uvicorn stub.mock_shipping_api:app --host 127.0.0.1 --port 8081 &
     - python -m uvicorn app.main:app --host 127.0.0.1 --port 8090 &
     - sleep 2
-    - python scripts/run_fault.py --label baseline --iterations 5 --expect-fail --allow-standalone-proxy --output reports/fault_run_baseline.json
+    - python scripts/run_fault.py --label baseline --iterations 5 --expect-fail --output reports/fault_run_baseline.json
     - python scripts/collect_evidence.py
     - python scripts/diagnose_and_bisect.py
     - python scripts/trigger_duo_flow.py
@@ -99,6 +100,7 @@ configure:chaos_topology:
     - create:duo_remediation_mr
   script:
     - pip install -r requirements.txt
+    - python scripts/start_toxiproxy.py
     - python scripts/configure_chaos.py
     - python scripts/evidence_ledger.py --stage configure --job configure:chaos_topology --status SUCCESS --artifacts reports/fault_config.json
   artifacts:
@@ -137,6 +139,7 @@ verify:exact_fault_replay_proof:
   script:
     - apt-get update -qq && apt-get install -y -qq git
     - pip install -r requirements.txt
+    - python scripts/start_toxiproxy.py
     - |
       if [ -f reports/duo_evidence.json ] && python -c "import json; d=json.load(open('reports/duo_evidence.json')); exit(0 if d.get('found') and d.get('source_branch') else 1)"; then
         CANDIDATE_BRANCH=$(python -c "import json; print(json.load(open('reports/duo_evidence.json'))['source_branch'])")
@@ -155,7 +158,7 @@ verify:exact_fault_replay_proof:
     - python -m uvicorn stub.mock_shipping_api:app --host 127.0.0.1 --port 8081 &
     - python -m uvicorn app.main:app --host 127.0.0.1 --port 8090 &
     - sleep 3
-    - python scripts/run_fault.py --label candidate --git-sha $FIX_SHA --iterations 10 --allow-standalone-proxy --output reports/fault_run_hardened.json
+    - python scripts/run_fault.py --label candidate --git-sha $FIX_SHA --iterations 10 --output reports/fault_run_hardened.json
     - python scripts/evaluate_replay.py --baseline reports/fault_run_baseline.json --candidate reports/fault_run_hardened.json --output reports/replay_evaluation.json --candidate-source "$CANDIDATE_SRC"
     - python scripts/evidence_ledger.py --stage verify --job verify:exact_fault_replay_proof --status SUCCESS --artifacts reports/fault_run_hardened.json reports/replay_evaluation.json
   artifacts:

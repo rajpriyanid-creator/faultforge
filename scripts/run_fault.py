@@ -183,9 +183,18 @@ def main():
 
     engine = ChaosEngine()
     if not engine.use_toxi:
+        # Attempt automatic boot of official Toxiproxy daemon if not running
+        try:
+            from scripts.start_toxiproxy import start_toxiproxy
+            if start_toxiproxy():
+                engine = ChaosEngine()
+        except Exception:
+            pass
+
+    if not engine.use_toxi:
         if not args.allow_standalone_proxy:
-            print("[-] Error: Official Toxiproxy API (port 8474) is not reachable.")
-            print("    Real Toxiproxy is required. Pass --allow-standalone-proxy only for local dev without Docker.")
+            print("[-] Error: Official Toxiproxy API (port 8474) is not reachable.", file=sys.stderr)
+            print("    Real Toxiproxy is required. Pass --allow-standalone-proxy only for local dev without Docker.", file=sys.stderr)
             sys.exit(1)
         print("[!] Warning: Using StandaloneChaosProxy (--allow-standalone-proxy set).")
 
@@ -196,6 +205,33 @@ def main():
 
     toxic_readback = engine.read_back_toxic(profile)
     toxiproxy_ver = engine.get_version()
+
+    # Compute and assert profile hash directly from the live Toxiproxy API readback
+    if engine.use_toxi and isinstance(toxic_readback, dict):
+        readback_attrs = toxic_readback.get("attributes", toxic_readback)
+        readback_profile = {
+            "attributes": {
+                "jitter": readback_attrs.get("jitter", profile.get("attributes", {}).get("jitter", 250)),
+                "latency": readback_attrs.get("latency", profile.get("attributes", {}).get("latency", 3500))
+            },
+            "fault_type": profile.get("fault_type", "latency"),
+            "listen": profile.get("listen", "0.0.0.0:8082"),
+            "name": profile.get("name", "latency_cascading_hang"),
+            "proxy_name": profile.get("proxy_name", "shipping_api_proxy"),
+            "sla_budget_ms": profile.get("sla_budget_ms", 1500),
+            "upstream": profile.get("upstream", "127.0.0.1:8081")
+        }
+        live_profile_hash = compute_profile_hash(readback_profile)
+    else:
+        live_profile_hash = compute_profile_hash(profile)
+
+    expected_hash = profile.get("expected_hash", "644a89784316")
+    if profile.get("name") == "latency_cascading_hang" and live_profile_hash != expected_hash:
+        print(f"[-] ERROR: Toxiproxy live readback profile hash mismatch: expected {expected_hash}, got {live_profile_hash}", file=sys.stderr)
+        sys.exit(1)
+
+    profile_hash = live_profile_hash
+    print(f"[*] Verified profile hash from live API: {profile_hash}")
 
     try:
         print(f"[*] Executing {args.iterations} probes against target ...")

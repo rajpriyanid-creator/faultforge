@@ -128,6 +128,11 @@ def generate_evidence_receipt(
         is_verified = False
         not_established.append("Exact fault profile hash match could not be established across baseline and hardened runs.")
 
+    base_engine = base_run.get("proxy_engine", "standalone")
+    hard_engine = hard_run.get("proxy_engine", "standalone")
+    if base_engine != "toxiproxy" or hard_engine != "toxiproxy":
+        not_established.append(f"Official Toxiproxy engine not used for all chaos runs (baseline: '{base_engine}', candidate: '{hard_engine}'). Standalone runs cannot be verified.")
+
     git_sha = get_real_git_sha()
     if dossier.get("commit_sha") and dossier["commit_sha"] != git_sha:
         not_established.append(f"Dossier commit SHA ({dossier['commit_sha'][:8]}) differs from current HEAD ({git_sha[:8]}).")

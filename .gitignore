@@ -13,6 +13,7 @@ venv/
 credentials*.json
 service_account*.json
 .cache/
+bin/
 gate_data/
 reports/*
 !reports/.gitkeep
