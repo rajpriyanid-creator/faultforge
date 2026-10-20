@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: MIT
+import os
 import pytest
 from httpx import AsyncClient, ASGITransport
 from app.main import app
@@ -119,5 +120,14 @@ async def test_reports_endpoint(tmp_path, monkeypatch):
         assert res.status_code == 200
         res_404 = await client.get("/api/v1/reports/nonexistent_report_xyz")
         assert res_404.status_code == 404
+
+def test_dashboard_has_no_hardcoded_prices_or_pipelines():
+    dashboard_path = os.path.join(os.path.dirname(__file__), "..", "..", "app", "dashboard.html")
+    with open(dashboard_path, "r", encoding="utf-8") as f:
+        content = f.read()
+    assert "14.99" not in content, "dashboard.html must not hardcode $14.99 fallback price"
+    assert "2965823054" not in content, "dashboard.html must not hardcode pipeline ID 2965823054"
+    assert "2965807846" not in content, "dashboard.html must not hardcode pipeline ID 2965807846"
+    assert "2963430484" not in content, "dashboard.html must not hardcode pipeline ID 2963430484"
 
 

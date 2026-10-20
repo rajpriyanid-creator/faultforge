@@ -176,7 +176,10 @@
 
         <!-- Mode Selector: The Core Comparison -->
         <div class="bg-slate-950 p-3.5 rounded-lg border border-slate-800 space-y-2">
-          <div class="text-[11px] font-mono text-slate-400 uppercase tracking-wider">Choose Execution Scenario:</div>
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-mono text-slate-400 uppercase tracking-wider">Choose Execution Scenario:</span>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-sky-950 text-sky-400 border border-sky-800 font-mono">SIMULATION (illustrative demo in Cloud Run)</span>
+          </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <label class="flex items-start gap-3 p-3 rounded-md border cursor-pointer transition bg-slate-900 border-sky-600/60 hover:border-sky-500" id="label-mode-resilience">
               <input type="radio" name="checkout-mode" value="resilience" checked onchange="handleModeChange()" class="mt-1 text-sky-500">
@@ -202,6 +205,7 @@
               </div>
             </label>
           </div>
+          <div class="text-[10px] text-slate-500 pt-1">Note: Live Cloud Run interactive demo illustrates client timeout interception. Verified empirical proof under Toxiproxy chaos is preserved in reports/replay_evaluation.json.</div>
         </div>
 
         <!-- Form Controls -->
@@ -281,7 +285,7 @@
               <span>Resilience Circuit Intercepted Downstream Latency!</span>
             </div>
             <p class="text-[11px] text-amber-300/90 leading-relaxed">
-              Downstream carrier exceeded the 0.8s SLA limit. FaultForge intercepted the hang and confirmed the order safely using an estimated fallback quote (<span id="alert-fallback-rate" class="font-mono font-bold">$14.99</span>) without customer drop-off.
+              Downstream carrier exceeded the 0.8s SLA limit. FaultForge intercepted the hang and confirmed the order safely using an estimated fallback quote (<span id="alert-fallback-rate" class="font-mono font-bold">--</span>) without customer drop-off.
             </p>
           </div>
 
@@ -337,7 +341,7 @@
               <h2 class="text-base font-semibold text-white">Empirical Failure vs Recovery</h2>
               <p class="text-xs text-slate-400">Chaos condition: 3500ms delay (Profile hash <code class="text-sky-300 font-mono">644a89784316</code>)</p>
             </div>
-            <span class="text-xs px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 font-mono border border-emerald-800">78.4% FASTER</span>
+            <span id="badge-latency-reduction" class="text-xs px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 font-mono border border-emerald-800">78.4% MEAN REDUCTION</span>
           </div>
 
           <!-- Comparative Bars -->
@@ -480,7 +484,7 @@
           <span class="text-emerald-400 font-bold mt-0.5">✓</span>
           <div>
             <div class="font-semibold text-slate-200">6. &gt;60% Latency Reduction</div>
-            <div class="text-[11px] text-slate-400">Achieved 78.4% improvement (808ms avg)</div>
+            <div id="gate-reduction-text" class="text-[11px] text-slate-400">Achieved 78.4% mean reduction (per docs/measurement-method.md)</div>
           </div>
         </div>
 
@@ -786,7 +790,7 @@
         if (isFallback) {
           fallbackAlert.classList.remove('hidden');
           vulnAlert.classList.add('hidden');
-          document.getElementById('alert-fallback-rate').textContent = "$" + (data.shipping_fee ? data.shipping_fee.toFixed(2) : "14.99");
+          document.getElementById('alert-fallback-rate').textContent = (data.shipping_fee !== undefined && data.shipping_fee !== null) ? "$" + Number(data.shipping_fee).toFixed(2) : "unavailable";
         } else if (!isOk) {
           fallbackAlert.classList.add('hidden');
           vulnAlert.classList.remove('hidden');
