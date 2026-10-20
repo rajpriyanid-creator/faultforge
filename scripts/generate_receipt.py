@@ -239,6 +239,7 @@ def generate_evidence_receipt(
         "evaluation_gates": replay.get("gates", {}),
         "run_history_15_probes": run_history_15,
         "metrics_raw": replay.get("raw_metrics", {}),
+        "latency_reduction": replay.get("latency_reduction", {}),
         "deployment": {
             "image_digest": image_digest,
             "cloud_run_revision": cloud_run_revision

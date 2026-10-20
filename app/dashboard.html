@@ -341,7 +341,7 @@
               <h2 class="text-base font-semibold text-white">Empirical Failure vs Recovery</h2>
               <p class="text-xs text-slate-400">Chaos condition: 3500ms delay (Profile hash <code class="text-sky-300 font-mono">644a89784316</code>)</p>
             </div>
-            <span id="badge-latency-reduction" class="text-xs px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 font-mono border border-emerald-800">78.4% MEAN REDUCTION</span>
+            <span id="badge-latency-reduction" class="text-xs px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 font-mono border border-emerald-800">MEASURING REDUCTION...</span>
           </div>
 
           <!-- Comparative Bars -->
@@ -351,12 +351,12 @@
               <div class="flex justify-between items-center text-slate-400">
                 <span class="flex items-center gap-1.5">
                   <span class="w-2 h-2 rounded bg-rose-500"></span>
-                  <span>BEFORE: Culprit Commit (974035c)</span>
+                  <span>BEFORE: Culprit Commit</span>
                 </span>
-                <span class="text-rose-400 font-bold tabular-nums">3,742.46 ms</span>
+                <span id="bar-before-latency" class="text-rose-400 font-bold tabular-nums">-- ms</span>
               </div>
               <div class="w-full bg-slate-950 h-3 rounded overflow-hidden border border-slate-800 flex">
-                <div class="bg-rose-500/80 h-full w-full" title="3742ms Unbounded Hang"></div>
+                <div class="bg-rose-500/80 h-full w-full" title="Unbounded Latency Hang"></div>
               </div>
               <div class="flex justify-between text-[10px] text-rose-400/90">
                 <span>5 / 5 SLA Breaches (&gt;1500ms budget)</span>
@@ -375,12 +375,12 @@
               <div class="flex justify-between items-center text-slate-400">
                 <span class="flex items-center gap-1.5">
                   <span class="w-2 h-2 rounded bg-emerald-400"></span>
-                  <span>AFTER: Duo Healed & Bounded</span>
+                  <span>AFTER: Resilience Policy Bounded</span>
                 </span>
-                <span class="text-emerald-400 font-bold tabular-nums">808.12 ms</span>
+                <span id="bar-after-latency" class="text-emerald-400 font-bold tabular-nums">-- ms</span>
               </div>
               <div class="w-full bg-slate-950 h-3 rounded overflow-hidden border border-slate-800 flex">
-                <div class="bg-emerald-500 h-full w-[21.6%]" title="808ms Intercepted via 0.8s Timeout"></div>
+                <div id="bar-after-fill" class="bg-emerald-500 h-full w-[25%]" title="Intercepted via Timeout & Breaker"></div>
               </div>
               <div class="flex justify-between text-[10px] text-emerald-400/90">
                 <span>0 / 10 SLA Breaches (100% compliant)</span>
@@ -484,7 +484,7 @@
           <span class="text-emerald-400 font-bold mt-0.5">✓</span>
           <div>
             <div class="font-semibold text-slate-200">6. &gt;60% Latency Reduction</div>
-            <div id="gate-reduction-text" class="text-[11px] text-slate-400">Achieved 78.4% mean reduction (per docs/measurement-method.md)</div>
+            <div id="gate-reduction-text" class="text-[11px] text-slate-400">Loading reduction metrics from evidence receipt...</div>
           </div>
         </div>
 
@@ -893,6 +893,45 @@
               gateEl.textContent = `${gStatus} (Human Sign-off Required)`;
             } else {
               gateEl.textContent = "BLOCKED_PENDING_APPROVAL (Human Sign-off Required)";
+            }
+          }
+
+          // Dynamic Latency Reduction & Comparative Bars from Live Evidence
+          let meanPct = null;
+          if (ev.latency_reduction && ev.latency_reduction.mean_basis) {
+            meanPct = ev.latency_reduction.mean_basis.percent;
+          } else if (ev.metrics_raw && ev.metrics_raw.baseline_avg_ms && ev.metrics_raw.hardened_avg_ms) {
+            meanPct = (((ev.metrics_raw.baseline_avg_ms - ev.metrics_raw.hardened_avg_ms) / ev.metrics_raw.baseline_avg_ms) * 100).toFixed(1);
+          }
+
+          if (meanPct !== null) {
+            const badgeReduction = document.getElementById('badge-latency-reduction');
+            if (badgeReduction) {
+              badgeReduction.textContent = `${meanPct}% MEAN REDUCTION`;
+            }
+            const gateReduction = document.getElementById('gate-reduction-text');
+            if (gateReduction) {
+              gateReduction.textContent = `Achieved ${meanPct}% mean reduction (per docs/measurement-method.md)`;
+            }
+          }
+
+          if (ev.metrics_raw) {
+            const barBefore = document.getElementById('bar-before-latency');
+            const barAfter = document.getElementById('bar-after-latency');
+            const barAfterFill = document.getElementById('bar-after-fill');
+            const baseAvg = ev.metrics_raw.baseline_avg_ms;
+            const hardAvg = ev.metrics_raw.hardened_avg_ms;
+
+            if (baseAvg && barBefore) {
+              barBefore.textContent = `${baseAvg.toFixed(2)} ms`;
+            }
+            if (hardAvg && barAfter) {
+              barAfter.textContent = `${hardAvg.toFixed(2)} ms`;
+            }
+            if (baseAvg && hardAvg && barAfterFill) {
+              const widthPct = Math.min(100, Math.max(5, (hardAvg / baseAvg) * 100)).toFixed(1);
+              barAfterFill.style.width = `${widthPct}%`;
+              barAfterFill.title = `${hardAvg.toFixed(1)}ms Intercepted via Resilience Policy`;
             }
           }
         }

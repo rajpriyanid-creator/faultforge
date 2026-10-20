@@ -1,0 +1,15 @@
+{
+  "tier": "MEDIUM",
+  "autonomy_level": "SUPERVISED",
+  "lines_changed": 20,
+  "files_changed": [
+    "app/dashboard.html"
+  ],
+  "reasons": [
+    "Changed file 'app/dashboard.html' is outside allowed low-risk paths: ['app/clients/', 'app/resilience/', 'tests/']",
+    "Merge request does not include or update regression tests under tests/.",
+    "Autonomy Dial: SUPERVISED mode active (autonomous staging/replay; human sign-off for live promotion)."
+  ],
+  "requires_human_approval": true,
+  "allowed_automation": "Manual review required"
+}

@@ -1,0 +1,25 @@
+{
+  "timestamp": 1792504457.3452315,
+  "service_name": "faultforge-checkout",
+  "region": "us-central1",
+  "production_url": "https://faultforge-checkout-136942862703.us-central1.run.app",
+  "health": {
+    "status_code": 200,
+    "body": {
+      "status": "healthy",
+      "service": "faultforge-checkout",
+      "revision": "faultforge-checkout-00002-kpl",
+      "uptime_seconds": 2315.3,
+      "environment": "production"
+    },
+    "verified": true
+  },
+  "traffic_split": {
+    "verified": false,
+    "status": "UNVERIFIED_NO_GCP_AUTH",
+    "traffic": [],
+    "candidate_percent": null,
+    "production_percent": null,
+    "error": "gcloud invocation failed or uninstalled: [WinError 2] The system cannot find the file specified"
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "evaluation_status": "RECOVERED_AND_VERIFIED",
+  "verified": true,
+  "candidate_source": "reference-fix (not Duo-authored)",
+  "gates": {
+    "valid_git_shas": {
+      "passed": true,
+      "baseline_sha": "275c598ce2d128aa1107bc9b28c36c9572065ddb",
+      "hardened_sha": "a1702b002ea1fbc5a10bc0aa0a24158073b70eac"
+    },
+    "distinct_revisions": {
+      "passed": true,
+      "baseline_sha": "275c598c",
+      "hardened_sha": "a1702b00"
+    },
+    "identical_profile_hash": {
+      "passed": true,
+      "baseline_hash": "644a89784316",
+      "hardened_hash": "644a89784316"
+    },
+    "toxiproxy_engine_verified": {
+      "passed": true,
+      "baseline_engine": "toxiproxy",
+      "hardened_engine": "toxiproxy"
+    },
+    "proxy_in_request_path": {
+      "passed": true,
+      "fault_delay_ms": 3500,
+      "candidate_min_ms": 2.37
+    },
+    "identical_payload_hash": {
+      "passed": true,
+      "baseline_payload": "ab41be6ea964",
+      "hardened_payload": "ab41be6ea964"
+    },
+    "identical_toxic_readback": {
+      "passed": true,
+      "baseline_toxic": {
+        "latency": 3500,
+        "jitter": 250
+      },
+      "hardened_toxic": {
+        "latency": 3500,
+        "jitter": 250
+      }
+    },
+    "toxic_active": {
+      "passed": true
+    },
+    "baseline_reproducibility": {
+      "passed": true,
+      "failure_ratio": 1.0,
+      "required_min_ratio": 0.8,
+      "total_probes": 5,
+      "failed_or_breached": 5
+    },
+    "candidate_resilience": {
+      "passed": true,
+      "failed_probes": 0,
+      "sla_breaches": 0,
+      "total_probes": 10,
+      "required_consecutive": 10
+    },
+    "latency_budget": {
+      "passed": true,
+      "budget_ms": 1500,
+      "candidate_p95_ms": 817.02,
+      "candidate_max_ms": 817.02
+    },
+    "fallback_marked_estimated": {
+      "passed": true,
+      "fallback_count": 10,
+      "metadata_valid": true
+    },
+    "individual_measurements_present": {
+      "passed": true,
+      "probe_count": 10
+    }
+  },
+  "raw_metrics": {
+    "baseline_avg_ms": 3446.08,
+    "baseline_p95_ms": 3653.06,
+    "hardened_avg_ms": 246.18,
+    "hardened_p95_ms": 817.02
+  }
+}

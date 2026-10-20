@@ -405,9 +405,10 @@ def main():
         with open(args.output, "w", encoding="utf-8") as f:
             json.dump(result_payload, f, indent=2)
 
+        summary_metrics = result_payload["metrics"]
         print(f"\n[+] Probe results saved to {args.output}")
-        print(f"    Total: {probe_results['total_probes']} | Success: {probe_results['successful_probes']} | Fallbacks: {probe_results['fallback_count']}")
-        print(f"    Avg Latency: {probe_results['avg_ms']}ms | p95: {probe_results['p95_ms']}ms | SLA Breaches: {sla_breaches}")
+        print(f"    Total: {summary_metrics['total_probes']} | Success: {summary_metrics['successful_probes']} | Fallbacks: {summary_metrics['fallback_count']}")
+        print(f"    Avg Latency: {summary_metrics['avg_ms']}ms | p95: {summary_metrics['p95_ms']}ms | SLA Breaches: {sla_breaches}")
         print(f"    Status: {'PASS (SLA Met)' if passed_sla else 'FAIL (SLA Breached / Errors Occurred)'}\n")
 
         if args.expect_fail:

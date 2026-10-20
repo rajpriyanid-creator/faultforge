@@ -1,0 +1,14 @@
+{
+  "incident_id": "inc-1792501971",
+  "title": "Incident inc-1792501971: Checkout SLA budget breach under downstream delay",
+  "severity": "high",
+  "commit_sha": "275c598ce2d128aa1107bc9b28c36c9572065ddb",
+  "pipeline_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2967640493",
+  "created_at": 1792501971.0282223,
+  "status": "OPEN",
+  "labels": [
+    "incident",
+    "chaos-breach",
+    "faultforge"
+  ]
+}

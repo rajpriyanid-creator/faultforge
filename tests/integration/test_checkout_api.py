@@ -129,5 +129,16 @@ def test_dashboard_has_no_hardcoded_prices_or_pipelines():
     assert "2965823054" not in content, "dashboard.html must not hardcode pipeline ID 2965823054"
     assert "2965807846" not in content, "dashboard.html must not hardcode pipeline ID 2965807846"
     assert "2963430484" not in content, "dashboard.html must not hardcode pipeline ID 2963430484"
+    assert "78.4%" not in content, "dashboard.html must not hardcode static '78.4%' reduction percentage"
+    assert "78.3%" not in content, "dashboard.html must not hardcode static '78.3%' reduction percentage"
+    assert "77.6%" not in content, "dashboard.html must not hardcode static '77.6%' reduction percentage"
+    assert "92.9%" not in content, "dashboard.html must not hardcode static '92.9%' reduction percentage"
+    assert "93.2%" not in content, "dashboard.html must not hardcode static '93.2%' reduction percentage"
+
+    # Verify no static percentage in HTML markup outside of scripts
+    html_markup = content.split("<script")[0]
+    import re
+    pct_matches = re.findall(r">\s*(\d{2}\.\d%)\s*(?:MEAN\s+)?REDUCTION", html_markup, re.IGNORECASE)
+    assert not pct_matches, f"dashboard.html markup contains hardcoded reduction percentage: {pct_matches}"
 
 

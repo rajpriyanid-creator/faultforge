@@ -180,18 +180,40 @@ def evaluate_replay(
     hard_avg = hard_metrics.get("avg_ms", 0.0)
     mean_reduction_pct = round(((base_avg - hard_avg) / base_avg * 100.0), 1) if base_avg > 0 else 0.0
 
+    base_p50 = base_metrics.get("p50_ms", 0.0)
+    hard_p50 = hard_metrics.get("p50_ms", 0.0)
+    p50_reduction_pct = round(((base_p50 - hard_p50) / base_p50 * 100.0), 1) if base_p50 > 0 else 0.0
+
+    base_latencies = base_metrics.get("latencies_ms", [])
+    hard_latencies = hard_metrics.get("latencies_ms", [])
+    base_max = max(base_latencies) if base_latencies else base_p95
+    hard_max = max(hard_latencies) if hard_latencies else hard_p95
+    max_reduction_pct = round(((base_max - hard_max) / base_max * 100.0), 1) if base_max > 0 else 0.0
+
     latency_reduction = {
+        "mean_basis": {
+            "metric": "mean_candidate_vs_mean_baseline",
+            "baseline_ms": base_avg,
+            "candidate_ms": hard_avg,
+            "percent": mean_reduction_pct
+        },
+        "p50_basis": {
+            "metric": "p50_candidate_vs_p50_baseline",
+            "baseline_ms": base_p50,
+            "candidate_ms": hard_p50,
+            "percent": p50_reduction_pct
+        },
         "p95_basis": {
             "metric": "p95_candidate_vs_p95_baseline",
             "baseline_ms": base_p95,
             "candidate_ms": hard_p95,
             "percent": p95_reduction_pct
         },
-        "mean_basis": {
-            "metric": "mean_candidate_vs_mean_baseline",
-            "baseline_ms": base_avg,
-            "candidate_ms": hard_avg,
-            "percent": mean_reduction_pct
+        "max_basis": {
+            "metric": "max_candidate_vs_max_baseline",
+            "baseline_ms": base_max,
+            "candidate_ms": hard_max,
+            "percent": max_reduction_pct
         }
     }
 
@@ -255,6 +277,7 @@ def evaluate_replay(
             "candidate_timeout_only": {
                 "passed": gate_candidate_timeout_only,
                 "phase": "Phase A (Timeout Only - Breaker Reset)",
+                "breaker_state": "CLOSED (reset each probe)",
                 "total_probes": phase_a.get("total_probes", 10),
                 "sla_breaches": phase_a.get("sla_breaches", 0),
                 "p95_ms": phase_a.get("p95_ms", hard_metrics.get("p95_ms")),
@@ -263,6 +286,7 @@ def evaluate_replay(
             "candidate_breaker_short_circuit": {
                 "passed": gate_candidate_breaker_short_circuit,
                 "phase": "Phase B (Circuit Breaker Tripped - Short Circuit)",
+                "breaker_state": "OPEN (N of 10 short-circuited)",
                 "total_probes": phase_b.get("total_probes", 10),
                 "short_circuited_probes": phase_b.get("short_circuited_count", 0),
                 "p95_ms": phase_b.get("p95_ms", hard_metrics.get("p95_ms")),
@@ -285,10 +309,14 @@ def evaluate_replay(
             }
         },
         "raw_metrics": {
-            "baseline_avg_ms": base_metrics.get("avg_ms", 0),
-            "baseline_p95_ms": base_metrics.get("p95_ms", 0),
-            "hardened_avg_ms": hard_metrics.get("avg_ms", 0),
-            "hardened_p95_ms": hard_metrics.get("p95_ms", 0)
+            "baseline_avg_ms": base_avg,
+            "baseline_p50_ms": base_p50,
+            "baseline_p95_ms": base_p95,
+            "baseline_max_ms": base_max,
+            "hardened_avg_ms": hard_avg,
+            "hardened_p50_ms": hard_p50,
+            "hardened_p95_ms": hard_p95,
+            "hardened_max_ms": hard_max
         },
         "latency_reduction": latency_reduction
     }

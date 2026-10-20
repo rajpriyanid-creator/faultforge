@@ -1,0 +1,24 @@
+{
+  "stage": "package",
+  "job_name": "package:container_build",
+  "status": "SUCCESS",
+  "commit_sha": "275c598ce2d128aa1107bc9b28c36c9572065ddb",
+  "pipeline_id": "2967640493",
+  "approval_required": false,
+  "artifacts_declared": [
+    "reports/image_digest.txt"
+  ],
+  "artifacts_verified_on_disk": [
+    "reports/image_digest.txt"
+  ],
+  "artifacts_details": [
+    {
+      "path": "reports/image_digest.txt",
+      "size_bytes": 153,
+      "sha256": "ac1f0fb4eecae547ea0e45aa0457e0e79106ed28088eae529a89a811d8eaa262"
+    }
+  ],
+  "timestamp": 1792502234.251925,
+  "duo_executed": false,
+  "notes": ""
+}

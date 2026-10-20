@@ -15,42 +15,48 @@ This document defines the mathematical formulas, measurement conditions, and exp
 
 ---
 
-## 2. Measurement Formulas
+## 2. Measurement Formulas & Empirical Values
 
-All latency reduction metrics recorded in `reports/replay_evaluation.json` and reported across documentation are deterministically computed using the formulas below:
+All latency reduction metrics recorded in `reports/replay_evaluation.json` and rendered by `scripts/render_metrics.py` are deterministically computed using the formulas below:
 
 ### A. 95th Percentile (P95) Latency Reduction
 Measures tail latency protection under severe dependency degradation:
 
 $$\text{P95 Reduction (\%)} = \left( \frac{\text{Baseline P95 (ms)} - \text{Candidate P95 (ms)}}{\text{Baseline P95 (ms)}} \right) \times 100$$
 
-- **Baseline P95:** ~3,742.46 ms (unconstrained downstream hang)
-- **Candidate P95:** ~814.00 ms (bounded by 0.8s strict client timeout)
-- **Computed Reduction:** **78.3%** tail latency reduction
+- **Baseline P95:** 3,653.06 ms (unconstrained downstream hang)
+- **Candidate P95:** 817.02 ms (bounded by 0.8s strict client timeout)
+- **Computed Reduction:** **77.6%** tail latency reduction
 
 ### B. Mean (Average) Latency Reduction
 Measures aggregate throughput improvement across both timeout and circuit-breaker short-circuit phases:
 
 $$\text{Mean Reduction (\%)} = \left( \frac{\text{Baseline Mean (ms)} - \text{Candidate Mean (ms)}}{\text{Baseline Mean (ms)}} \right) \times 100$$
 
-- **Baseline Mean:** ~3,600.00 ms
-- **Candidate Mean (Phase A + Phase B Combined):** ~528.00 ms
-- **Computed Reduction:** **~85.3%** (or **~93.2%** during Phase B breaker-open short-circuit)
+- **Baseline Mean:** 3,446.08 ms
+- **Candidate Mean:** 246.18 ms
+- **Computed Reduction:** **92.9%** mean latency reduction
+
+### C. Median (P50) Latency Reduction
+$$\text{P50 Reduction (\%)} = \left( \frac{3,453.42 - 2.88}{3,453.42} \right) \times 100 = \mathbf{99.9\%}$$
+
+### D. Maximum Latency Reduction
+$$\text{Max Reduction (\%)} = \left( \frac{3,653.06 - 817.02}{3,653.06} \right) \times 100 = \mathbf{77.6\%}$$
 
 ---
 
 ## 3. Two-Phase Replay Verification
 
-FaultForge separates timeout verification from circuit-breaker short-circuit verification into two distinct gates in `scripts/evaluate_replay.py`:
+FaultForge evaluates timeout verification and circuit-breaker short-circuit verification across two distinct operational phases:
 
-| Phase | Evaluation Gate | Execution Semantics | Probes | Target Latency | Status |
-|---|---|---|---|---|---|
-| **Phase A** | `candidate_timeout_only` | Circuit breaker reset before every probe; strictly exercises the 0.8s bounded timeout path with fallback quote. | 10 probes | ~812 ms (all $\le 1,500$ ms) | PASS |
-| **Phase B** | `candidate_breaker_short_circuit` | Circuit breaker enabled; probes 1–3 trip the breaker, probes 4–10 are immediately short-circuited (~2ms). | 10 probes | 7 / 10 short-circuited | PASS |
+| Phase | Evaluation Gate | Execution Semantics | Probes | Measured Mean | Measured P95 | Breaker State | Status |
+|---|---|---|---|---|---|---|---|
+| **Phase A** | `candidate_timeout_only` | Initial probes exercise the bounded 0.8s timeout path before tripping the breaker. | 3 probes | 814.42 ms | 817.02 ms | `CLOSED` (reset each probe) | PASS |
+| **Phase B** | `candidate_breaker_short_circuit` | Circuit breaker trips OPEN after 3 consecutive timeouts; subsequent probes short-circuit in ~2.65ms. | 7 probes | 2.65 ms | 3.46 ms | `OPEN` (7 of 10 short-circuited) | PASS |
 
 ---
 
 ## 4. Anti-Fake Policy on Percentage Claims
 
-- Documentation and dashboard must explicitly cite the basis when quoting percentage improvements (e.g. *"78.3% P95 latency reduction"* or *"~85% mean latency reduction"*).
-- No hardcoded numbers: all values displayed in the dashboard are dynamically read from `reports/replay_evaluation.json` (`latency_reduction` object).
+- Documentation and dashboard must explicitly cite the basis when quoting percentage improvements (e.g. *"77.6% P95 latency reduction"* or *"92.9% mean latency reduction"*).
+- No hardcoded numbers: all values displayed in the dashboard are dynamically read from `reports/replay_evaluation.json` (`latency_reduction` and `raw_metrics` objects).

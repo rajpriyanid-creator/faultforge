@@ -29,7 +29,7 @@ Most CI pipelines only verify that unit tests pass in isolation. Because unit te
 **FaultForge** connects deterministic chaos engineering, AI-assisted diagnosis via **GitLab Duo Agent Platform**, automated resilience healing, and empirical proof into a closed-loop platform engineering workflow:
 
 1. **Inject Controlled Chaos:** Inject a deterministic network delay (3500ms ± 250ms jitter) into an isolated downstream shipping dependency via Toxiproxy.
-2. **Detect & Collect Evidence:** Record SLA budget breaches (>1500ms budget, observed baseline avg 3742.46ms, p95 3918.27ms, 5/5 breaches), capture sanitized logs, and compile a structured Incident Dossier.
+2. **Detect & Collect Evidence:** Record SLA budget breaches (>1500ms budget, observed baseline avg 3446.08ms, p95 3653.06ms, 5/5 breaches), capture sanitized logs, and compile a structured Incident Dossier.
 3. **Deterministic Diagnosis & Bisect:** Execute AST call-site inspection and automated `git bisect` to pinpoint the exact regressing commit (`974035c6e45e7c177452df260a155b6508b828e9`) where timeouts and circuit breakers were stripped.
 4. **GitLab Duo Agent Platform Remediation:** Trigger a custom GitLab Duo flow (`flows/faultforge-flow.yaml`) whose Diagnostician, Resilience Healer, and Chaos Hardener synthesize a minimal scoped fix: a bounded 0.8s timeout, circuit breaker (3 failures, 10s cooldown), and deterministic fallback rate.
 5. **Replay Identical Fault:** Re-execute the **identical Toxiproxy fault profile** (`644a89784316`) against the candidate release across 10 consecutive probe iterations.
@@ -167,7 +167,7 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8090
 ```bash
 # Step 1: Demonstrate Baseline Vulnerability Under Chaos (5 probes under 3500ms delay)
 python scripts/run_fault.py --label baseline --output reports/fault_run_baseline.json
-# Empirical Result: 5/5 probes breach SLA budget (>1500ms budget, avg 3742ms, p95 3918ms). Status: FAIL.
+# Empirical Result: 5/5 probes breach SLA budget (>1500ms budget, avg 3446ms, p95 3653ms). Status: FAIL.
 
 # Step 2: Ingest Evidence & Bisect Culprit Commit
 python scripts/collect_evidence.py
@@ -217,11 +217,13 @@ If evaluating the Supervised Human Gate and instant rollback without Google Clou
 |---|---|---|---|---|
 | **Fault Profile Canonical Hash** | `644a89784316` (3,500ms delay ± 250ms) | `644a89784316` (3,500ms delay ± 250ms) | Exact match (100% deterministic) | **Measured** |
 | **SLA Budget Breaches** | 5 / 5 breaches (>1,500ms budget) | 0 / 10 breaches (0%) | 100% reduction | **Measured** |
-| **Mean Request Latency (P50)** | 3,742.46 ms | 808.12 ms | -78.4% mean reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
-| **Tail Latency (P95)** | 3,918.27 ms | 835.40 ms | -78.7% P95 reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
-| **Circuit Breaker State** | N/A (cascading thread starvation) | `CLOSED` (0 failures, healthy cooldown) | Downstream protected | **Measured** |
+| **Mean Request Latency** | 3446.08 ms | 246.18 ms | -92.9% mean reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
+| **Median Latency (P50)** | 3453.42 ms | 2.88 ms | -99.9% P50 reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
+| **Tail Latency (P95)** | 3653.06 ms | 817.02 ms | -77.6% P95 reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
+| **Max Latency** | 3653.06 ms | 817.02 ms | -77.6% Max reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
+| **Circuit Breaker State** | N/A (cascading thread starvation) | Phase A (CLOSED (reset each probe)) & Phase B (OPEN (7 of 10 short-circuited)) | Downstream protected | **Measured** |
 | **Fallback Observability** | None (unhandled hang / 504 Gateway Timeout) | `is_fallback: true`, `is_estimate: true` | Zero dropped checkouts | **Measured** |
-| **Incident MTTR (Mean Time to Recovery)** | ~45 minutes (manual human bisect & test) | < 90 seconds (autonomous agent flow) | ~96% faster MTTR | **Estimated** (enterprise baseline) |
+| **Incident MTTR (Mean Time to Recovery)** | ~45 minutes (industry manual response) | < 90 seconds (autonomous agent flow) | Design target, not measured | **Design target, not measured** |
 
 ---
 

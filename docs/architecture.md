@@ -45,7 +45,7 @@ FaultForge is an AI-assisted resilience engineering platform built for **GitLab 
               |                  Candidate Verification Loop                  |
               | 1. Identical Toxiproxy fault profile re-injected              |
               | 2. 10 consecutive candidate probe passes required             |
-              | 3. Average latency drops from 3742.46ms to <850ms (>60%)      |
+              | 3. Average latency drops from 3446.08ms to 246.18ms (92.9%)   |
               | 4. Deterministic fallback marked with is_estimate: true       |
               +---------------------------------------------------------------+
                                       |

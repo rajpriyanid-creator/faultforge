@@ -38,10 +38,10 @@ Standard CI pipelines test that unit tests pass, but unit tests usually mock out
 FaultForge closes the loop between chaos engineering, AI-assisted diagnosis, and empirical verification:
 1. **Tracks Incident Issue:** Monitors SLA budget breaches and opens a structured Incident Issue with sanitized logs.
 2. **Injects Chaos:** Routes outbound calls through Shopify Toxiproxy and injects a 3500ms delay (±250ms jitter).
-3. **Proves Baseline Failure:** Proves checkout service breaches the 1500ms SLA budget (observed 5/5 breaches, 3742.46ms avg).
+3. **Proves Baseline Failure:** Proves checkout service breaches the 1500ms SLA budget (observed 5/5 breaches, 3,446.08ms avg latency).
 4. **Diagnoses Weakness:** Discovers the regression boundary via deterministic `git bisect` and AST call-site inspection, pinpointing commit `974035c6`.
 5. **Remediates with Duo:** GitLab Duo custom flow (`flows/faultforge-flow.yaml`) plans a scoped resilience fix (0.8s timeout, circuit breaker, and observable fallback) and opens a Merge Request. In CI without Duo API access, CI falls back cleanly to reference code and explicitly records candidate source as `reference-fix (not Duo-authored)` in the cryptographic receipt.
-6. **Replays Exact Fault:** Re-runs the identical Toxiproxy fault profile hash (`644a89784316`) against the candidate code across 10 consecutive probes.
+6. **Replays Exact Fault:** Re-runs the identical Toxiproxy fault profile hash (`644a89784316`) against the candidate code across 10 consecutive probes, achieving 77.6% P95 latency reduction and 92.9% mean latency reduction.
 7. **Signs Audit Receipt:** Generates a cryptographic SHA-256 sealed Evidence Receipt with full run history.
 8. **Supervised Gate:** Enforces risk policy and requires human developer approval before promoting Cloud Run candidate revisions to live traffic.
 

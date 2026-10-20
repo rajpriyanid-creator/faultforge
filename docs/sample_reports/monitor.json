@@ -1,0 +1,11 @@
+{
+  "timestamp": 1792502303.0324016,
+  "target_url": "http://127.0.0.1:8090",
+  "health_endpoint_status": "HEALTHY",
+  "health_status_code": 200,
+  "metrics": {
+    "baseline_avg_ms": 3446.08,
+    "hardened_avg_ms": 246.18,
+    "sla_breaches_contained": true
+  }
+}
