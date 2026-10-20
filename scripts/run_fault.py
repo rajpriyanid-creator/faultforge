@@ -99,7 +99,13 @@ def compute_payload_hash(payload_dict: Dict[str, Any]) -> str:
     canonical = json.dumps(payload_dict, sort_keys=True)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:12]
 
-def run_probe(target_url: str, iterations: int = 5, timeout_sec: float = 6.0) -> Dict[str, Any]:
+def run_probe(
+    target_url: str,
+    iterations: int = 5,
+    timeout_sec: float = 6.0,
+    reset_breaker_before_each: bool = False,
+    index_offset: int = 0
+) -> Dict[str, Any]:
     latencies = []
     status_codes = []
     errors = []
@@ -118,6 +124,12 @@ def run_probe(target_url: str, iterations: int = 5, timeout_sec: float = 6.0) ->
         sys.exit(1)
 
     for i in range(iterations):
+        if reset_breaker_before_each:
+            try:
+                requests.post(f"{target_url.rstrip('/')}/resilience/circuit-breaker/reset", timeout=1.0)
+            except Exception:
+                pass
+
         req_id = f"ORD-{uuid.uuid4().hex[:8]}"
         payload = dict(CANONICAL_PAYLOAD_TEMPLATE)
         payload["order_id"] = req_id
@@ -159,7 +171,7 @@ def run_probe(target_url: str, iterations: int = 5, timeout_sec: float = 6.0) ->
             errors.append(error_msg)
 
         per_request.append({
-            "probe_index": i + 1,
+            "probe_index": index_offset + i + 1,
             "order_id": req_id,
             "latency_ms": elapsed_ms,
             "status_code": status_code,
@@ -284,44 +296,111 @@ def main():
         sys.exit(1)
 
     try:
-        print(f"[*] Executing {args.iterations} probes against target ...")
-        probe_results = run_probe(args.target, iterations=args.iterations)
-
         sla_budget = profile.get("sla_budget_ms", 1500)
-        sla_breaches = sum(1 for lat in probe_results["latencies_ms"] if lat > sla_budget)
-        passed_sla = (sla_breaches == 0) and (probe_results["failed_probes"] == 0)
 
-        result_payload = {
-            "run_id": run_id,
-            "timestamp": time.time(),
-            "label": label,
-            "git_sha": git_sha,
-            "git_sha_verified": git_sha_verified,
-            "proxy_engine": "toxiproxy" if engine.use_toxi else "standalone",
-            "toxiproxy_version": toxiproxy_ver,
-            "profile_name": profile.get("name"),
-            "profile_hash": profile_hash,
-            "payload_hash": payload_hash,
-            "fault_type": profile.get("fault_type"),
-            "toxic_readback": toxic_readback,
-            "sla_budget_ms": sla_budget,
-            "sla_breaches": sla_breaches,
-            "passed_sla": passed_sla,
-            "per_request_results": probe_results.get("per_request_results", []),
-            "metrics": {
-                "total_probes": probe_results["total_probes"],
-                "successful_probes": probe_results["successful_probes"],
-                "failed_probes": probe_results["failed_probes"],
-                "fallback_count": probe_results["fallback_count"],
-                "status_codes": probe_results["status_codes"],
-                "errors": probe_results["errors"],
-                "latencies_ms": probe_results["latencies_ms"],
-                "p50_ms": probe_results["p50_ms"],
-                "p95_ms": probe_results["p95_ms"],
-                "p99_ms": probe_results["p99_ms"],
-                "avg_ms": probe_results["avg_ms"]
+        if label == "candidate":
+            print(f"[*] Running Candidate Replay in Two Phases (Phase A: Timeout-Only, Phase B: Breaker-Open) ...")
+            # Phase A: Timeout-only (10 probes, reset breaker before each probe)
+            print("[*] Phase A (Timeout-only, breaker reset before each probe, 10 probes)...")
+            phase_a = run_probe(args.target, iterations=10, reset_breaker_before_each=True, index_offset=0)
+            phase_a_breaches = sum(1 for lat in phase_a["latencies_ms"] if lat > sla_budget)
+            phase_a["sla_breaches"] = phase_a_breaches
+
+            # Phase B: Breaker-open (10 probes, breaker enabled)
+            print("[*] Phase B (Circuit-breaker active, 10 probes)...")
+            phase_b = run_probe(args.target, iterations=10, reset_breaker_before_each=False, index_offset=10)
+            phase_b_breaches = sum(1 for lat in phase_b["latencies_ms"] if lat > sla_budget)
+            phase_b["sla_breaches"] = phase_b_breaches
+            phase_b["short_circuited_count"] = sum(1 for lat in phase_b["latencies_ms"] if lat < 150.0)
+
+            all_per_requests = phase_a["per_request_results"] + phase_b["per_request_results"]
+            all_latencies = phase_a["latencies_ms"] + phase_b["latencies_ms"]
+            total_probes = len(all_latencies)
+            total_success = phase_a["successful_probes"] + phase_b["successful_probes"]
+            total_failed = phase_a["failed_probes"] + phase_b["failed_probes"]
+            total_fallbacks = phase_a["fallback_count"] + phase_b["fallback_count"]
+            sla_breaches = phase_a_breaches + phase_b_breaches
+            passed_sla = (sla_breaches == 0) and (total_failed == 0)
+
+            sorted_lat = sorted(all_latencies)
+            p50 = sorted_lat[int(total_probes * 0.50)] if total_probes > 0 else 0
+            p95 = sorted_lat[min(int(total_probes * 0.95), total_probes - 1)] if total_probes > 0 else 0
+            p99 = sorted_lat[min(int(total_probes * 0.99), total_probes - 1)] if total_probes > 0 else 0
+            avg = round(sum(all_latencies) / total_probes, 2) if total_probes > 0 else 0
+
+            combined_metrics = {
+                "total_probes": total_probes,
+                "successful_probes": total_success,
+                "failed_probes": total_failed,
+                "fallback_count": total_fallbacks,
+                "status_codes": phase_a["status_codes"] + phase_b["status_codes"],
+                "errors": phase_a["errors"] + phase_b["errors"],
+                "latencies_ms": all_latencies,
+                "p50_ms": p50,
+                "p95_ms": p95,
+                "p99_ms": p99,
+                "avg_ms": avg
             }
-        }
+
+            result_payload = {
+                "run_id": run_id,
+                "timestamp": time.time(),
+                "label": label,
+                "git_sha": git_sha,
+                "git_sha_verified": git_sha_verified,
+                "proxy_engine": "toxiproxy" if engine.use_toxi else "standalone",
+                "toxiproxy_version": toxiproxy_ver,
+                "profile_name": profile.get("name"),
+                "profile_hash": profile_hash,
+                "payload_hash": payload_hash,
+                "fault_type": profile.get("fault_type"),
+                "toxic_readback": toxic_readback,
+                "sla_budget_ms": sla_budget,
+                "sla_breaches": sla_breaches,
+                "passed_sla": passed_sla,
+                "phase_a_timeout_only": phase_a,
+                "phase_b_breaker_open": phase_b,
+                "per_request_results": all_per_requests,
+                "metrics": combined_metrics
+            }
+        else:
+            print(f"[*] Executing {args.iterations} probes against target ...")
+            probe_results = run_probe(args.target, iterations=args.iterations)
+
+            sla_breaches = sum(1 for lat in probe_results["latencies_ms"] if lat > sla_budget)
+            passed_sla = (sla_breaches == 0) and (probe_results["failed_probes"] == 0)
+
+            result_payload = {
+                "run_id": run_id,
+                "timestamp": time.time(),
+                "label": label,
+                "git_sha": git_sha,
+                "git_sha_verified": git_sha_verified,
+                "proxy_engine": "toxiproxy" if engine.use_toxi else "standalone",
+                "toxiproxy_version": toxiproxy_ver,
+                "profile_name": profile.get("name"),
+                "profile_hash": profile_hash,
+                "payload_hash": payload_hash,
+                "fault_type": profile.get("fault_type"),
+                "toxic_readback": toxic_readback,
+                "sla_budget_ms": sla_budget,
+                "sla_breaches": sla_breaches,
+                "passed_sla": passed_sla,
+                "per_request_results": probe_results.get("per_request_results", []),
+                "metrics": {
+                    "total_probes": probe_results["total_probes"],
+                    "successful_probes": probe_results["successful_probes"],
+                    "failed_probes": probe_results["failed_probes"],
+                    "fallback_count": probe_results["fallback_count"],
+                    "status_codes": probe_results["status_codes"],
+                    "errors": probe_results["errors"],
+                    "latencies_ms": probe_results["latencies_ms"],
+                    "p50_ms": probe_results["p50_ms"],
+                    "p95_ms": probe_results["p95_ms"],
+                    "p99_ms": probe_results["p99_ms"],
+                    "avg_ms": probe_results["avg_ms"]
+                }
+            }
 
         with open(args.output, "w", encoding="utf-8") as f:
             json.dump(result_payload, f, indent=2)

@@ -43,6 +43,11 @@ class CircuitBreaker:
         # HALF_OPEN allows a trial request
         return True
 
+    def reset(self):
+        self.state = CircuitState.CLOSED
+        self.failure_count = 0
+        self.last_failure_time = 0.0
+
     def record_success(self):
         if self.state in (CircuitState.HALF_OPEN, CircuitState.OPEN):
             logger.info("Circuit breaker probe succeeded, transitioning to CLOSED")

@@ -133,3 +133,47 @@ def test_evaluate_replay_non_toxiproxy_engine_fails(tmp_path):
     with pytest.raises(SystemExit) as exc:
         evaluate_replay(base_file, standalone_file, out_file, CRITERIA_PATH)
     assert exc.value.code == 1
+
+def test_evaluate_replay_two_phase_success(tmp_path):
+    base_file = os.path.join(FIXTURES_DIR, "base_pass.json")
+    with open(os.path.join(FIXTURES_DIR, "hard_pass.json"), "r") as f:
+        hard_data = json.load(f)
+
+    hard_data["phase_a_timeout_only"] = {
+        "total_probes": 10,
+        "successful_probes": 10,
+        "failed_probes": 0,
+        "fallback_count": 10,
+        "sla_breaches": 0,
+        "latencies_ms": [812.0] * 10,
+        "avg_ms": 812.0,
+        "p95_ms": 815.0
+    }
+    hard_data["phase_b_breaker_open"] = {
+        "total_probes": 10,
+        "successful_probes": 10,
+        "failed_probes": 0,
+        "fallback_count": 10,
+        "short_circuited_count": 7,
+        "sla_breaches": 0,
+        "latencies_ms": [812.0, 814.0, 810.0] + [2.1] * 7,
+        "avg_ms": 245.0,
+        "p95_ms": 814.0
+    }
+
+    two_phase_file = str(tmp_path / "hard_two_phase.json")
+    with open(two_phase_file, "w") as f:
+        json.dump(hard_data, f)
+    out_file = str(tmp_path / "eval_two_phase.json")
+
+    with pytest.raises(SystemExit) as exc:
+        evaluate_replay(base_file, two_phase_file, out_file, CRITERIA_PATH)
+    assert exc.value.code == 0
+
+    with open(out_file, "r") as f:
+        eval_res = json.load(f)
+    assert eval_res["gates"]["candidate_timeout_only"]["passed"] is True
+    assert eval_res["gates"]["candidate_breaker_short_circuit"]["passed"] is True
+    assert "latency_reduction" in eval_res
+    assert "p95_basis" in eval_res["latency_reduction"]
+    assert "mean_basis" in eval_res["latency_reduction"]

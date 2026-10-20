@@ -59,3 +59,9 @@ async def get_metrics():
         "circuit_breaker": circuit_status,
         "resilience_metrics": summary
     }
+
+@router.post("/resilience/circuit-breaker/reset")
+@router.post("/api/v1/resilience/circuit-breaker/reset")
+async def reset_circuit_breaker():
+    shipping_circuit_breaker.reset()
+    return {"status": "RESET", "circuit_breaker": shipping_circuit_breaker.get_status()}
