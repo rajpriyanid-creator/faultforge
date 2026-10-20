@@ -194,6 +194,7 @@ def generate_evidence_receipt(
     pipeline_url = os.getenv("CI_PIPELINE_URL") or (dossier.get("pipeline_url") if (dossier.get("pipeline_url") and "gitlab.com" in str(dossier.get("pipeline_url"))) else None)
     job_url = os.getenv("CI_JOB_URL") or None
     issue_url = issue_data.get("web_url") if (issue_data.get("web_url") and "gitlab.com" in str(issue_data.get("web_url"))) else None
+    flow_run_url = duo_evidence.get("run_url") or duo_run.get("web_url") or None
 
     # Validate mr_url strictly matches /-/merge_requests/<n>
     if mr_url and not re.search(r"/-/merge_requests/\d+", mr_url):
@@ -216,7 +217,8 @@ def generate_evidence_receipt(
             "pipeline_url": pipeline_url,
             "job_url": job_url,
             "issue_url": issue_url,
-            "merge_request_url": mr_url
+            "merge_request_url": mr_url,
+            "flow_run_url": flow_run_url
         },
         "fault_profile": {
             "name": dossier.get("fault", {}).get("profile_name", "latency_cascading_hang"),
@@ -283,7 +285,12 @@ def generate_evidence_receipt(
 - **Injected Fault:** `{receipt_data['fault_profile']['name']}` ({receipt_data['fault_profile']['type']})
 - **Profile Hash:** `{receipt_data['fault_profile']['hash']}`
 - **Identical Replay Confirmed:** `{receipt_data['fault_profile']['identical_replay_confirmed']}`
-- **Duo Run ID:** `{receipt_data['duo_execution']['run_id']}`
+- **Candidate Source:** `{receipt_data['candidate_source']}`
+- **Duo Run ID:** `{receipt_data['duo_execution']['run_id'] or 'not established'}`
+- **Pipeline URL:** `{receipt_data['urls']['pipeline_url'] or 'not established'}`
+- **Incident Issue URL:** `{receipt_data['urls']['issue_url'] or 'not established'}`
+- **Duo Merge Request URL:** `{receipt_data['urls']['merge_request_url'] or 'not established'}`
+- **Duo Flow Run URL:** `{receipt_data['urls']['flow_run_url'] or 'not established'}`
 
 ## 2. Before & After Verified Metrics
 | Metric | Baseline (Unpatched) | Hardened (Candidate Patch) |

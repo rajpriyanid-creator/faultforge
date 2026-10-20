@@ -72,15 +72,27 @@ def verify_live_service(
 
             cand_pct = 0
             prod_pct = 0
+            cand_url = None
+            cand_rev = None
+            prod_rev = None
             for t in traffic:
                 pct = t.get("percent", 0)
                 tag = t.get("tag")
+                rev = t.get("revisionName")
                 if tag == "candidate":
                     cand_pct += pct
+                    cand_url = t.get("url")
+                    cand_rev = rev
                 else:
                     prod_pct += pct
+                    if not prod_rev or pct > 0:
+                        prod_rev = rev
             record["traffic_split"]["candidate_percent"] = cand_pct
             record["traffic_split"]["production_percent"] = prod_pct
+            record["traffic_split"]["candidate_tag"] = "candidate"
+            record["traffic_split"]["candidate_url"] = cand_url
+            record["traffic_split"]["candidate_revision"] = cand_rev
+            record["traffic_split"]["production_revision"] = prod_rev
         else:
             record["traffic_split"]["status"] = "GCLOUD_DESCRIBE_FAILED"
             record["traffic_split"]["error"] = res.stderr.strip()[:300]

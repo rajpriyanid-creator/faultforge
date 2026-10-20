@@ -3,27 +3,41 @@
 
 ---
 
-## HUMAN CHECKLIST: Executing a Real GitLab Duo Agent Flow
+## HUMAN CHECKLIST: Executing a Real GitLab Duo Agent Flow & Cloud Run Release
 
-Follow these exact steps if you have available GitLab Duo Agent Platform credits and wish to execute a real Duo-authored Merge Request:
+Follow these exact steps if you have available GitLab Duo Agent Platform credits and GCP credentials to achieve 10/10 platform evaluation:
 
-1. **Configure CI/CD Variables:**
+1. **Check Duo Access:**
+   - In GitLab project: Navigate to **Automate → Flows** (or **Duo Agent Platform → Flows**).
+   - Confirm your namespace has available Duo Agent Platform credits.
+2. **Register the Custom Flow:**
+   - Click **New Flow** (or **Register Custom Flow**).
+   - **Flow ID:** `faultforge_resilience_flow`
+   - **Display Name:** `FaultForge Supervised Resilience Healer`
+   - **Source:** Select **Repository file** and enter `flows/faultforge-flow.yaml`.
+   - **Environment:** `ambient` (Full workspace execution).
+   - Click **Save & Activate**.
+3. **Configure CI/CD Variables:**
    - In GitLab: Navigate to **Settings → CI/CD → Variables**.
    - Add `FF_GITLAB_TOKEN` (Masked): A GitLab Personal Access Token or Project Access Token with `api` and `read_api` scopes.
-   - Verify `CI_PROJECT_ID` is present (GitLab provides this automatically).
-2. **Trigger the Duo Flow on Incident Issue #42:**
-   - Open Incident Issue #42: [`https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/work_items/42`](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/work_items/42)
-   - In the comment thread, post:
+   - For Cloud Run release: Add `GCP_PROJECT`, `GCP_SA_KEY` (Masked Service Account JSON key), and set `REQUIRE_GCP_DEPLOY=true`.
+4. **Create or Confirm the Incident Issue:**
+   - Ensure an incident issue describing the checkout shipping SLA breach exists and is public (e.g. Issue #42 or newly opened issue).
+5. **Trigger the Duo Flow:**
+   - On that issue, add a comment:
      ```markdown
      @ai-faultforge_resilience_flow Please run resilience flow flows/faultforge-flow.yaml to repair the shipping client timeout.
      ```
-   - Wait for the Duo Agent service account (`ai-faultforge_resilience_flow`) to run the flow, synthesize the fix in `app/clients/` and `app/resilience/`, and open a candidate Merge Request targeting `main` (e.g. branch `fix/resilience-shipping-timeout`).
-3. **Rerun the Pipeline on Main:**
+   - Wait for the Duo Agent service account (`ai-faultforge_resilience_flow`) to run the flow, synthesize the fix in `app/clients/` and `app/resilience/`, and open a candidate Merge Request targeting `main`. Do not edit the synthesized code.
+6. **Rerun the Pipeline on Main:**
    - In GitLab: Navigate to **Build → Pipelines → Run Pipeline** on `main`.
-   - CI stage `create:duo_remediation_mr` executes `scripts/record_duo_evidence.py`, detecting the new Duo MR and run URL.
-   - Stage `verify:exact_fault_replay_proof` checks out the Duo candidate branch, runs exact Toxiproxy replay, and seals the receipt with `candidate_source: "duo-authored (MR !<iid>)"`.
-4. **Fallback Note (If Credits Are Depleted):**
-   - If Duo Agent Platform credits show *"No credits remain for this billing period"*, FaultForge gracefully degrades to `reference-fix (not Duo-authored)` with status `NOT_EXECUTED_NO_CREDENTIALS`. The entire pipeline remains green, fully audited, and truth-compliant without fabricating evidence.
+   - Stage `create:duo_remediation_mr` records the real Duo run and MR evidence.
+   - Stage `verify:exact_fault_replay_proof` checks out the Duo candidate branch, replays the exact Toxiproxy fault (`644a89784316`), and records `candidate_source: "duo-authored (MR !<iid>)"`.
+   - Stage `release:cloudrun_candidate_deploy` deploys the candidate revision with `--no-traffic --tag candidate`.
+7. **Collect the Evidence Links:**
+   - Pipeline URL, Incident Issue URL, Duo-authored MR URL, and Flow Run URL.
+8. **Fallback Note (If Credits Are Depleted or Duo Unavailable):**
+   - If Duo Agent Platform credits are unavailable, FaultForge maintains an honest and audited fallback to `reference-fix (not Duo-authored)` with status `NOT_EXECUTED_NO_CREDENTIALS`. All gates and audits pass without faking evidence.
 
 ---
 

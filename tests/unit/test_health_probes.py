@@ -55,3 +55,43 @@ def test_resolve_target_url_release_json(tmp_path, monkeypatch):
         json.dump({"status": "STAGED", "url": "https://candidate.run.app"}, f)
     url = resolve_target_url("http://fallback")
     assert url == "https://candidate.run.app"
+
+def test_verify_live_with_gcloud_traffic_split(tmp_path, monkeypatch):
+    import subprocess
+    from scripts.verify_live import verify_live_service
+
+    mock_gcloud_data = {
+        "status": {
+            "traffic": [
+                {
+                    "percent": 100,
+                    "revisionName": "faultforge-checkout-00002-kpl"
+                },
+                {
+                    "percent": 0,
+                    "revisionName": "faultforge-checkout-00003-can",
+                    "tag": "candidate",
+                    "url": "https://candidate---faultforge-checkout.run.app"
+                }
+            ]
+        }
+    }
+
+    class MockSubprocessResult:
+        returncode = 0
+        stdout = json.dumps(mock_gcloud_data)
+        stderr = ""
+
+    monkeypatch.setattr(subprocess, "run", lambda *args, **kwargs: MockSubprocessResult())
+
+    out_file = str(tmp_path / "live_verification.json")
+    rec = verify_live_service(service_url="http://127.0.0.1:9999", output_path=out_file)
+
+    assert rec["traffic_split"]["verified"] is True
+    assert rec["traffic_split"]["status"] == "VERIFIED"
+    assert rec["traffic_split"]["candidate_percent"] == 0
+    assert rec["traffic_split"]["production_percent"] == 100
+    assert rec["traffic_split"]["candidate_tag"] == "candidate"
+    assert rec["traffic_split"]["candidate_url"] == "https://candidate---faultforge-checkout.run.app"
+    assert rec["traffic_split"]["candidate_revision"] == "faultforge-checkout-00003-can"
+    assert rec["traffic_split"]["production_revision"] == "faultforge-checkout-00002-kpl"

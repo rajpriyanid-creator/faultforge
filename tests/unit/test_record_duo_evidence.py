@@ -98,3 +98,47 @@ def test_trigger_duo_flow_no_confirmed_status():
     import re
     matches = re.findall(r'["\']status["\']\s*:\s*["\']CONFIRMED["\']', content)
     assert len(matches) == 0, "trigger_duo_flow.py must not emit 'CONFIRMED' as Duo status"
+
+def test_duo_authored_detection_and_candidate_source_integration(tmp_path):
+    from scripts.evaluate_replay import evaluate_replay
+    from scripts.generate_receipt import generate_evidence_receipt
+
+    # 1. Simulate duo_evidence.json fixture
+    duo_evidence = {
+        "found": True,
+        "mr_iid": 42,
+        "mr_url": "https://gitlab.com/test/-/merge_requests/42",
+        "source_branch": "fix/resilience-shipping-timeout",
+        "author_username": "ai-faultforge_resilience_flow",
+        "run_url": "https://gitlab.com/test/runs/99"
+    }
+    cand_src = determine_candidate_source(duo_evidence)
+    assert cand_src == "duo-authored (MR !42)"
+    duo_evidence["candidate_source"] = cand_src
+
+    # 2. Test CI detection logic:
+    ci_detection = str(duo_evidence.get("candidate_source", "")).startswith("duo-authored") and bool(duo_evidence.get("source_branch"))
+    assert ci_detection is True
+
+    # 3. Test evaluate_replay records this candidate_source with identical fault hash 644a89784316
+    base_file = os.path.join(os.path.dirname(__file__), "fixtures", "base_pass.json")
+    hard_file = os.path.join(os.path.dirname(__file__), "fixtures", "hard_pass.json")
+    criteria_file = os.path.join(os.path.dirname(__file__), "..", "..", "chaos", "criteria.json")
+    replay_out = str(tmp_path / "replay_evaluation.json")
+
+    with pytest.raises(SystemExit) as exc_info:
+        evaluate_replay(
+            baseline_path=base_file,
+            hardened_path=hard_file,
+            output_path=replay_out,
+            criteria_path=criteria_file,
+            candidate_source=cand_src
+        )
+    assert exc_info.value.code == 0
+
+    with open(replay_out, "r", encoding="utf-8") as rf:
+        ev = json.load(rf)
+
+    assert ev["candidate_source"] == "duo-authored (MR !42)"
+    assert ev["gates"]["identical_profile_hash"]["passed"] is True
+    assert ev["gates"]["identical_profile_hash"]["baseline_hash"] == ev["gates"]["identical_profile_hash"]["hardened_hash"]

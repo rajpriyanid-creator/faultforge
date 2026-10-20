@@ -140,12 +140,12 @@ verify:exact_fault_replay_proof:
         CANDIDATE_SRC=$(python -c "import json; print(json.load(open('reports/duo_evidence.json'))['candidate_source'])")
         echo "[+] Testing Duo-authored candidate branch: $CANDIDATE_BRANCH ($CANDIDATE_SRC)"
         git fetch origin "$CANDIDATE_BRANCH"
-        git checkout "origin/$CANDIDATE_BRANCH" -- app/clients/shipping_client.py
+        git checkout "origin/$CANDIDATE_BRANCH" -- app/
         FIX_SHA=$(git rev-parse "origin/$CANDIDATE_BRANCH")
       else
         echo "[!] No Duo-authored MR branch detected; falling back to reference-fix"
         git fetch origin reference-fix
-        git checkout origin/reference-fix -- app/clients/shipping_client.py
+        git checkout origin/reference-fix -- app/
         FIX_SHA=$(git rev-parse origin/reference-fix || git rev-parse reference-fix)
         CANDIDATE_SRC="reference-fix (not Duo-authored)"
       fi
@@ -264,8 +264,8 @@ release:cloudrun_candidate_deploy:
         python3 -c "import json, time; json.dump({'provider': 'cloudrun', 'status': 'STAGED', 'url': '$CANDIDATE_URL', 'revision': '$REVISION_NAME', 'timestamp': time.time()}, open('reports/release.json', 'w'), indent=2)"
         python3 scripts/evidence_ledger.py --stage release --job release:cloudrun_candidate_deploy --status SUCCESS --artifacts reports/release.json
       else
-        if [ "$CI_PROJECT_PATH" = "gitlab-ai-hackathon/transcend-october-2026/43424456/showcase" ] && [ "$REQUIRE_GCP_DEPLOY" = "true" ]; then
-          echo "[-] Error: GCP_PROJECT or GCP_SA_KEY missing in submission showcase pipeline with REQUIRE_GCP_DEPLOY=true!"
+        if [ "$REQUIRE_GCP_DEPLOY" = "true" ]; then
+          echo "[-] Error: GCP_PROJECT or GCP_SA_KEY missing with REQUIRE_GCP_DEPLOY=true! Failing release stage loudly."
           exit 1
         fi
         echo "[!] GCP_PROJECT or GCP_SA_KEY not configured. Skipping live Cloud Run candidate staging deployment."
