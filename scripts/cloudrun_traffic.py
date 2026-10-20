@@ -124,6 +124,7 @@ def main():
     parser.add_argument("--expected-revision", default=None, help="Expected revision in X-Service-Revision header")
     parser.add_argument("--provider", choices=["cloudrun", "docker-compose", "auto"], default="auto", help="Deployment provider (defaults to auto-detect)")
     parser.add_argument("--dry-run", action="store_true", help="Execute in dry-run mode for local validation")
+    parser.add_argument("--approved", action="store_true", help="Explicit human supervisor approval flag required for live production traffic promotion")
     args = parser.parse_args()
 
     # Detect provider
@@ -168,6 +169,9 @@ def main():
     elif args.action == "route":
         if not args.revisions:
             print("[-] --revisions required for action 'route'")
+            sys.exit(1)
+        if ("100" in args.revisions or "production" in args.revisions) and not args.approved and not args.dry_run:
+            print("[-] REJECTED: Promoting live production traffic requires explicit human supervisor approval flag (--approved).", file=sys.stderr)
             sys.exit(1)
         if active_provider == "docker-compose":
             print(f"[+] Local Fallback Provider: [DOCKER-COMPOSE] traffic split applied: {args.revisions}")

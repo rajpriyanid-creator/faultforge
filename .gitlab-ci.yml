@@ -372,7 +372,7 @@ govern:promote_to_production:
       else
         echo "DRY RUN: no action taken"
         echo "[!] GCP credentials missing. Performing dry-run promotion validation."
-        python3 scripts/cloudrun_traffic.py --action route --service "$SERVICE_NAME" --revisions "$SERVICE_NAME-${CI_COMMIT_SHORT_SHA:-staging}=100" --dry-run
+        python3 scripts/cloudrun_traffic.py --action route --service "$SERVICE_NAME" --revisions "$SERVICE_NAME-${CI_COMMIT_SHORT_SHA:-staging}=100" --dry-run --approved
         apt-get update -qq && apt-get install -y -qq python3
         python3 scripts/evidence_ledger.py --stage govern --job govern:promote_to_production --status SKIPPED
       fi

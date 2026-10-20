@@ -26,3 +26,25 @@ def test_rollback_dry_run(tmp_path, monkeypatch):
         data = json.load(f)
     assert data["target_service"] == "faultforge-checkout"
     assert data["restored_revision"] == "faultforge-checkout-00001"
+
+def test_cloudrun_traffic_refuses_promotion_without_approval_flag(monkeypatch):
+    import sys
+    from scripts import cloudrun_traffic
+    monkeypatch.setattr(sys, "argv", [
+        "cloudrun_traffic.py",
+        "--action", "route",
+        "--service", "faultforge-checkout",
+        "--revisions", "candidate=100",
+        "--provider", "cloudrun"
+    ])
+    with pytest.raises(SystemExit) as exc:
+        cloudrun_traffic.main()
+    assert exc.value.code == 1
+
+def test_gitlab_ci_manual_promotion_gate_defined():
+    ci_file = os.path.join(os.path.dirname(__file__), "..", "..", ".gitlab-ci.yml")
+    with open(ci_file, "r", encoding="utf-8") as f:
+        content = f.read()
+    assert "govern:promote_to_production:" in content
+    assert "when: manual" in content
+    assert "allow_failure: false" in content

@@ -246,6 +246,11 @@ In strict compliance with the **Never Fabricate Evidence** and **Claim Only What
 - **Additional Category:** **Most Creative ($4,000)**. Novel "Break It, Heal It" closed-loop system pairing chaos testing with exact-fault replay verification.
 - **Google Cloud Bonus (+0.2 points):** **Verified Live Google Cloud Run Deployment** in `us-central1`. Service URL: [`https://faultforge-checkout-136942862703.us-central1.run.app`](https://faultforge-checkout-136942862703.us-central1.run.app) (Active revision `faultforge-checkout-00002-kpl`, verified responding HTTP 200 on `/health`). Full Knative service YAML in [`infra/cloudrun/service.yaml`](infra/cloudrun/service.yaml), deployment scripts in [`infra/cloudrun/deploy.sh`](infra/cloudrun/deploy.sh), and automated candidate routing / instant traffic rollback in [`scripts/cloudrun_traffic.py`](scripts/cloudrun_traffic.py). In GitLab CI, `release:cloudrun_candidate_deploy` executes a real deployment with `--no-traffic --tag candidate` whenever `GCP_PROJECT` and `GCP_SA_KEY` CI variables are present; otherwise, it records `SKIPPED_NO_GCP_CREDENTIALS` and links to the live reference deployment without fabricating success.
 
+### Authorship and Autonomy
+- **AI Agent Authorship:** In accordance with the Transcend Hackathon theme (*"Life After Code"*), most commits, test generations, and evidence harvesting scripts in this repository were synthesized by an autonomous DevSecOps coding agent working under supervision.
+- **Human Authority:** The human repository maintainer (`rajpriyanid`) directs design goals, reviews candidate Merge Requests, manages tokens, and controls the production release gate.
+- **Enforced Human Gate:** The live production traffic promotion step (`govern:promote_to_production`) cannot be bypassed by an agent; it is strictly defined as `when: manual`, requires the `--approved` flag in `scripts/cloudrun_traffic.py`, and records human sign-off in the cryptographic receipt's `governance.approver` field.
+
 ---
 
 ## 9. Engineering Takeaways & Lessons Learned

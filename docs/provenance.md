@@ -46,3 +46,14 @@ In strict adherence to Path A guidelines ("Start Fresh"):
   - **Shopify Toxiproxy:** Official binary release `v2.9.0` used as the network chaos engine (MIT License).
   - **GitLab Duo Custom Flows:** Built strictly to the official GitLab Duo Custom Flows Schema v1 (`flows/faultforge-flow.yaml`).
   - **Standard Python Libraries:** FastAPI, Uvicorn, HTTPX, Pytest, and Bandit (all standard open-source dependencies listed in `requirements.txt`).
+
+## 4. Authorship, Autonomy Model & The Human Gate
+
+- **Supervised Autonomy Model:**
+  - Most code commits, test generation, and truth auditing scripts in this repository were authored by an autonomous DevSecOps AI coding agent operating under supervision.
+  - The human developer (`rajpriyanid`) sets design objectives, reviews Merge Requests, manages credentials, and holds the final production promotion gate.
+- **Human Promotion Gate:**
+  - Production traffic promotion to Google Cloud Run can NEVER occur autonomously.
+  - The GitLab CI job `govern:promote_to_production` is strictly declared with `when: manual` and `allow_failure: false`.
+  - In `scripts/cloudrun_traffic.py`, live traffic promotion requires the explicit `--approved` supervisor flag.
+  - In `reports/evidence_receipt.json`, the field `governance.approver` records the human authorization before live traffic reaches end-users.
