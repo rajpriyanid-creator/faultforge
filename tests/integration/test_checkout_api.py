@@ -108,7 +108,11 @@ async def test_ledger_endpoint():
         assert res.status_code == 200
 
 @pytest.mark.asyncio
-async def test_reports_endpoint():
+async def test_reports_endpoint(tmp_path, monkeypatch):
+    dummy_dir = tmp_path / "reports"
+    dummy_dir.mkdir()
+    (dummy_dir / "evidence_receipt.json").write_text('{"status": "TEST"}', encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         res = await client.get("/api/v1/reports/evidence_receipt")

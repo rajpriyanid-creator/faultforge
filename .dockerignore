@@ -16,5 +16,7 @@ venv
 credentials*.json
 service_account*.json
 gate_data/
+reports/
+bin/
 *.zip
 *.log

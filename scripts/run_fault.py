@@ -16,19 +16,71 @@ from typing import Dict, Any, List, Optional
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from chaos.toxiproxy_helper import ChaosEngine
+from typing import Tuple
 
-def get_real_git_sha() -> str:
+def get_real_git_sha(explicit_sha: Optional[str] = None) -> Tuple[str, bool]:
+    if explicit_sha and len(explicit_sha) == 40 and all(c in "0123456789abcdefABCDEF" for c in explicit_sha):
+        return explicit_sha, True
     commit_sha = os.getenv("CI_COMMIT_SHA")
-    if not commit_sha or len(commit_sha) != 40:
+    if commit_sha and len(commit_sha) == 40 and all(c in "0123456789abcdefABCDEF" for c in commit_sha):
+        return commit_sha, True
+    try:
+        commit_sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True, stderr=subprocess.DEVNULL).strip()
+        if commit_sha and len(commit_sha) == 40 and all(c in "0123456789abcdefABCDEF" for c in commit_sha):
+            return commit_sha, True
+    except Exception:
+        pass
+    return "UNKNOWN_NO_GIT", False
+
+def verify_proxy_in_path(engine: ChaosEngine, profile: Dict[str, Any], proxy_listen_url: str = "http://127.0.0.1:8082") -> bool:
+    """
+    Proxy-in-path guard:
+    Verifies that the chaos proxy is enabled, listening, and that the fault is actively in the path.
+    Prevents false-greens from instant connection-refused fallbacks.
+    """
+    if engine.use_toxi:
+        proxy_name = profile.get("proxy_name", "shipping_api_proxy")
         try:
-            commit_sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+            r = requests.get(f"{engine.toxi_client.api_url}/proxies/{proxy_name}", timeout=2.0)
+            if r.status_code != 200:
+                print(f"[-] Proxy guard failed: Proxy '{proxy_name}' not found on Toxiproxy API (HTTP {r.status_code})", file=sys.stderr)
+                return False
+            p_data = r.json()
+            if not p_data.get("enabled"):
+                print(f"[-] Proxy guard failed: Proxy '{proxy_name}' is disabled in Toxiproxy", file=sys.stderr)
+                return False
+            toxics = p_data.get("toxics", [])
+            fault_type = profile.get("fault_type", "latency")
+            if not any(fault_type in str(t.get("type", "")) for t in toxics):
+                print(f"[-] Proxy guard failed: Toxic '{fault_type}' is not attached to proxy '{proxy_name}'", file=sys.stderr)
+                return False
         except Exception as exc:
-            print(f"[-] Error: Unable to determine git commit SHA: {exc}", file=sys.stderr)
-            sys.exit(1)
-    if not commit_sha or len(commit_sha) != 40:
-        print(f"[-] Error: Invalid git commit SHA '{commit_sha}' (must be 40 hex chars)", file=sys.stderr)
-        sys.exit(1)
-    return commit_sha
+            print(f"[-] Proxy guard failed: Unable to query Toxiproxy API: {exc}", file=sys.stderr)
+            return False
+
+    # Also verify that a probe through proxy listen port is delayed as expected
+    configured_latency = profile.get("attributes", {}).get("latency", 0)
+    if configured_latency > 500:
+        t0 = time.perf_counter()
+        try:
+            r = requests.get(f"{proxy_listen_url.rstrip('/')}/health", timeout=(configured_latency / 1000.0) + 3.0)
+            elapsed_ms = (time.perf_counter() - t0) * 1000.0
+            min_expected_ms = configured_latency * 0.4
+            if elapsed_ms < min_expected_ms:
+                print(f"[-] Proxy guard failed: Probe through {proxy_listen_url} completed in {elapsed_ms:.1f}ms (< expected {min_expected_ms:.1f}ms). Fault is not in path!", file=sys.stderr)
+                return False
+            print(f"[+] Proxy-in-path guard passed: {proxy_listen_url} confirmed active with delay ({elapsed_ms:.1f}ms).")
+        except requests.exceptions.ConnectionError as ce:
+            print(f"[-] Proxy guard failed: Connection refused on proxy listen port {proxy_listen_url}: {ce}", file=sys.stderr)
+            return False
+        except requests.exceptions.Timeout:
+            print(f"[+] Proxy-in-path guard passed: Proxy {proxy_listen_url} timed out as expected under latency toxic.")
+        except Exception as exc:
+            print(f"[-] Proxy guard failed: Unexpected error probing {proxy_listen_url}: {exc}", file=sys.stderr)
+            return False
+    else:
+        print("[+] Proxy-in-path guard passed: API and toxic presence confirmed.")
+    return True
 
 def compute_profile_hash(profile: Dict[str, Any]) -> str:
     canonical = json.dumps(profile, sort_keys=True)
@@ -171,7 +223,7 @@ def main():
 
     profile_hash = compute_profile_hash(profile)
     payload_hash = compute_payload_hash(CANONICAL_PAYLOAD_TEMPLATE)
-    git_sha = args.git_sha or get_real_git_sha()
+    git_sha, git_sha_verified = get_real_git_sha(args.git_sha)
     run_id = f"run-{uuid.uuid4().hex[:8]}"
 
     print(f"\n=================================================================")
@@ -226,6 +278,11 @@ def main():
     profile_hash = live_profile_hash
     print(f"[*] Verified profile hash from live API: {profile_hash}")
 
+    proxy_listen = os.getenv("SHIPPING_SERVICE_URL", "http://127.0.0.1:8082")
+    if not verify_proxy_in_path(engine, profile, proxy_listen_url=proxy_listen):
+        print("[-] FATAL: Proxy-in-path guard failed. Aborting experiment to prevent false green.", file=sys.stderr)
+        sys.exit(1)
+
     try:
         print(f"[*] Executing {args.iterations} probes against target ...")
         probe_results = run_probe(args.target, iterations=args.iterations)
@@ -239,6 +296,7 @@ def main():
             "timestamp": time.time(),
             "label": label,
             "git_sha": git_sha,
+            "git_sha_verified": git_sha_verified,
             "proxy_engine": "toxiproxy" if engine.use_toxi else "standalone",
             "toxiproxy_version": toxiproxy_ver,
             "profile_name": profile.get("name"),

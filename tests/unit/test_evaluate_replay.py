@@ -108,3 +108,28 @@ def test_evaluate_replay_missing_fallback_flag(tmp_path):
     with pytest.raises(SystemExit) as exc:
         evaluate_replay(base_file, no_est_file, out_file, CRITERIA_PATH)
     assert exc.value.code == 1
+
+def test_evaluate_replay_fast_fail_not_in_path(tmp_path):
+    base_file = os.path.join(FIXTURES_DIR, "base_pass.json")
+    hard_file = os.path.join(FIXTURES_DIR, "hard_not_in_path.json")
+    out_file = str(tmp_path / "eval_fast_fail.json")
+
+    with pytest.raises(SystemExit) as exc:
+        evaluate_replay(base_file, hard_file, out_file, CRITERIA_PATH)
+    assert exc.value.code == 1
+
+def test_evaluate_replay_non_toxiproxy_engine_fails(tmp_path):
+    base_file = os.path.join(FIXTURES_DIR, "base_pass.json")
+    hard_file = os.path.join(FIXTURES_DIR, "hard_pass.json")
+    with open(hard_file, "r") as f:
+        hard_data = json.load(f)
+    hard_data["proxy_engine"] = "standalone"
+
+    standalone_file = str(tmp_path / "hard_standalone.json")
+    with open(standalone_file, "w") as f:
+        json.dump(hard_data, f)
+    out_file = str(tmp_path / "eval_standalone.json")
+
+    with pytest.raises(SystemExit) as exc:
+        evaluate_replay(base_file, standalone_file, out_file, CRITERIA_PATH)
+    assert exc.value.code == 1

@@ -63,22 +63,20 @@ def validate_claims(
     readme_path: str = DEFAULT_README_PATH,
     ledger_path: str = DEFAULT_LEDGER_PATH,
     receipt_path: str = DEFAULT_RECEIPT_PATH,
-    strict_all_stages: bool = True
+    strict_all_stages: bool = True,
+    samples_mode: bool = False
 ) -> bool:
     print("\n=================================================================")
     print(" FaultForge README Claims vs. Empirical Evidence Ledger Gate")
     print("=================================================================")
 
-    # Fallback to sample reports if live reports missing in local test mode
-    if not os.path.exists(ledger_path) and os.path.exists("docs/sample_reports/stage_ledger.json"):
+    if samples_mode:
+        print("SAMPLE MODE: not CI evidence")
         ledger_path = "docs/sample_reports/stage_ledger.json"
-        print(f"[*] Live ledger missing. Using reference ledger: {ledger_path}")
-
-    if not os.path.exists(receipt_path) and os.path.exists("docs/sample_reports/evidence_receipt.json"):
         receipt_path = "docs/sample_reports/evidence_receipt.json"
 
-    if not os.path.exists(ledger_path):
-        print(f"[-] Error: Stage ledger not found at {ledger_path}", file=sys.stderr)
+    if not os.path.exists(ledger_path) or not os.path.exists(receipt_path):
+        print(f"[-] Error: no CI evidence present (`{ledger_path}` or `{receipt_path}` missing)", file=sys.stderr)
         return False
 
     with open(ledger_path, "r", encoding="utf-8") as lf:
@@ -128,6 +126,13 @@ def validate_claims(
                 discrepancies.append(f"Stage '{stage}' succeeded in ledger, but README does not indicate SUCCESS ('{claim_str}').")
                 print(f"{stage:<12} {ledger_status:<16} {claim_str:<24} [FAIL]")
             else:
+                # Check create stage duo_executed status
+                if stage == "create":
+                    duo_exec = ledger_entry.get("duo_executed", False)
+                    if not duo_exec and ("NOT EXECUTED" not in claim_str.upper() and "DUO:" not in claim_str.upper() and "DUO FLOW:" not in claim_str.upper()):
+                        discrepancies.append("Stage 'create' duo_executed is false in ledger, but README claims unqualified SUCCESS without stating Duo flow was not executed.")
+                        print(f"{stage:<12} {ledger_status:<16} {claim_str:<24} [FAIL]")
+                        continue
                 print(f"{stage:<12} {ledger_status:<16} {claim_str:<24} [PASS]")
         else:
             discrepancies.append(f"Stage '{stage}' has unknown ledger status: {ledger_status}")
@@ -162,6 +167,7 @@ def main():
     parser.add_argument("--readme", default=DEFAULT_README_PATH, help="Path to README.md")
     parser.add_argument("--ledger", default=DEFAULT_LEDGER_PATH, help="Path to stage_ledger.json")
     parser.add_argument("--receipt", default=DEFAULT_RECEIPT_PATH, help="Path to evidence_receipt.json")
+    parser.add_argument("--samples", action="store_true", help="Read from docs/sample_reports/ instead of active reports/")
     parser.add_argument("--allow-partial", action="store_true", help="Allow partial ledger when testing early stages")
     args = parser.parse_args()
 
@@ -169,7 +175,8 @@ def main():
         readme_path=args.readme,
         ledger_path=args.ledger,
         receipt_path=args.receipt,
-        strict_all_stages=not args.allow_partial
+        strict_all_stages=not args.allow_partial,
+        samples_mode=args.samples
     )
     sys.exit(0 if success else 1)
 

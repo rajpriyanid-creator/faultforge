@@ -2,6 +2,7 @@
   "run_id": "run-base-fixture-01",
   "label": "baseline",
   "git_sha": "e53f1d3576bbdf1f9adb17f012beba101f92376a",
+  "proxy_engine": "toxiproxy",
   "profile_hash": "hash-abc-123",
   "payload_hash": "payload-xyz-999",
   "toxic_readback": {

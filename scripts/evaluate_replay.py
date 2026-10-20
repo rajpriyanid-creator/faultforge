@@ -54,10 +54,14 @@ def evaluate_replay(
     gate_valid_shas = valid_base_sha and valid_hard_sha
     gate_distinct_revisions = (base_sha != hard_sha) if (base_sha and hard_sha) else False
 
-    # 2. Identical Profile & Payload Hashes
+    # 2. Identical Profile & Payload Hashes, Proxy Engine & Path Verification
     base_prof_hash = baseline.get("profile_hash")
     hard_prof_hash = hardened.get("profile_hash")
     gate_identical_profile = bool(base_prof_hash and base_prof_hash == hard_prof_hash)
+
+    base_engine = baseline.get("proxy_engine", "toxiproxy")
+    hard_engine = hardened.get("proxy_engine", "toxiproxy")
+    gate_toxiproxy_engine = (base_engine == "toxiproxy" and hard_engine == "toxiproxy")
 
     base_payload_hash = baseline.get("payload_hash", "default")
     hard_payload_hash = hardened.get("payload_hash", "default")
@@ -94,7 +98,19 @@ def evaluate_replay(
     hard_latencies = hard_metrics.get("latencies_ms", [])
     gate_latency_budget = all(lat <= budget for lat in hard_latencies) if hard_latencies else False
 
-    # 6. Fallback Observability & Metadata Check
+    # 6. Proxy in Request Path Check: Candidate probes must not be instant fast-fail (<150ms)
+    fault_delay = 0
+    if isinstance(base_toxic, dict):
+        fault_delay = base_toxic.get("latency", 0) or base_toxic.get("attributes", {}).get("latency", 0)
+    if fault_delay == 0 and isinstance(hard_toxic, dict):
+        fault_delay = hard_toxic.get("latency", 0) or hard_toxic.get("attributes", {}).get("latency", 0)
+
+    if fault_delay >= 1000 and hard_latencies:
+        gate_proxy_in_path = not all(lat < 150.0 for lat in hard_latencies)
+    else:
+        gate_proxy_in_path = True
+
+    # 7. Fallback Observability & Metadata Check
     fallback_count = hard_metrics.get("fallback_count", 0)
     hard_per_req = hardened.get("per_request_results", [])
     gate_measurements_present = len(hard_per_req) >= req_consecutive
@@ -111,6 +127,8 @@ def evaluate_replay(
         gate_valid_shas
         and gate_distinct_revisions
         and gate_identical_profile
+        and gate_toxiproxy_engine
+        and gate_proxy_in_path
         and gate_identical_payload
         and gate_identical_toxic
         and gate_toxic_active
@@ -142,6 +160,16 @@ def evaluate_replay(
                 "passed": gate_identical_profile,
                 "baseline_hash": base_prof_hash,
                 "hardened_hash": hard_prof_hash
+            },
+            "toxiproxy_engine_verified": {
+                "passed": gate_toxiproxy_engine,
+                "baseline_engine": base_engine,
+                "hardened_engine": hard_engine
+            },
+            "proxy_in_request_path": {
+                "passed": gate_proxy_in_path,
+                "fault_delay_ms": fault_delay,
+                "candidate_min_ms": min(hard_latencies) if hard_latencies else 0
             },
             "identical_payload_hash": {
                 "passed": gate_identical_payload,

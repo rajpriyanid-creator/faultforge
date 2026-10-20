@@ -6,7 +6,8 @@ import json
 import time
 import hashlib
 import subprocess
-from typing import Dict, Any, List
+import re
+from typing import Dict, Any, List, Tuple
 
 def hash_file(path: str) -> str:
     if not os.path.exists(path):
@@ -14,18 +15,17 @@ def hash_file(path: str) -> str:
     with open(path, "rb") as f:
         return hashlib.sha256(f.read()).hexdigest()
 
-def get_real_git_sha() -> str:
+def get_real_git_sha() -> Tuple[str, bool]:
     commit_sha = os.getenv("CI_COMMIT_SHA")
-    if not commit_sha or len(commit_sha) != 40:
-        try:
-            commit_sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
-        except Exception as exc:
-            print(f"[-] Error: Unable to determine git commit SHA from CI_COMMIT_SHA or git rev-parse HEAD: {exc}", file=sys.stderr)
-            sys.exit(1)
-    if not commit_sha or len(commit_sha) != 40:
-        print(f"[-] Error: Invalid git commit SHA '{commit_sha}' (must be 40 hex chars)", file=sys.stderr)
-        sys.exit(1)
-    return commit_sha
+    if commit_sha and len(commit_sha) == 40 and all(c in "0123456789abcdefABCDEF" for c in commit_sha):
+        return commit_sha, True
+    try:
+        commit_sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True, stderr=subprocess.DEVNULL).strip()
+        if commit_sha and len(commit_sha) == 40 and all(c in "0123456789abcdefABCDEF" for c in commit_sha):
+            return commit_sha, True
+    except Exception:
+        pass
+    return "UNKNOWN_NO_GIT", False
 
 def generate_evidence_receipt(
     reports_dir: str = "reports",
@@ -133,25 +133,42 @@ def generate_evidence_receipt(
     if base_engine != "toxiproxy" or hard_engine != "toxiproxy":
         not_established.append(f"Official Toxiproxy engine not used for all chaos runs (baseline: '{base_engine}', candidate: '{hard_engine}'). Standalone runs cannot be verified.")
 
-    git_sha = get_real_git_sha()
-    if dossier.get("commit_sha") and dossier["commit_sha"] != git_sha:
+    git_sha, git_verified = get_real_git_sha()
+    if not git_verified:
+        not_established.append("git commit identity (missing .git repository or CI_COMMIT_SHA)")
+    elif dossier.get("commit_sha") and dossier["commit_sha"] != git_sha:
         not_established.append(f"Dossier commit SHA ({dossier['commit_sha'][:8]}) differs from current HEAD ({git_sha[:8]}).")
 
-    duo_status = duo_run.get("status", "UNCONFIRMED")
-    duo_executed = bool(
-        duo_run.get("executed") is True
-        or (
-            duo_run.get("run_id")
-            and duo_status in ("CONFIRMED", "DISPATCHED_TO_AGENT", "SUCCESS", "RUNNING")
-            and not duo_status.startswith("NOT_EXECUTED")
-        )
-    )
-    if not duo_executed or not duo_run.get("run_id") or duo_run.get("run_id") in ("unconfirmed", "reference-only"):
-        not_established.append("GitLab Duo remote remediation execution unconfirmed (no platform trigger or API credentials).")
+    duo_evidence_path = os.path.join(reports_dir, "duo_evidence.json")
+    duo_evidence = {}
+    if os.path.exists(duo_evidence_path):
+        try:
+            with open(duo_evidence_path, "r", encoding="utf-8") as def_f:
+                duo_evidence = json.load(def_f)
+        except Exception:
+            pass
+
+    duo_found = bool(duo_evidence.get("found"))
+    duo_has_run_url = bool(duo_evidence.get("run_url"))
+    duo_author = str(duo_evidence.get("author_username", ""))
+    duo_has_mr = bool(duo_evidence.get("mr_url") and ("ai-" in duo_author.lower() or "duo" in duo_author.lower()))
+    duo_mr_url = duo_evidence.get("mr_url")
+
+    if duo_found and duo_has_run_url and duo_has_mr and duo_mr_url:
+        duo_executed = True
+        duo_status = "CONFIRMED"
+        mr_url = duo_mr_url
+    else:
+        duo_executed = False
+        duo_status = duo_run.get("status", "NOT_EXECUTED_NO_CREDENTIALS")
+        not_established.append("GitLab Duo flow execution")
+        not_established.append("Candidate authored by Duo")
+        mr_url = None
 
     candidate_source = replay.get("candidate_source", "duo-authored-mr")
-    if "not Duo-authored" in candidate_source:
-        not_established.append("Candidate code under test is from fallback reference-fix (not Duo-authored MR branch).")
+    if "not Duo-authored" in candidate_source or "reference-fix" in candidate_source:
+        if "Candidate authored by Duo" not in not_established:
+            not_established.append("Candidate authored by Duo")
 
     if len(run_history_15) != 15:
         not_established.append(f"Complete 15-probe run evidence incomplete (found {len(run_history_15)}/15).")
@@ -174,12 +191,14 @@ def generate_evidence_receipt(
         promotion_gate = "REJECTED"
 
     gitlab_project_url = "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase"
-    pipeline_url = os.getenv("CI_PIPELINE_URL") or (dossier.get("pipeline_url") if (dossier.get("pipeline_url") and "gitlab.com" in dossier.get("pipeline_url")) else f"{gitlab_project_url}/-/pipelines/2963430484")
-    job_url = os.getenv("CI_JOB_URL") or f"{gitlab_project_url}/-/jobs/17286255318"
-    issue_url = issue_data.get("web_url") if (issue_data.get("web_url") and "gitlab.com" in issue_data.get("web_url")) else f"{gitlab_project_url}/-/issues/29"
-    mr_url = duo_run.get("web_url") or mr_data.get("mr_url")
-    if not mr_url or "gitlab.com" not in mr_url:
-        mr_url = f"{gitlab_project_url}/-/work_items/30"
+    pipeline_url = os.getenv("CI_PIPELINE_URL") or (dossier.get("pipeline_url") if (dossier.get("pipeline_url") and "gitlab.com" in str(dossier.get("pipeline_url"))) else None)
+    job_url = os.getenv("CI_JOB_URL") or None
+    issue_url = issue_data.get("web_url") if (issue_data.get("web_url") and "gitlab.com" in str(issue_data.get("web_url"))) else None
+
+    # Validate mr_url strictly matches /-/merge_requests/<n>
+    if mr_url and not re.search(r"/-/merge_requests/\d+", mr_url):
+        mr_url = None
+
     approver = os.getenv("GITLAB_USER_LOGIN", "SUPERVISED_OPERATOR")
 
     receipt_data = {
@@ -188,8 +207,9 @@ def generate_evidence_receipt(
         "final_status": final_status,
         "project": dossier.get("project_path", "faultforge/checkout-service"),
         "commit_sha": git_sha,
+        "git_verified": git_verified,
         "autonomy_model": "SUPERVISED",
-        "risk_classification": risk_data.get("tier", "LOW"),
+        "risk_classification": risk_data.get("tier", "MEDIUM"),
         "approver": approver,
         "candidate_source": candidate_source,
         "urls": {

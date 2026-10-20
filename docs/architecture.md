@@ -8,7 +8,7 @@
 
 ## 1. System Overview
 
-FaultForge is an AI-assisted resilience engineering platform built for **GitLab Transcend 2026: Life After Code**. It replaces traditional unit-test mock assumptions with empirical network fault injection, deterministic diagnosis, automated GitLab Duo Agent Platform remediation, exact-fault replay verification, and risk-gated deployment governance.
+FaultForge is an AI-assisted resilience engineering platform built for **GitLab Transcend 2026: Life After Code**. It replaces traditional unit-test mock assumptions with empirical network fault injection, deterministic diagnosis, automated GitLab Duo Agent Platform remediation, exact-fault replay verification, and risk-gated deployment governance. FaultForge autonomously executes 11 agent quality checks across 9 CI/CD lifecycle stages before presenting the verified outcome to the human operator at the Supervised Autonomy gate.
 
 ```
 +-------------------------------------------------------------------------------------------------------------+

@@ -8,16 +8,17 @@
 
 ---
 
-### Segment 1: The Dependency Fragility Under Chaos (0:00 – 0:35)
-- **Visual:** Terminal split screen: Checkout service on port 8090, downstream carrier stub on 8081, and Toxiproxy on 8082/8474.
-- **Action:** Run baseline fault probe:
+### Segment 1: Incident Issue & Dependency Fragility Under Chaos (0:00 – 0:35)
+- **Visual:** GitLab Issue Tracker displaying the incident issue ("SLA Breach Detected: Shipping dependency latency exceeds 1500ms budget"), followed by terminal split screen showing checkout service on port 8090, downstream carrier stub on 8081, and Toxiproxy on 8082.
+- **Action:** Run baseline fault probe reproducing the failure:
   ```bash
   python scripts/run_fault.py --label baseline --output reports/fault_run_baseline.json
   ```
 - **Narrator:**
   > "Ordinary CI pipelines mock downstream dependencies, giving teams false confidence. But in production, when an external carrier slows down, unhardened services hang.
-  > Here, we introduce a controlled Toxiproxy network delay of 3500 milliseconds on the shipping dependency path.
-  > Running our baseline probe against the unpatched checkout service immediately reproduces the failure: all 5 requests breach our 1500 millisecond SLA budget, averaging 3742 milliseconds."
+  > Our automated monitor triggers an incident issue in GitLab when outbound dependency latency spikes.
+  > Here, Toxiproxy injects a controlled 3500 millisecond network delay on the shipping path.
+  > Running our baseline probe against the unpatched checkout service reproduces the incident: all 5 requests breach our 1500 millisecond SLA budget, averaging 3742 milliseconds."
 
 ---
 
@@ -29,13 +30,13 @@
   python scripts/diagnose_and_bisect.py
   ```
 - **Narrator:**
-  > "Rather than letting an LLM hallucinate a culprit commit, FaultForge runs deterministic AST inspection and real `git bisect`.
+  > "Rather than letting an LLM guess what broke, FaultForge runs deterministic AST inspection and real `git bisect`.
   > Binary searching our commit history with an automated probe tests good and bad revisions, and conclusively isolates commit `974035c` — where a recent commit removed the bounded timeout and fallback.
   > FaultForge compiles these verified facts into a compact, secret-sanitized Incident Dossier."
 
 ---
 
-### Segment 3: GitLab Duo Agent Platform Custom Flow (1:00 – 1:40)
+### Segment 3: GitLab Duo Agent Platform Custom Flow (1:00 – 1:35)
 - **Visual:** GitLab UI showing Duo Agent Platform custom flow (`flows/faultforge-flow.yaml`) and the synthesized Merge Request.
 - **Action:**
   ```bash
@@ -49,31 +50,31 @@
 
 ---
 
-### Segment 4: Regression Test & Exact-Fault Replay Verification (1:40 – 2:15)
-- **Visual:** Terminal showing regression tests failing on unpatched code, passing on candidate branch, and `evaluate_replay.py` validating 10/10 probes.
+### Segment 4: 9-Stage CI Pipeline & Exact-Fault Replay Verification (1:35 – 2:15)
+- **Visual:** GitLab CI/CD Pipeline graph showing all 9 lifecycle stages executing, followed by terminal showing exact-fault replay under canonical profile hash `644a89784316`.
 - **Action:**
   ```bash
   python scripts/run_fault.py --label candidate --output reports/fault_run_candidate.json
   python scripts/evaluate_replay.py --baseline reports/fault_run_baseline.json --candidate reports/fault_run_candidate.json
   ```
 - **Narrator:**
-  > "Here is our core differentiator: We don't trust a fix just because an AI wrote it. We replay the exact same fault profile against the candidate patch.
-  > Under the candidate run, 10 consecutive probes are executed against the identical 3500ms network delay.
-  > All 10 pass within ~820 milliseconds — zero SLA breaches.
+  > "Here is our core differentiator: We don't trust a fix just because an AI wrote it. We replay the exact same fault profile against the candidate patch inside our 9-stage GitLab CI pipeline.
+  > Replay verification confirms Toxiproxy is in-path with canonical profile hash `644a89784316`.
+  > Under 10 consecutive probes with the identical 3500 millisecond network delay, all 10 pass within 820 milliseconds — zero SLA breaches.
   > The response explicitly flags `is_fallback: true` and `is_estimate: true` so carrier data is never misrepresented."
 
 ---
 
-### Segment 5: Supervised Governance, Cloud Run & Audit Receipt (2:15 – 2:50)
-- **Visual:** Google Cloud Run console showing canary traffic split, rollback execution, and `reports/EVIDENCE_RECEIPT.md`.
+### Segment 5: Supervised Governance Gate, Cloud Run & Rollback (2:15 – 2:50)
+- **Visual:** Google Cloud Run staging deployment (0% live traffic), manual `govern:promote_to_production` gate button in GitLab CI, rollback script execution, and cryptographic Evidence Receipt.
 - **Action:**
   ```bash
   python scripts/cloudrun_traffic.py --action rollback --dry-run
   python scripts/generate_receipt.py
   ```
 - **Narrator:**
-  > "Because we operate under Supervised Autonomy, our risk policy classifies this change as MEDIUM risk, allowing automated staging deployment at zero live traffic.
-  > But live production traffic promotion strictly requires explicit human developer authorization.
-  > If candidate health probes ever degrade, `cloudrun_traffic.py` executes an instant traffic rollback to the previous revision in seconds.
+  > "Because we operate under Supervised Autonomy, our risk policy classifies this change as MEDIUM risk, allowing automated staging deployment on Google Cloud Run at zero live traffic.
+  > But live production traffic promotion strictly requires explicit human sign-off at our governance gate.
+  > If post-promotion telemetry ever breaches thresholds, `cloudrun_traffic.py` executes an instant traffic rollback to the previous revision in seconds.
   > Finally, FaultForge emits a tamper-evident Evidence Receipt sealed with a cryptographic SHA-256 hash.
   > FaultForge: Rehearse a failure. Recover safely. Prove the service is stronger."

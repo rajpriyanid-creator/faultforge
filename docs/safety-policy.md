@@ -44,8 +44,8 @@ Before requesting human sign-off, the Supervised Agent autonomously verifies 11 
 2. **Gate 2 (Plan):** Sanitized Incident Dossier compiled with zero sensitive token or key leakage.
 3. **Gate 3 (Create):** Deterministic AST call-site inspection and `git bisect` pinpointing culprit commit (`974035c`).
 4. **Gate 4 (Create):** Scoped resilience code patch synthesized (0.8s bounded timeout, 3-failure circuit breaker, fallback).
-5. **Gate 5 (Configure):** Automated risk classification confirms diff is LOW tier (<150 lines, safe paths).
-6. **Gate 6 (Verify):** 39/39 unit and integration tests pass cleanly (`pytest tests/unit tests/integration`).
+5. **Gate 5 (Configure):** Automated risk classification confirms diff is MEDIUM tier (client resilience fix without new test fixtures under tests/), routing to Supervised gate.
+6. **Gate 6 (Verify):** Unit and integration tests pass cleanly (`pytest tests/unit tests/integration`, 70+ passing).
 7. **Gate 7 (Verify):** Exact-fault replay passes 10/10 probes under identical Toxiproxy profile hash (`644a89784316`), achieving 0 SLA breaches and >60% latency reduction.
 8. **Gate 8 (Secure):** Bandit static AST security scan confirms 0 high/medium vulnerabilities.
 9. **Gate 9 (Package):** Multi-stage Docker container built with non-root security user.

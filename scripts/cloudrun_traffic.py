@@ -7,7 +7,8 @@ import json
 import shutil
 import argparse
 import subprocess
-import requests
+import urllib.request
+import urllib.error
 from typing import Dict, Any, Optional
 
 def run_cmd(cmd: list) -> str:
@@ -23,17 +24,20 @@ def run_cmd(cmd: list) -> str:
 
 def verify_live_health(service_url: str, expected_revision: Optional[str] = None, max_retries: int = 5) -> bool:
     print(f"[*] Verifying health at {service_url}/health ...")
+    health_url = f"{service_url.rstrip('/')}/health"
     for i in range(max_retries):
         try:
-            r = requests.get(f"{service_url.rstrip('/')}/health", timeout=3.0)
-            if r.status_code == 200:
-                rev_header = r.headers.get("X-Service-Revision") or r.json().get("revision")
-                if expected_revision and rev_header and rev_header != expected_revision:
-                    print(f"[-] Attempt {i+1}: Revision mismatch (expected '{expected_revision}', got '{rev_header}')")
-                    time.sleep(2)
-                    continue
-                print(f"[+] Health probe passed (HTTP 200, X-Service-Revision: {rev_header})")
-                return True
+            req = urllib.request.Request(health_url, headers={"User-Agent": "FaultForge-HealthCheck/1.0"})
+            with urllib.request.urlopen(req, timeout=3.0) as resp:
+                if resp.status == 200:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    rev_header = resp.headers.get("X-Service-Revision") or data.get("revision")
+                    if expected_revision and rev_header and rev_header != expected_revision:
+                        print(f"[-] Attempt {i+1}: Revision mismatch (expected '{expected_revision}', got '{rev_header}')")
+                        time.sleep(2)
+                        continue
+                    print(f"[+] Health probe passed (HTTP 200, X-Service-Revision: {rev_header})")
+                    return True
         except Exception as exc:
             print(f"[-] Attempt {i+1}/{max_retries} failed: {exc}")
         time.sleep(2)
