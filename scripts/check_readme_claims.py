@@ -83,6 +83,19 @@ def validate_claims(
         ledger_data = json.load(lf)
 
     stages_recorded = ledger_data.get("stages", {})
+    # Merge any individual stage ledger files present in the same directory
+    base_dir = os.path.dirname(ledger_path) or "."
+    if os.path.exists(base_dir):
+        for fname in os.listdir(base_dir):
+            if fname.startswith("stage_ledger_") and fname.endswith(".json") and fname != os.path.basename(ledger_path):
+                try:
+                    with open(os.path.join(base_dir, fname), "r", encoding="utf-8") as sf:
+                        stg = json.load(sf)
+                        if isinstance(stg, dict) and "stage" in stg:
+                            stages_recorded[stg["stage"]] = stg
+                except Exception:
+                    pass
+
     readme_claims = parse_readme_stages_table(readme_path)
 
     print(f"README Stages Found: {len(readme_claims)} / 9")
