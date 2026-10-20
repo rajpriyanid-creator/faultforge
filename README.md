@@ -217,8 +217,8 @@ If evaluating the Supervised Human Gate and instant rollback without Google Clou
 |---|---|---|---|---|
 | **Fault Profile Canonical Hash** | `644a89784316` (3,500ms delay ± 250ms) | `644a89784316` (3,500ms delay ± 250ms) | Exact match (100% deterministic) | **Measured** |
 | **SLA Budget Breaches** | 5 / 5 breaches (>1,500ms budget) | 0 / 10 breaches (0%) | 100% reduction | **Measured** |
-| **Mean Request Latency (P50)** | 3,742.46 ms | 808.12 ms | -78.4% latency reduction | **Measured** |
-| **Tail Latency (P95)** | 3,918.27 ms | 835.40 ms | -78.7% latency reduction | **Measured** |
+| **Mean Request Latency (P50)** | 3,742.46 ms | 808.12 ms | -78.4% mean reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
+| **Tail Latency (P95)** | 3,918.27 ms | 835.40 ms | -78.7% P95 reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
 | **Circuit Breaker State** | N/A (cascading thread starvation) | `CLOSED` (0 failures, healthy cooldown) | Downstream protected | **Measured** |
 | **Fallback Observability** | None (unhandled hang / 504 Gateway Timeout) | `is_fallback: true`, `is_estimate: true` | Zero dropped checkouts | **Measured** |
 | **Incident MTTR (Mean Time to Recovery)** | ~45 minutes (manual human bisect & test) | < 90 seconds (autonomous agent flow) | ~96% faster MTTR | **Estimated** (enterprise baseline) |
