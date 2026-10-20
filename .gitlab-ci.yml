@@ -321,6 +321,7 @@ govern:audit_receipt_and_gate:
     - python scripts/generate_receipt.py
     - python scripts/evidence_ledger.py --stage govern --job govern:audit_receipt_and_gate --status SUCCESS --artifacts reports/evidence_receipt.json --approval-required
     - python scripts/evidence_ledger.py --summary
+    - python scripts/check_readme_claims.py
     - python scripts/truth_audit.py --final-audit
   artifacts:
     name: "audit-receipt-$CI_COMMIT_SHA"
