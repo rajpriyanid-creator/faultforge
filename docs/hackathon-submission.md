@@ -19,8 +19,10 @@
 - **Additional Prize Opportunity:** **Most Creative ($4,000)**
   - First closed-loop system combining chaos engineering, GitLab Duo custom flows, and empirical exact-fault replay verification.
 - **Google Cloud Deployment Bonus:** (+0.2 Points)
-  - Google Cloud Run Knative deployment and automated canary traffic splitting / rollback implemented in `infra/cloudrun/` and `scripts/cloudrun_traffic.py`.
-- **Autonomy Model:** Supervised Autonomy (human approves promotion to 100% live traffic).
+  - Live Google Cloud Run Service: [`https://faultforge-checkout-136942862703.us-central1.run.app`](https://faultforge-checkout-136942862703.us-central1.run.app)
+  - Interactive Dashboard: [`https://faultforge-checkout-136942862703.us-central1.run.app/dashboard`](https://faultforge-checkout-136942862703.us-central1.run.app/dashboard)
+  - Knative deployment spec (`infra/cloudrun/service.yaml`) and automated canary traffic splitting / instant rollback automation (`scripts/cloudrun_traffic.py`).
+- **Autonomy Model:** Supervised Autonomy (Autonomous staging, testing, and replay; mandatory human sign-off for live production traffic).
 
 ---
 
