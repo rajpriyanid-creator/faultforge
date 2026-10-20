@@ -60,9 +60,19 @@ def test_generate_receipt_fully_verified_when_all_consistent(tmp_path, monkeypat
             "raw_metrics": {"baseline_avg_ms": 3600.0, "hardened_avg_ms": 820.0}
         }, f)
 
-    # 3. Duo run
+    # 3. Duo run & Duo evidence
     with open(os.path.join(reports_dir, "duo_run.json"), "w") as f:
-        json.dump({"run_id": "duo-run-12345", "status": "CONFIRMED", "executed": True, "web_url": "https://gitlab.com/mr/1"}, f)
+        json.dump({"run_id": "duo-run-12345", "status": "CONFIRMED", "executed": True, "web_url": "https://gitlab.com/project/-/merge_requests/1"}, f)
+
+    with open(os.path.join(reports_dir, "duo_evidence.json"), "w") as f:
+        json.dump({
+            "found": True,
+            "mr_iid": 1,
+            "mr_url": "https://gitlab.com/project/-/merge_requests/1",
+            "source_branch": "fix/resilience-flow",
+            "author_username": "ai-faultforge_resilience_flow",
+            "run_url": "https://gitlab.com/project/-/flows/run/1"
+        }, f)
 
     # 4. 15 probe runs (5 base, 10 hard)
     with open(os.path.join(reports_dir, "fault_run_baseline.json"), "w") as f:
