@@ -1,0 +1,12 @@
+{
+  "status": "APPLIED",
+  "proxy_name": "shipping_api_proxy",
+  "listen": "0.0.0.0:8082",
+  "upstream": "127.0.0.1:8081",
+  "fault_type": "latency",
+  "attributes": {
+    "latency": 3500,
+    "jitter": 250
+  },
+  "config_hash": "345d4d85773a"
+}

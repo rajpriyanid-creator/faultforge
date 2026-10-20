@@ -38,12 +38,20 @@ Standard CI pipelines test that unit tests pass, but unit tests usually mock out
 FaultForge closes the loop between chaos engineering, AI-assisted diagnosis, and empirical verification:
 1. **Tracks Incident Issue:** Monitors SLA budget breaches and opens a structured Incident Issue with sanitized logs.
 2. **Injects Chaos:** Routes outbound calls through Shopify Toxiproxy and injects a 3500ms delay (±250ms jitter).
-3. **Proves Baseline Failure:** Proves checkout service breaches the 1500ms SLA budget (observed 5/5 breaches, 3,446.08ms avg latency).
+3. **Proves Baseline Failure:** Proves checkout service breaches the 1500ms SLA budget (observed 5/5 breaches, 3,446.08ms avg latency, 3,653.06ms max).
 4. **Diagnoses Weakness:** Discovers the regression boundary via deterministic `git bisect` and AST call-site inspection, pinpointing commit `974035c6`.
 5. **Remediates with Duo:** GitLab Duo custom flow (`flows/faultforge-flow.yaml`) plans a scoped resilience fix (0.8s timeout, circuit breaker, and observable fallback) and opens a Merge Request. In CI without Duo API access, CI falls back cleanly to reference code and explicitly records candidate source as `reference-fix (not Duo-authored)` in the cryptographic receipt.
-6. **Replays Exact Fault:** Re-runs the identical Toxiproxy fault profile hash (`644a89784316`) against the candidate code across 10 consecutive probes, achieving 77.6% P95 latency reduction and 92.9% mean latency reduction.
-7. **Signs Audit Receipt:** Generates a cryptographic SHA-256 sealed Evidence Receipt with full run history.
-8. **Supervised Gate:** Enforces risk policy and requires human developer approval before promoting Cloud Run candidate revisions to live traffic.
+6. **Replays Exact Fault (0/10 SLA Breaches — Degraded but Available):** Re-runs the identical Toxiproxy fault profile hash (`644a89784316`) against the candidate code across 10 consecutive probes. All 10 probes pass the SLA budget (0% breaches vs 100% baseline failure). The bimodal distribution reflects 3 timeout probes (~814ms) exercising the 0.8s deadline, followed by 7 breaker-tripped probes short-circuiting locally in 2.65ms (P50 2.88ms, -99.9% reduction) to return deterministic fallback rate quotes (`$7.50 + $1.25 * weight_kg`) without dropped checkouts.
+7. **Signs Cryptographic Audit Receipt:** Generates a tamper-evident SHA-256 sealed Evidence Receipt with full run history across all 9 GitLab stages.
+8. **Supervised Human Gate:** Enforces risk policy and requires human developer approval before promoting Cloud Run candidate revisions to live traffic.
+
+### Evidence Receipt Status & Unestablished Items
+The final signed cryptographic Evidence Receipt records status `CONTAINED_NEEDS_REVIEW`. In strict compliance with the **Never Fabricate Evidence** rule, three items are honestly flagged as `not_established` because they require private secrets or interactive platform access:
+1. **GitLab Duo Flow Execution:** Authored in `flows/faultforge-flow.yaml` and verified for spec validity, but was unexecuted in public CI (`NOT_EXECUTED_NO_CREDENTIALS`). The candidate is labeled `reference-fix (not Duo-authored)`.
+2. **Candidate Cloud Run Deployment in Public CI:** Stage `release` is recorded as `SKIPPED_NO_GCP_CREDENTIALS` on GitLab SaaS runners to keep GCP Service Account keys out of public repositories.
+3. **Live Canary Traffic Split Verification:** Probed endpoint confirms production revision `faultforge-checkout-00002-kpl` is healthy (HTTP 200), while traffic split validation was unverified (`UNVERIFIED_NO_GCP_AUTH`).
+
+FaultForge proves that honest status reporting beats impressive simulated green checkmarks.
 
 ### Duo Execution & Fallback Wording
 If GitLab Duo custom flow did not execute on the cloud runner due to namespace credit or environment constraints, the Duo flow (`flows/faultforge-flow.yaml`) is described as implemented and verified for specification validity, and the pipeline operates as agent-agnostic verification of any candidate fix. The candidate fix is truthfully reported as `reference-fix (not Duo-authored)` unless `duo_run.json` confirms `executed: true`.

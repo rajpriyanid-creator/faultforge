@@ -1,7 +1,7 @@
 # FaultForge Latency Reduction & Measurement Methodology
 # SPDX-License-Identifier: MIT
 
-This document defines the mathematical formulas, measurement conditions, and experimental phases used to evaluate FaultForge resilience and compute latency reduction metrics.
+This document defines the mathematical formulas, measurement conditions, experimental phases, and statistical distributions used to evaluate FaultForge resilience and compute latency reduction metrics.
 
 ---
 
@@ -15,7 +15,14 @@ This document defines the mathematical formulas, measurement conditions, and exp
 
 ---
 
-## 2. Measurement Formulas & Empirical Values
+## 2. Headline Result: Degraded but Available
+
+> ### 🟢 Headline: 0/10 SLA Breaches: Degraded but Available (Deterministic Estimated Fallback Quotes)
+> **Crucial Measurement Semantic:** All 10 candidate probes under active fault return `is_fallback: true` and `is_estimate: true`. The **2.88 ms P50 latency** and **-99.9% reduction** measure serving deterministic local fallback quotes (`$7.50 + $1.25 * weight_kg`) when the circuit breaker trips OPEN during complete downstream carrier outage, rather than hanging indefinitely until upstream 504 Gateway Timeouts.
+
+---
+
+## 3. Measurement Formulas & Empirical Values
 
 All latency reduction metrics recorded in `reports/replay_evaluation.json` and rendered by `scripts/render_metrics.py` are deterministically computed using the formulas below:
 
@@ -39,13 +46,37 @@ $$\text{Mean Reduction (\%)} = \left( \frac{\text{Baseline Mean (ms)} - \text{Ca
 
 ### C. Median (P50) Latency Reduction
 $$\text{P50 Reduction (\%)} = \left( \frac{3,453.42 - 2.88}{3,453.42} \right) \times 100 = \mathbf{99.9\%}$$
+*(Measures instant local fallback quote computation when the circuit breaker trips OPEN).*
 
 ### D. Maximum Latency Reduction
 $$\text{Max Reduction (\%)} = \left( \frac{3,653.06 - 817.02}{3,653.06} \right) \times 100 = \mathbf{77.6\%}$$
 
 ---
 
-## 3. Two-Phase Replay Verification
+## 4. Empirical Sample Distribution & Variance Analysis
+
+| Statistical Metric | Baseline Run (N=5) | Candidate Replay (N=10) | Notes on Distribution |
+|---|---|---|---|
+| **Count ($N$)** | 5 probes | 10 probes | CI execution dataset |
+| **SLA Breaches** | 5 / 5 (100% failure) | 0 / 10 (0% breaches) | 1,500 ms SLA threshold |
+| **Mean** | 3,446.08 ms | 246.18 ms | -92.9% mean reduction |
+| **Median (P50)** | 3,453.42 ms | 2.88 ms | -99.9% P50 reduction |
+| **P95** | 3,653.06 ms | 817.02 ms | -77.6% P95 reduction |
+| **Minimum** | 3,268.03 ms | 2.37 ms | Min recorded latency |
+| **Maximum** | 3,653.06 ms | 817.02 ms | Max recorded latency |
+| **Sample Variance ($s^2$)** | 28,183.84 ms² | 153,759.43 ms² | Candidate has high variance due to bimodal distribution |
+| **Sample Std Dev ($s$)** | ±167.88 ms | ±392.12 ms | Bimodal: timeout vs open breaker |
+
+### Why Candidate Variance is High (Bimodal Distribution)
+The candidate probe distribution is strictly bimodal across two operational phases:
+1. **Phase A (Probes 1–3):** Timeout-only path. Probes experience the full 800ms client timeout before returning fallback quotes (Mean: 814.42 ms, P95: 817.02 ms, Min: 810.74 ms, Max: 817.02 ms, $s^2 = 11.2\text{ ms}^2$, $s = \pm 3.35\text{ ms}$). Breaker state is `CLOSED`.
+2. **Phase B (Probes 4–10):** Breaker short-circuit. Having reached 3 consecutive failures, the circuit breaker transitions to `OPEN`. All subsequent probes short-circuit locally without network I/O (Mean: 2.65 ms, P95: 3.46 ms, Min: 2.37 ms, Max: 3.46 ms, $s^2 = 0.15\text{ ms}^2$, $s = \pm 0.39\text{ ms}$).
+
+Combining 3 timeout probes (~814ms) and 7 short-circuit probes (~2.65ms) produces an aggregate mean of 246.18 ms with sample variance 153,759.43 ms² (std dev ±392.12 ms).
+
+---
+
+## 5. Two-Phase Replay Verification
 
 FaultForge evaluates timeout verification and circuit-breaker short-circuit verification across two distinct operational phases:
 
@@ -56,7 +87,7 @@ FaultForge evaluates timeout verification and circuit-breaker short-circuit veri
 
 ---
 
-## 4. Anti-Fake Policy on Percentage Claims
+## 6. Anti-Fake Policy on Percentage Claims
 
 - Documentation and dashboard must explicitly cite the basis when quoting percentage improvements (e.g. *"77.6% P95 latency reduction"* or *"92.9% mean latency reduction"*).
 - No hardcoded numbers: all values displayed in the dashboard are dynamically read from `reports/replay_evaluation.json` (`latency_reduction` and `raw_metrics` objects).

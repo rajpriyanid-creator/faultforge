@@ -15,7 +15,7 @@ SAMPLE_README = """
 | **`verify`** | Exact Replay | `reports/fault_run_baseline.json` | ✅ SUCCESS |
 | **`secure`** | Secret Detection | `reports/bandit_security_report.json` | ✅ SUCCESS |
 | **`package`** | Docker Build | `reports/image_digest.txt` | ✅ SUCCESS |
-| **`release`** | Cloud Run Deploy | `reports/release.json` | ✅ SUCCESS / SKIPPED |
+| **`release`** | Cloud Run Deploy | `reports/release.json` | ⚠️ SKIPPED (no GCP credentials) |
 | **`monitor`** | Telemetry Probes | `reports/monitor.json` | ✅ SUCCESS |
 | **`govern`** | Supervised Gate | `reports/evidence_receipt.json` | ✅ SUCCESS |
 
@@ -28,7 +28,7 @@ def test_parse_readme_stages_table(tmp_path):
     claims = parse_readme_stages_table(str(readme))
     assert len(claims) == 9
     assert claims["plan"] == "✅ SUCCESS"
-    assert claims["release"] == "✅ SUCCESS / SKIPPED"
+    assert claims["release"] == "⚠️ SKIPPED (no GCP credentials)"
     assert "Duo: not executed" in claims["create"]
 
 def test_validate_claims_fails_when_no_ci_evidence(tmp_path):
@@ -65,9 +65,33 @@ def test_validate_claims_passes_when_consistent(tmp_path):
 
 def test_validate_claims_fails_when_inflated_claim(tmp_path):
     # README claims bare SUCCESS for release, but ledger says SKIPPED
-    inflated_readme = SAMPLE_README.replace("✅ SUCCESS / SKIPPED", "✅ SUCCESS")
+    inflated_readme = SAMPLE_README.replace("⚠️ SKIPPED (no GCP credentials)", "✅ SUCCESS")
     readme = tmp_path / "README.md"
     readme.write_text(inflated_readme, encoding="utf-8")
+
+    ledger_file = tmp_path / "stage_ledger.json"
+    receipt_file = tmp_path / "evidence_receipt.json"
+
+    stages = {}
+    for stg in ["plan", "create", "configure", "verify", "secure", "package", "monitor", "govern"]:
+        stages[stg] = {"status": "SUCCESS", "duo_executed": False}
+    stages["release"] = {"status": "SKIPPED"}
+
+    ledger_file.write_text(json.dumps({"stages": stages}), encoding="utf-8")
+    receipt_file.write_text(json.dumps({"final_status": "CONTAINED_NEEDS_REVIEW"}), encoding="utf-8")
+
+    assert validate_claims(
+        readme_path=str(readme),
+        ledger_path=str(ledger_file),
+        receipt_path=str(receipt_file),
+        strict_all_stages=True
+    ) is False
+
+def test_validate_claims_fails_when_hedged_skipped_claim(tmp_path):
+    # README hedges with "SUCCESS or SKIPPED" when ledger is strictly SKIPPED
+    hedged_readme = SAMPLE_README.replace("⚠️ SKIPPED (no GCP credentials)", "✅ SUCCESS or SKIPPED")
+    readme = tmp_path / "README.md"
+    readme.write_text(hedged_readme, encoding="utf-8")
 
     ledger_file = tmp_path / "stage_ledger.json"
     receipt_file = tmp_path / "evidence_receipt.json"

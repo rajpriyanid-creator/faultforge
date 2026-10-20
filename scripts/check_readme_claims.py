@@ -131,9 +131,12 @@ def validate_claims(
             discrepancies.append(f"Stage '{stage}' marked FAILED in ledger, but claimed in README as '{claim_str}'.")
             print(f"{stage:<12} {ledger_status:<16} {claim_str:<24} [FAIL]")
         elif ledger_status == "SKIPPED":
-            # If ledger skipped, README must acknowledge SKIPPED
-            if "SKIPPED" not in claim_str.upper():
-                discrepancies.append(f"Stage '{stage}' is SKIPPED in ledger, but README claims unqualified SUCCESS ('{claim_str}').")
+            # If ledger skipped, README must acknowledge SKIPPED and must NOT claim SUCCESS (no hedging)
+            if "SUCCESS" in claim_str.upper():
+                discrepancies.append(f"Stage '{stage}' is SKIPPED in ledger, but README hedges with SUCCESS ('{claim_str}').")
+                print(f"{stage:<12} {ledger_status:<16} {claim_str:<24} [FAIL]")
+            elif "SKIPPED" not in claim_str.upper():
+                discrepancies.append(f"Stage '{stage}' is SKIPPED in ledger, but README does not state SKIPPED ('{claim_str}').")
                 print(f"{stage:<12} {ledger_status:<16} {claim_str:<24} [FAIL]")
             else:
                 print(f"{stage:<12} {ledger_status:<16} {claim_str:<24} [PASS]")
@@ -175,7 +178,7 @@ def validate_claims(
             print(f"    - {d}")
         return False
 
-    print("[+] PASSED: All README claims perfectly match the empirical evidence ledger.")
+    print("[+] PASSED: All README claims match the empirical evidence ledger.")
     return True
 
 def main():

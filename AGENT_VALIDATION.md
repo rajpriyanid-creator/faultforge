@@ -153,7 +153,7 @@ FaultForge is designed to cover all 9 stages of the software delivery lifecycle 
 - **Devpost Submission Guide:** [`docs/hackathon-submission.md`](docs/hackathon-submission.md)
 - **Sub-3 Minute Video Script:** [`docs/demo-script.md`](docs/demo-script.md)
 - **Supervised Agent Architecture:** [`AGENTS.md`](AGENTS.md)
-- **Hardening Report & Audit Trail:** [`docs/hardening-report.md`](docs/hardening-report.md)
+- **Empirical Measurement Method:** [`docs/measurement-method.md`](docs/measurement-method.md)
 - **Path A Provenance Record:** [`docs/provenance.md`](docs/provenance.md)
 - **Safety Policy & Autonomy Dial:** [`docs/safety-policy.md`](docs/safety-policy.md)
 - **Sample Reports & Sealed Receipts:** [`docs/sample_reports/`](docs/sample_reports/)

@@ -136,7 +136,7 @@ FaultForge implements real, testable operations with machine-readable artifacts 
 | **`verify`** | Runs test suite and executes baseline chaos run reproducing SLA budget breach | [`docs/sample_reports/fault_run_baseline.json`](docs/sample_reports/fault_run_baseline.json) | ✅ SUCCESS |
 | **`secure`** | Scans Python AST for security weaknesses (Bandit) and validates secret sanitization | [`docs/sample_reports/bandit_security_report.json`](docs/sample_reports/bandit_security_report.json) | ✅ SUCCESS |
 | **`package`** | Builds multi-stage production Docker container with non-root security user | [`Dockerfile`](Dockerfile) | ✅ SUCCESS |
-| **`release`** | Deploys candidate container revision to Google Cloud Run staging (`--no-traffic --tag candidate`) when GCP credentials exist; otherwise records `SKIPPED_NO_GCP_CREDENTIALS` | [`docs/sample_reports/rollback.json`](docs/sample_reports/rollback.json) | ✅ SUCCESS (deployed) or SKIPPED (no GCP credentials) |
+| **`release`** | Deploys candidate container revision to Google Cloud Run staging (`--no-traffic --tag candidate`) when GCP credentials exist; otherwise records `SKIPPED_NO_GCP_CREDENTIALS` | [`docs/sample_reports/release.json`](docs/sample_reports/release.json) | ⚠️ SKIPPED (no GCP credentials) |
 | **`monitor`** | Evaluates exact-fault candidate replay (10 probes) and tracks sliding-window percentiles | [`docs/sample_reports/replay_evaluation.json`](docs/sample_reports/replay_evaluation.json) | ✅ SUCCESS |
 | **`govern`** | Enforces Supervised Autonomy gate and signs tamper-evident SHA-256 seal | [`docs/sample_reports/evidence_receipt.json`](docs/sample_reports/evidence_receipt.json) | ✅ SUCCESS |
 
@@ -213,16 +213,20 @@ If evaluating the Supervised Human Gate and instant rollback without Google Clou
 
 ## 6. Empirical Resilience Metrics & Recovery Dashboard
 
+> ### 🟢 Headline: 0/10 SLA Breaches: Degraded but Available (Deterministic Estimated Fallback Quotes)
+> **Deterministic Fallback Semantics:** All 10 candidate probes under active fault return `is_fallback: true` and `is_estimate: true`. The 2.88 ms P50 latency and -99.9% reduction measure returning deterministic local fallback rate quotes (`$7.50 + $1.25 * weight_kg`) during complete carrier outage, rather than hanging indefinitely until upstream 504 timeouts.
+
 | Metric | Unpatched Baseline Under Fault | Hardened Candidate Under Identical Fault | Delta / Improvement | Measurement Type |
 |---|---|---|---|---|
 | **Fault Profile Canonical Hash** | `644a89784316` (3,500ms delay ± 250ms) | `644a89784316` (3,500ms delay ± 250ms) | Exact match (100% deterministic) | **Measured** |
-| **SLA Budget Breaches** | 5 / 5 breaches (>1,500ms budget) | 0 / 10 breaches (0%) | 100% reduction | **Measured** |
+| **SLA Budget Breaches** | 5 / 5 breaches (>1,500ms budget) | 0 / 10 breaches (0%) | 100% reduction: Degraded but Available | **Measured** |
 | **Mean Request Latency** | 3446.08 ms | 246.18 ms | -92.9% mean reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
-| **Median Latency (P50)** | 3453.42 ms | 2.88 ms | -99.9% P50 reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
+| **Median Latency (P50)** | 3453.42 ms | 2.88 ms | -99.9% P50 reduction (deterministic fallback rate quote) | **Measured** |
 | **Tail Latency (P95)** | 3653.06 ms | 817.02 ms | -77.6% P95 reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
-| **Max Latency** | 3653.06 ms | 817.02 ms | -77.6% Max reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
+| **Min / Max Latency** | 3268.03 ms / 3653.06 ms | 2.37 ms / 817.02 ms | -77.6% Max reduction | **Measured** |
+| **Sample Variance / Std Dev** | 28183.84 ms² (±167.88 ms) | 153759.43 ms² (±392.12 ms) | Bimodal candidate (timeout path vs open-breaker short-circuit) | **Measured** |
 | **Circuit Breaker State** | N/A (cascading thread starvation) | Phase A (CLOSED (reset each probe)) & Phase B (OPEN (7 of 10 short-circuited)) | Downstream protected | **Measured** |
-| **Fallback Observability** | None (unhandled hang / 504 Gateway Timeout) | `is_fallback: true`, `is_estimate: true` | Zero dropped checkouts | **Measured** |
+| **Fallback Observability** | None (unhandled hang / 504 Gateway Timeout) | `is_fallback: true`, `is_estimate: true` | Zero dropped checkouts (local fallback estimate) | **Measured** |
 | **Incident MTTR (Mean Time to Recovery)** | ~45 minutes (industry manual response) | < 90 seconds (autonomous agent flow) | Design target, not measured | **Design target, not measured** |
 
 ---
