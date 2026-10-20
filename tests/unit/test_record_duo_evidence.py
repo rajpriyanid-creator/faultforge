@@ -44,7 +44,7 @@ def test_record_duo_evidence_parses_matching_mr(tmp_path, monkeypatch):
     monkeypatch.setattr("requests.get", mock_get)
 
     evidence = query_duo_evidence(
-        token="mock-auth-token-12345",
+        token="test-token",
         project_id="12345",
         output_path=output_file,
         bot_user="ai-faultforge_resilience_flow"
