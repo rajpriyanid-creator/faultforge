@@ -191,10 +191,13 @@ def audit_report_consistency(final_mode: bool = False) -> List[str]:
         violations.append("Running in CI environment but .git repository history is missing")
 
     if final_mode:
-        if not os.path.exists(receipt_file):
-            violations.append(f"Final audit requires active {receipt_file} to exist and be generated at runtime")
-        if not os.path.exists(ledger_file):
-            violations.append(f"Final audit requires active {ledger_file} to exist and record pipeline stages")
+        if not os.path.exists(receipt_file) and not os.path.exists(ledger_file):
+            violations.append("no CI evidence present (`reports/` is empty)")
+        else:
+            if not os.path.exists(receipt_file):
+                violations.append(f"Final audit requires active {receipt_file} to exist and be generated at runtime")
+            if not os.path.exists(ledger_file):
+                violations.append(f"Final audit requires active {ledger_file} to exist and record pipeline stages")
 
     receipt_data = {}
     if os.path.exists(receipt_file):

@@ -5,7 +5,8 @@ import hashlib
 import pytest
 from scripts.generate_receipt import generate_evidence_receipt
 
-def test_generate_receipt_creates_valid_seal(tmp_path):
+def test_generate_receipt_creates_valid_seal(tmp_path, monkeypatch):
+    monkeypatch.setenv("CI_COMMIT_SHA", "a" * 40)
     reports_dir = str(tmp_path / "reports")
     os.makedirs(reports_dir, exist_ok=True)
 
@@ -22,7 +23,8 @@ def test_generate_receipt_creates_valid_seal(tmp_path):
     calc_seal = hashlib.sha256(json.dumps(receipt, sort_keys=True).encode("utf-8")).hexdigest()
     assert seal == calc_seal
 
-def test_generate_receipt_refuses_recovered_when_inputs_missing(tmp_path):
+def test_generate_receipt_refuses_recovered_when_inputs_missing(tmp_path, monkeypatch):
+    monkeypatch.setenv("CI_COMMIT_SHA", "a" * 40)
     reports_dir = str(tmp_path / "reports")
     os.makedirs(reports_dir, exist_ok=True)
 
@@ -32,6 +34,23 @@ def test_generate_receipt_refuses_recovered_when_inputs_missing(tmp_path):
     receipt = generate_evidence_receipt(reports_dir, json_path, md_path)
     assert receipt["final_status"] != "RECOVERED_AND_VERIFIED"
     assert len(receipt["not_established"]) > 0
+
+def test_generate_receipt_marks_git_unverified_when_no_git(tmp_path, monkeypatch):
+    reports_dir = str(tmp_path / "reports")
+    os.makedirs(reports_dir, exist_ok=True)
+    monkeypatch.delenv("CI_COMMIT_SHA", raising=False)
+    import subprocess
+    def mock_subp(*args, **kwargs):
+        raise FileNotFoundError("git not found")
+    monkeypatch.setattr(subprocess, "check_output", mock_subp)
+
+    json_path = str(tmp_path / "evidence_receipt.json")
+    md_path = str(tmp_path / "EVIDENCE_RECEIPT.md")
+
+    receipt = generate_evidence_receipt(reports_dir, json_path, md_path)
+    assert receipt["commit_sha"] == "UNKNOWN_NO_GIT"
+    assert receipt["git_verified"] is False
+    assert any("git commit identity" in ne for ne in receipt["not_established"])
 
 def test_generate_receipt_fully_verified_when_all_consistent(tmp_path, monkeypatch):
     reports_dir = str(tmp_path / "reports")
