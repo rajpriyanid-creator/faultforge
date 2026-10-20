@@ -52,7 +52,7 @@ FaultForge is an AI-assisted resilience engineering platform built for **GitLab 
                                       v
               +---------------------------------------------------------------+
               |                 Supervised Governance Gate                    |
-              | - LOW risk tier permits staging candidate deployment          |
+              | - MEDIUM risk tier permits staging candidate deployment       |
               | - Deploys candidate revision with --tag candidate (when creds)|
               | - Live traffic promotion requires explicit human authorization|
               | - Automated instantaneous rollback via cloudrun_traffic.py    |

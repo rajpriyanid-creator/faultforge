@@ -49,7 +49,7 @@ The **GitLab Transcend 2026** competition defines **Supervised Autonomy** as:
 
 FaultForge is the quintessential implementation of this exact paradigm:
 
-### 11 Autonomous Multi-Step Gates vs. 1 Human Outcome Approval
+### 11 Agent Quality Checks across 9 CI/CD Lifecycle Stages
 
 ```mermaid
 flowchart TD
@@ -57,8 +57,8 @@ flowchart TD
         G1["1. SLA Breach Detection"] --> G2["2. Sanitized Incident Dossier"]
         G2 --> G3["3. AST & Git Bisect Culprit (974035c)"]
         G3 --> G4["4. Scoped 0.8s Timeout & Fallback Patch"]
-        G4 --> G5["5. Risk Policy Check (<150 Lines, Low Risk)"]
-        G5 --> G6["6. Unit & Integration Tests (52/52 Passed)"]
+        G4 --> G5["5. Risk Policy Check (MEDIUM Tier, Supervised Gate)"]
+        G5 --> G6["6. Unit & Integration Tests (65/65 Passed)"]
         G6 --> G7["7. Exact-Fault Replay (10/10 Passed under 644a89784316)"]
         G7 --> G8["8. Bandit Static AST Security Scan"]
         G8 --> G9["9. Hardened Multi-Stage Docker Build"]
@@ -79,8 +79,8 @@ FaultForge implements testable programmatic routing based on diff scope, touched
 
 | Risk Tier | Example Touched Files | Diff Limit | Assigned Route | Autonomous Permissions | Mandatory Human Gate |
 |---|---|---|---|---|---|
-| **Low Risk** | `app/clients/shipping_client.py` (0.8s timeout, fallback) | <150 lines | `auto-apply` | Branch, MR synthesis, test execution, staging deployment, exact-fault replay | Single sign-off at `govern:promote_to_production` |
-| **Medium Risk** | `requirements.txt`, `Dockerfile`, `docker-compose.yml` | Any | `supervised` | Branch creation, test execution (flagged `REQUIRES_INSPECTION`) | Human sign-off required before staging & production |
+| **Low Risk** | Documentation, non-production test fixtures, comments | <50 lines | `auto-apply` | Branch, test execution | Automated promotion |
+| **Medium Risk** | `app/clients/shipping_client.py` (0.8s timeout, circuit breaker) | <150 lines | `supervised` | Branch, MR synthesis, test execution, staging deployment, exact-fault replay | Single human sign-off at `govern:promote_to_production` |
 | **High Risk** | `app/auth/tokens.py`, payment processing, DB migrations | Any or >150 lines | `assisted` | **Automation halted.** Agent files advisory issue | Manual developer implementation & approval required at each step |
 
 ### The Enterprise Case: Why Supervised Wins
