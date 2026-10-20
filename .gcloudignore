@@ -12,3 +12,11 @@ venv
 .venv
 *.zip
 *.log
+bin/
+bin/*.exe
+*.exe
+.env*
+reports/
+*.key
+*.pem
+credentials*.json
