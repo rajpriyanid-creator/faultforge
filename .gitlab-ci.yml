@@ -91,11 +91,8 @@ create:duo_remediation_mr:
 configure:chaos_topology:
   stage: configure
   image: python:3.12-slim
-  services:
-    - name: ghcr.io/shopify/toxiproxy:2.9.0
-      alias: toxiproxy
   variables:
-    TOXIPROXY_URL: "http://toxiproxy:8474"
+    TOXIPROXY_UPSTREAM: "127.0.0.1:8081"
   dependencies:
     - create:duo_remediation_mr
   script:
@@ -127,11 +124,7 @@ verify:unit_and_integration:
 verify:exact_fault_replay_proof:
   stage: verify
   image: python:3.12-slim
-  services:
-    - name: ghcr.io/shopify/toxiproxy:2.9.0
-      alias: toxiproxy
   variables:
-    TOXIPROXY_URL: "http://toxiproxy:8474"
     SHIPPING_SERVICE_URL: "http://127.0.0.1:8082"
   dependencies:
     - create:duo_remediation_mr

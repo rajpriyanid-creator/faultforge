@@ -2,6 +2,7 @@
   "run_id": "run-hard-fixture-01",
   "label": "candidate",
   "git_sha": "a1702b002ea1fbc5a10bc0aa0a24158073b70eac",
+  "proxy_engine": "toxiproxy",
   "profile_hash": "hash-abc-123",
   "payload_hash": "payload-xyz-999",
   "toxic_readback": {
