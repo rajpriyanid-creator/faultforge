@@ -214,7 +214,7 @@ If evaluating the Supervised Human Gate and instant rollback without Google Clou
 ## 6. Empirical Resilience Metrics & Recovery Dashboard
 
 > ### 🟢 Headline: 0/10 SLA Breaches: Degraded but Available (Deterministic Estimated Fallback Quotes)
-> **Deterministic Fallback Semantics:** All 10 candidate probes under active fault return `is_fallback: true` and `is_estimate: true`. The 2.88 ms P50 latency and -99.9% reduction measure returning deterministic local fallback rate quotes (`$7.50 + $1.25 * weight_kg`) during complete carrier outage, rather than hanging indefinitely until upstream 504 timeouts.
+> **Deterministic Fallback Semantics:** All 10 candidate probes under active fault return `is_fallback: true` and `is_estimate: true`. The 2.88 ms P50 latency and -99.9% reduction measure returning deterministic local fallback rate quotes (`$7.50 + $1.25 * weight_kg`) during complete carrier outage, rather than waiting ~3.5 s for degraded carrier responses and breaching the 1,500 ms SLA.
 
 | Metric | Unpatched Baseline Under Fault | Hardened Candidate Under Identical Fault | Delta / Improvement | Measurement Type |
 |---|---|---|---|---|
@@ -226,7 +226,7 @@ If evaluating the Supervised Human Gate and instant rollback without Google Clou
 | **Min / Max Latency** | 3268.03 ms / 3653.06 ms | 2.37 ms / 817.02 ms | -77.6% Max reduction | **Measured** |
 | **Sample Variance / Std Dev** | 28183.84 ms² (±167.88 ms) | 153759.43 ms² (±392.12 ms) | Bimodal candidate (timeout path vs open-breaker short-circuit) | **Measured** |
 | **Circuit Breaker State** | N/A (cascading thread starvation) | Phase A (CLOSED (reset each probe)) & Phase B (OPEN (7 of 10 short-circuited)) | Downstream protected | **Measured** |
-| **Fallback Observability** | None (unhandled hang / 504 Gateway Timeout) | `is_fallback: true`, `is_estimate: true` | Zero dropped checkouts (local fallback estimate) | **Measured** |
+| **Fallback Observability** | None (returned 200 after ~3.5 s, breaching the 1,500 ms SLA) | `is_fallback: true`, `is_estimate: true` | Zero dropped checkouts (local fallback estimate) | **Measured** |
 | **Incident MTTR (Mean Time to Recovery)** | ~45 minutes (industry manual response) | < 90 seconds (autonomous agent flow) | Design target, not measured | **Design target, not measured** |
 
 ---
@@ -264,7 +264,7 @@ In strict compliance with the **Never Fabricate Evidence** and **Claim Only What
 1. **Deterministic Baselines Over Ad-Hoc Chaos:** Testing code against arbitrary network delays introduces flakiness. Computing a SHA-256 canonical hash of the Toxiproxy JSON configuration (`644a89784316`) guaranteed that the candidate release was replayed under the exact same 3,500ms delay and 250ms jitter as the baseline failure.
 2. **Fail Loudly with Anti-Fake Guards:** Masking exit codes with `|| true` creates dangerous illusions of safety. By enforcing `scripts/truth_audit.py` in Stage 9, FaultForge guarantees that every green checkmark in the 9-stage pipeline represents a real empirical pass.
 3. **Platform Constraints in Custom Flow YAML:** GitLab Duo Agent Platform flows reject hardcoded model identifiers (`model: claude-3-5-sonnet`) and top-level names. Decoupling prompts and relying on platform-managed model routing ensures multi-environment portability.
-4. **Graceful Fallbacks Over Cascading 504s:** Outbound HTTP dependencies will inevitably degrade. Providing observable fallback responses (`is_fallback: true`, `is_estimate: true`) allows checkout transactions to complete without customer loss while isolating upstream outages.
+4. **Graceful Fallbacks Over Dependency Latency Spikes:** Outbound HTTP dependencies will inevitably degrade. Providing observable fallback responses (`is_fallback: true`, `is_estimate: true`) allows checkout transactions to complete without customer loss while isolating upstream latency breaches.
 5. **Supervised Autonomy Is the Enterprise Standard:** Unchecked autonomous agents present severe production hazards. Supervised autonomy lets the agent handle the 99% grunt work of bisecting, testing, and staging deployment, while reserving final traffic migration for the human engineer.
 
 ---

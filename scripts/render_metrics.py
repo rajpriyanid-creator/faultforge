@@ -225,7 +225,7 @@ def print_metrics(m: Dict[str, Any]):
     print("=" * 70)
     print("HEADLINE: 0/10 SLA breaches: Degraded but Available (Deterministic Estimated Fallback Quotes)")
     print("NOTE: The 2.88 ms P50 latency and -99.9% reduction measure returning deterministic local")
-    print("      fallback rate quotes during complete carrier outage, rather than hanging until upstream timeouts.")
+    print("      fallback rate quotes during complete carrier outage, rather than waiting ~3.5 s for degraded carrier responses.")
     print("-" * 70)
     print(f"{'METRIC':<24} {'BASELINE (N=' + str(m['baseline']['probes']) + ')':<18} {'CANDIDATE (N=' + str(m['candidate']['probes']) + ')':<18} {'REDUCTION / DELTA'}")
     print("-" * 70)
@@ -258,7 +258,7 @@ def print_metrics(m: Dict[str, Any]):
 | **Min / Max Latency** | {m['baseline']['min_ms']:.2f} ms / {m['baseline']['max_ms']:.2f} ms | {m['candidate']['min_ms']:.2f} ms / {m['candidate']['max_ms']:.2f} ms | -{m['reductions']['max_reduction_pct']}% Max reduction | **Measured** |
 | **Sample Variance / Std Dev** | {m['baseline']['variance_ms2']:.2f} ms² (±{m['baseline']['std_dev_ms']:.2f} ms) | {m['candidate']['variance_ms2']:.2f} ms² (±{m['candidate']['std_dev_ms']:.2f} ms) | Bimodal candidate (timeout path vs open-breaker short-circuit) | **Measured** |
 | **Circuit Breaker State** | N/A (cascading thread starvation) | Phase A ({m['phase_a']['breaker_state']}) & Phase B ({m['phase_b']['breaker_state']}) | Downstream protected | **Measured** |
-| **Fallback Observability** | None (unhandled hang / 504 Gateway Timeout) | `is_fallback: true`, `is_estimate: true` | Zero dropped checkouts (local fallback estimate) | **Measured** |
+| **Fallback Observability** | None (returned 200 after ~3.5 s, breaching the 1,500 ms SLA) | `is_fallback: true`, `is_estimate: true` | Zero dropped checkouts (local fallback estimate) | **Measured** |
 | **Incident MTTR (Mean Time to Recovery)** | ~45 minutes (industry manual response) | < 90 seconds (autonomous agent flow) | Design target, not measured | **Design target, not measured** |"""
     print(table)
     print("=" * 70 + "\n")

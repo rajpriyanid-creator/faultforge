@@ -5,7 +5,8 @@ These sample reports were generated and extracted directly from the official Git
 - **Pipeline ID:** [2967640493](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2967640493)
 - **Commit SHA:** `275c598ce2d128aa1107bc9b28c36c9572065ddb`
 - **GitLab Project:** `gitlab-ai-hackathon/transcend-october-2026/43424456/showcase`
-- **Extraction Timestamp:** 2026-10-20T20:20:00Z
+- **Pipeline Execution Window:** 2026-10-20T13:12:51Z to 2026-10-20T13:19:01Z (UTC)
+- **Artifacts Extracted:** 2026-10-20T14:50:00Z (20:20:00 IST)
 
 ---
 

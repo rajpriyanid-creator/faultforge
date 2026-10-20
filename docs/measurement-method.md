@@ -18,7 +18,7 @@ This document defines the mathematical formulas, measurement conditions, experim
 ## 2. Headline Result: Degraded but Available
 
 > ### 🟢 Headline: 0/10 SLA Breaches: Degraded but Available (Deterministic Estimated Fallback Quotes)
-> **Crucial Measurement Semantic:** All 10 candidate probes under active fault return `is_fallback: true` and `is_estimate: true`. The **2.88 ms P50 latency** and **-99.9% reduction** measure serving deterministic local fallback quotes (`$7.50 + $1.25 * weight_kg`) when the circuit breaker trips OPEN during complete downstream carrier outage, rather than hanging indefinitely until upstream 504 Gateway Timeouts.
+> **Crucial Measurement Semantic:** All 10 candidate probes under active fault return `is_fallback: true` and `is_estimate: true`. The **2.88 ms P50 latency** and **-99.9% reduction** measure serving deterministic local fallback quotes (`$7.50 + $1.25 * weight_kg`) when the circuit breaker trips OPEN during complete downstream carrier outage, rather than waiting ~3.5 s for degraded carrier responses and breaching the 1,500 ms SLA.
 
 ---
 
@@ -44,9 +44,19 @@ $$\text{Mean Reduction (\%)} = \left( \frac{\text{Baseline Mean (ms)} - \text{Ca
 - **Candidate Mean:** 246.18 ms
 - **Computed Reduction:** **92.9%** mean latency reduction
 
-### C. Median (P50) Latency Reduction
+### C. Median (P50) Latency Reduction & Percentile Methodology
+
 $$\text{P50 Reduction (\%)} = \left( \frac{3,453.42 - 2.88}{3,453.42} \right) \times 100 = \mathbf{99.9\%}$$
-*(Measures instant local fallback quote computation when the circuit breaker trips OPEN).*
+
+#### Percentile Rank Method Documentation:
+FaultForge's telemetry scripts (`scripts/render_metrics.py`, `scripts/evaluate_replay.py`) use the standard **Nearest-Rank Method** with zero-indexed rank selection:
+
+$$\text{Index} = \lfloor N \times P \rfloor$$
+
+- For Candidate ($N = 10$, sorted latency array `[2.37, 2.44, 2.45, 2.47, 2.51, 2.88, 3.46, 812.74, 813.50, 817.02]`):
+  - $\text{Index} = \lfloor 10 \times 0.50 \rfloor = 5$ (the 6th element in zero-based indexing), selecting **2.88 ms**.
+  - By comparison, the continuous interpolated mid-point median method $\frac{s[4] + s[5]}{2} = \frac{2.51 + 2.88}{2} = \mathbf{2.70\text{ ms}}$ (2.695 ms).
+  - Both methods yield the identical **-99.9% reduction** from the unpatched baseline P50 (3,453.42 ms), confirming that once the circuit breaker trips OPEN, requests short-circuit locally in under 3 milliseconds.
 
 ### D. Maximum Latency Reduction
 $$\text{Max Reduction (\%)} = \left( \frac{3,653.06 - 817.02}{3,653.06} \right) \times 100 = \mathbf{77.6\%}$$

@@ -201,7 +201,7 @@
                   <span class="text-[9px] px-1.5 py-0.2 rounded bg-rose-950 border border-rose-800 text-rose-300">MAIN</span>
                 </div>
                 <div class="text-[11px] text-slate-300 mt-0.5">Raw unconstrained HTTP call without timeout</div>
-                <div class="text-[10px] text-rose-400 mt-1">Hangs 3.5s or crashes with 504 Gateway Timeout</div>
+                <div class="text-[10px] text-rose-400 mt-1">Takes ~3.5s (breaches 1500ms SLA threshold)</div>
               </div>
             </label>
           </div>
@@ -826,7 +826,7 @@
         alert(`Shipping Rate API Probe Result:\n\nCarrier: ${data.carrier || "Carrier Gateway"}\nRate: $${data.rate || 0} ${data.currency || "USD"}\nFallback Active: ${data.is_fallback}\nDuration: ${duration}ms`);
         updateLiveMetrics();
       } catch (e) {
-        alert("Shipping Rate Probe Result: 504 Gateway Timeout (Direct Carrier Unreachable without FaultForge Resilience)");
+        alert("Shipping Rate Probe Result: Degraded Carrier Latency (>3500ms, SLA Budget Breached)");
       }
     }
 

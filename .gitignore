@@ -18,3 +18,4 @@ gate_data/
 reports/*
 !reports/.gitkeep
 !reports/README.md
+*.zip
