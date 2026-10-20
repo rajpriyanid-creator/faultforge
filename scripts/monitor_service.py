@@ -5,13 +5,32 @@ import sys
 import json
 import time
 import requests
-from typing import Dict, Any
+from typing import Dict, Any, Optional
+
+def resolve_target_url(default: str = "http://127.0.0.1:8090") -> str:
+    """Reads deployed candidate URL from reports/release.json if staged, else fallback."""
+    release_path = "reports/release.json"
+    if os.path.exists(release_path):
+        try:
+            with open(release_path, "r", encoding="utf-8") as f:
+                rel = json.load(f)
+                url = rel.get("url")
+                if url and rel.get("status") == "STAGED" and not url.startswith("https://example.invalid"):
+                    return url
+        except Exception:
+            pass
+    env_url = os.getenv("DEPLOYED_URL") or os.getenv("CANDIDATE_URL")
+    if env_url and not env_url.startswith("https://example.invalid"):
+        return env_url
+    return default
 
 def monitor_service(
-    target_url: str = os.getenv("DEPLOYED_URL", "http://127.0.0.1:8090"),
+    target_url: Optional[str] = None,
     eval_path: str = "reports/replay_evaluation.json",
     output_path: str = "reports/monitor.json"
 ) -> Dict[str, Any]:
+    if target_url is None:
+        target_url = resolve_target_url()
     print(f"[*] Probing health and telemetry at {target_url} ...")
     health_status = "UNKNOWN"
     health_code = 0
