@@ -209,17 +209,10 @@ def main():
     # Compute and assert profile hash directly from the live Toxiproxy API readback
     if engine.use_toxi and isinstance(toxic_readback, dict):
         readback_attrs = toxic_readback.get("attributes", toxic_readback)
-        readback_profile = {
-            "attributes": {
-                "jitter": readback_attrs.get("jitter", profile.get("attributes", {}).get("jitter", 250)),
-                "latency": readback_attrs.get("latency", profile.get("attributes", {}).get("latency", 3500))
-            },
-            "fault_type": profile.get("fault_type", "latency"),
-            "listen": profile.get("listen", "0.0.0.0:8082"),
-            "name": profile.get("name", "latency_cascading_hang"),
-            "proxy_name": profile.get("proxy_name", "shipping_api_proxy"),
-            "sla_budget_ms": profile.get("sla_budget_ms", 1500),
-            "upstream": profile.get("upstream", "127.0.0.1:8081")
+        readback_profile = dict(profile)
+        readback_profile["attributes"] = {
+            "jitter": readback_attrs.get("jitter", profile.get("attributes", {}).get("jitter", 250)),
+            "latency": readback_attrs.get("latency", profile.get("attributes", {}).get("latency", 3500))
         }
         live_profile_hash = compute_profile_hash(readback_profile)
     else:
