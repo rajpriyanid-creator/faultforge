@@ -195,16 +195,19 @@ package:container_build:
     DOCKER_TLS_CERTDIR: ""
   dependencies:
     - secure:sast_and_secret_scan
-  before_script:
-    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
   script:
-    - docker build -t $DOCKER_IMAGE .
     - |
       if [ -n "$CI_REGISTRY_USER" ] && [ -n "$CI_REGISTRY_PASSWORD" ]; then
+        echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+        docker build -t $DOCKER_IMAGE .
         docker push $DOCKER_IMAGE
+        DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $DOCKER_IMAGE)
+      else
+        docker build -t $DOCKER_IMAGE .
+        DIGEST=$(docker inspect --format='{{index .Id}}' $DOCKER_IMAGE)
       fi
-    - mkdir -p reports
-    - docker inspect --format='{{index .Id}}' $DOCKER_IMAGE > reports/image_digest.txt
+      mkdir -p reports
+      echo "$DIGEST" > reports/image_digest.txt
     - apk add --no-cache python3
     - python3 scripts/evidence_ledger.py --stage package --job package:container_build --status SUCCESS --artifacts reports/image_digest.txt
   artifacts:
@@ -247,19 +250,26 @@ release:cloudrun_candidate_deploy:
         CANDIDATE_URL=$(gcloud run services describe "$SERVICE_NAME" --region "$GCP_REGION" --format="value(status.traffic[?tag=='candidate'].url)")
         REVISION_NAME=$(gcloud run services describe "$SERVICE_NAME" --region "$GCP_REGION" --format="value(status.traffic[?tag=='candidate'].revisionName)")
         
-        echo "CANDIDATE_URL=${CANDIDATE_URL:-https://faultforge-checkout-136942862703.us-central1.run.app}" >> deploy.env
+        if [ -z "$CANDIDATE_URL" ] || [ -z "$REVISION_NAME" ]; then
+          echo "[-] Error: CANDIDATE_URL or REVISION_NAME is empty after gcloud run services describe. Failing deploy."
+          exit 1
+        fi
         
-        pip install --no-cache-dir requests
+        echo "CANDIDATE_URL=$CANDIDATE_URL" >> deploy.env
+        echo "STAGING_ENV_NAME=staging" >> deploy.env
+        
         python3 scripts/cloudrun_traffic.py --action verify --url "$CANDIDATE_URL" --expected-revision "$REVISION_NAME"
+        python3 -c "import json, time; json.dump({'provider': 'cloudrun', 'status': 'STAGED', 'url': '$CANDIDATE_URL', 'revision': '$REVISION_NAME', 'timestamp': time.time()}, open('reports/release.json', 'w'), indent=2)"
         python3 scripts/evidence_ledger.py --stage release --job release:cloudrun_candidate_deploy --status SUCCESS --artifacts reports/release.json
       else
         echo "[!] GCP_PROJECT or GCP_SA_KEY not configured. Skipping live Cloud Run candidate staging deployment."
         python3 -c "import json, time; json.dump({'provider': 'cloudrun', 'status': 'SKIPPED_NO_GCP_CREDENTIALS', 'reason': 'GCP_PROJECT or GCP_SA_KEY not configured in CI/CD variables', 'timestamp': time.time()}, open('reports/release.json', 'w'), indent=2)"
-        echo "CANDIDATE_URL=https://faultforge-checkout-136942862703.us-central1.run.app" >> deploy.env
+        echo "CANDIDATE_URL=https://example.invalid/skipped" >> deploy.env
+        echo "STAGING_ENV_NAME=staging (skipped, no GCP credentials)" >> deploy.env
         python3 scripts/evidence_ledger.py --stage release --job release:cloudrun_candidate_deploy --status SKIPPED --artifacts reports/release.json
       fi
   environment:
-    name: staging
+    name: $STAGING_ENV_NAME
     url: $CANDIDATE_URL
   artifacts:
     expire_in: 30 days
@@ -336,6 +346,10 @@ govern:promote_to_production:
   script:
     - |
       if [ -n "$GCP_PROJECT" ] && [ -n "$GCP_SA_KEY" ]; then
+        if [ -z "$PRODUCTION_URL" ]; then
+          echo "[-] Error: PRODUCTION_URL environment variable is unset while GCP credentials exist."
+          exit 1
+        fi
         echo "[+] GCP credentials detected. Authenticating Service Account..."
         if [ -f "$GCP_SA_KEY" ]; then
           gcloud auth activate-service-account --key-file="$GCP_SA_KEY"
@@ -347,12 +361,17 @@ govern:promote_to_production:
         gcloud config set project "$GCP_PROJECT"
         echo "[+] Routing 100% production traffic to candidate revision..."
         gcloud run services update-traffic "$SERVICE_NAME" --region "$GCP_REGION" --to-tags candidate=100
+        apt-get update -qq && apt-get install -y -qq python3
+        python3 scripts/evidence_ledger.py --stage govern --job govern:promote_to_production --status SUCCESS
       else
+        echo "DRY RUN: no action taken"
         echo "[!] GCP credentials missing. Performing dry-run promotion validation."
         python3 scripts/cloudrun_traffic.py --action route --service "$SERVICE_NAME" --revisions "$SERVICE_NAME-${CI_COMMIT_SHORT_SHA:-staging}=100" --dry-run
+        apt-get update -qq && apt-get install -y -qq python3
+        python3 scripts/evidence_ledger.py --stage govern --job govern:promote_to_production --status SKIPPED
       fi
   when: manual
   allow_failure: false
   environment:
     name: production
-    url: https://faultforge-checkout-136942862703.us-central1.run.app
+    url: $PRODUCTION_URL
