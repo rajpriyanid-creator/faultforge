@@ -28,6 +28,7 @@ variables:
   SERVICE_NAME: "faultforge-checkout"
   GCP_REGION: "us-central1"
   DOCKER_IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
+  PRODUCTION_URL: "https://faultforge-checkout-136942862703.us-central1.run.app"
 
 cache:
   paths:
@@ -269,7 +270,7 @@ release:cloudrun_candidate_deploy:
         python3 scripts/evidence_ledger.py --stage release --job release:cloudrun_candidate_deploy --status SKIPPED --artifacts reports/release.json
       fi
   environment:
-    name: $STAGING_ENV_NAME
+    name: staging
     url: $CANDIDATE_URL
   artifacts:
     expire_in: 30 days
