@@ -28,6 +28,9 @@ secret_detection:
   stage: secure
   allow_failure: false
 
+sast:
+  stage: secure
+
 semgrep-sast:
   stage: secure
   allow_failure: false

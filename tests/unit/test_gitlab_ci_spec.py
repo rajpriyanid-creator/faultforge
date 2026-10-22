@@ -55,3 +55,12 @@ def test_codeowners_configured_with_valid_username():
 
     assert any("@rajpriyanid" in line for line in lines), "CODEOWNERS must assign ownership to @rajpriyanid"
     assert not any("@rajpr9698" in line for line in lines), "CODEOWNERS must not contain stale @rajpr9698 handle"
+
+def test_security_jobs_override_to_secure_stage():
+    ci_path = ".gitlab-ci.yml"
+    with open(ci_path, "r", encoding="utf-8") as f:
+        ci_yaml = yaml.safe_load(f)
+
+    assert ci_yaml.get("sast", {}).get("stage") == "secure", "sast parent job must be mapped to stage: secure"
+    assert ci_yaml.get("secret_detection", {}).get("stage") == "secure", "secret_detection must be mapped to stage: secure"
+    assert ci_yaml.get("semgrep-sast", {}).get("stage") == "secure", "semgrep-sast must be mapped to stage: secure"
