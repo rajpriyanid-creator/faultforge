@@ -32,7 +32,7 @@ def determine_candidate_source(evidence: Dict[str, Any]) -> str:
     author = str(evidence.get("author_username") or "").lower()
     commit_author = str(evidence.get("commit_author") or "").lower()
     commit_email = str(evidence.get("commit_author_email") or "").lower()
-    run_url = evidence.get("run_url") or os.getenv("FF_FLOW_RUN_URL")
+    run_url = evidence.get("run_url")
     mr_iid = evidence.get("mr_iid")
 
     is_duo_author = (
@@ -57,7 +57,8 @@ def query_duo_evidence(
     api_url: str = "https://gitlab.com/api/v4",
     bot_user: str = "ai-faultforge_resilience_flow",
     require: bool = False,
-    output_path: str = "reports/duo_evidence.json"
+    output_path: str = "reports/duo_evidence.json",
+    from_ci_env: bool = False
 ) -> Dict[str, Any]:
     api_url = api_url.rstrip("/")
 
@@ -71,34 +72,35 @@ def query_duo_evidence(
         pass
 
     if not token or not project_id:
-        flow_run_url = os.getenv("FF_FLOW_RUN_URL")
-        ci_mr_iid = os.getenv("CI_MERGE_REQUEST_IID")
-        ci_ref = os.getenv("CI_MERGE_REQUEST_SOURCE_BRANCH_NAME", os.getenv("CI_COMMIT_REF_NAME", ""))
-        ci_proj_url = os.getenv("CI_PROJECT_URL", "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase").rstrip("/")
+        if from_ci_env:
+            flow_run_url = os.getenv("FF_FLOW_RUN_URL")
+            ci_mr_iid = os.getenv("CI_MERGE_REQUEST_IID")
+            ci_ref = os.getenv("CI_MERGE_REQUEST_SOURCE_BRANCH_NAME", os.getenv("CI_COMMIT_REF_NAME", ""))
+            ci_proj_url = os.getenv("CI_PROJECT_URL", "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase").rstrip("/")
 
-        is_service_account = "service_account" in commit_email.lower() or "healer" in commit_author.lower()
-        is_resilience_branch = "resilience" in ci_ref.lower()
+            is_service_account = "service_account" in commit_email.lower() or "healer" in commit_author.lower()
+            is_resilience_branch = "resilience" in ci_ref.lower()
 
-        if flow_run_url and (ci_mr_iid or is_service_account or is_resilience_branch):
-            iid_val = int(ci_mr_iid) if ci_mr_iid else 3
-            branch_val = ci_ref if ci_ref else "fix/resilience-shipping-timeout"
-            evidence = {
-                "found": True,
-                "mr_iid": iid_val,
-                "mr_url": f"{ci_proj_url}/-/merge_requests/{iid_val}",
-                "source_branch": branch_val,
-                "author_username": os.getenv("GITLAB_USER_LOGIN", "rajpriyanid"),
-                "commit_author": commit_author or "FaultForge, Supervised, Resilience, Healer",
-                "commit_author_email": commit_email or "service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com",
-                "run_url": flow_run_url,
-                "run_id": flow_run_url.rstrip("/").split("/")[-1]
-            }
-            evidence["candidate_source"] = determine_candidate_source(evidence)
-            os.makedirs(os.path.dirname(output_path), exist_ok=True)
-            with open(output_path, "w", encoding="utf-8") as f:
-                json.dump(evidence, f, indent=2)
-            print(f"[+] Duo evidence confirmed via CI environment: {output_path}")
-            return evidence
+            if flow_run_url and (ci_mr_iid or is_service_account or is_resilience_branch):
+                iid_val = int(ci_mr_iid) if ci_mr_iid else 3
+                branch_val = ci_ref if ci_ref else "fix/resilience-shipping-timeout"
+                evidence = {
+                    "found": True,
+                    "mr_iid": iid_val,
+                    "mr_url": f"{ci_proj_url}/-/merge_requests/{iid_val}",
+                    "source_branch": branch_val,
+                    "author_username": os.getenv("GITLAB_USER_LOGIN", "rajpriyanid"),
+                    "commit_author": commit_author or "FaultForge, Supervised, Resilience, Healer",
+                    "commit_author_email": commit_email or "service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com",
+                    "run_url": flow_run_url,
+                    "run_id": flow_run_url.rstrip("/").split("/")[-1]
+                }
+                evidence["candidate_source"] = determine_candidate_source(evidence)
+                os.makedirs(os.path.dirname(output_path), exist_ok=True)
+                with open(output_path, "w", encoding="utf-8") as f:
+                    json.dump(evidence, f, indent=2)
+                print(f"[+] Duo evidence confirmed via CI environment: {output_path}")
+                return evidence
 
         evidence = {
             "found": False,
@@ -203,6 +205,7 @@ def main():
     parser.add_argument("--bot-user", default=os.getenv("FF_DUO_BOT_USER", "ai-faultforge_resilience_flow"))
     parser.add_argument("--require", action="store_true", help="Exit non-zero if no Duo evidence found")
     parser.add_argument("--output", default="reports/duo_evidence.json")
+    parser.add_argument("--from-ci-env", action="store_true", help="Allow resolving evidence from GitLab CI predefined variables")
     args = parser.parse_args()
 
     query_duo_evidence(
@@ -211,7 +214,8 @@ def main():
         api_url=args.api_url,
         bot_user=args.bot_user,
         require=args.require,
-        output_path=args.output
+        output_path=args.output,
+        from_ci_env=args.from_ci_env
     )
 
 if __name__ == "__main__":

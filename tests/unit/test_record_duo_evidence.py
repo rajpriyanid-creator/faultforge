@@ -58,6 +58,16 @@ def test_record_duo_evidence_no_credentials(tmp_path):
     assert evidence["found"] is False
     assert "Missing" in evidence["reason"]
 
+def test_record_duo_evidence_from_ci_env(tmp_path, monkeypatch):
+    monkeypatch.setenv("FF_FLOW_RUN_URL", "https://gitlab.com/test/automate/agent-sessions/9909079")
+    monkeypatch.setenv("CI_MERGE_REQUEST_IID", "3")
+    monkeypatch.setenv("CI_COMMIT_REF_NAME", "fix/resilience-shipping-timeout")
+    output_file = str(tmp_path / "duo_evidence.json")
+    evidence = query_duo_evidence(token=None, project_id=None, from_ci_env=True, output_path=output_file)
+    assert evidence["found"] is True
+    assert evidence["mr_iid"] == 3
+    assert evidence["candidate_source"] == "duo-authored (MR !3)"
+
 def test_record_duo_evidence_require_flag_fails_when_missing(tmp_path):
     output_file = str(tmp_path / "duo_evidence.json")
     with pytest.raises(SystemExit):
