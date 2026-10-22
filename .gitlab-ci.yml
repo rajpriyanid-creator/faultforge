@@ -148,6 +148,7 @@ verify:exact_fault_replay_proof:
   stage: verify
   image: python:3.12-slim
   variables:
+    GIT_DEPTH: "0"
     SHIPPING_SERVICE_URL: "http://127.0.0.1:8082"
   dependencies:
     - create:duo_remediation_mr
@@ -161,6 +162,7 @@ verify:exact_fault_replay_proof:
         CANDIDATE_BRANCH=$(python -c "import json; print(json.load(open('reports/duo_evidence.json'))['source_branch'])")
         CANDIDATE_SRC=$(python -c "import json; print(json.load(open('reports/duo_evidence.json'))['candidate_source'])")
         echo "[+] Testing Duo-authored candidate branch: $CANDIDATE_BRANCH ($CANDIDATE_SRC)"
+        git fetch origin main
         git fetch origin "$CANDIDATE_BRANCH"
         CHANGED_FILES=$(git diff --name-only origin/main...origin/$CANDIDATE_BRANCH)
         echo "[+] Changed files on candidate branch:"
@@ -429,7 +431,7 @@ govern:promote_to_production:
 # Official GitLab Native Release Creation
 release:official_gitlab_release:
   stage: govern
-  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  image: registry.gitlab.com/gitlab-org/release-cli:v0.24.0
   needs:
     - job: govern:audit_receipt_and_gate
       artifacts: true
@@ -457,4 +459,4 @@ release:official_gitlab_release:
           link_type: "other"
         - name: "Container Image Digest"
           url: "$CI_PROJECT_URL/-/jobs/artifacts/$CI_COMMIT_SHA/raw/reports/image_digest.txt?job=package:container_build"
-          link_type: "image"
+          link_type: "other"

@@ -90,6 +90,8 @@ components:
       - get_issue
       - read_file
       - list_dir
+      - edit_file
+      - write_file
       - run_command
       - create_branch
       - create_commit
