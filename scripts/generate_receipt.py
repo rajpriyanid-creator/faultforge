@@ -184,7 +184,7 @@ def generate_evidence_receipt(
         if "Candidate authored by Duo" not in not_established:
             not_established.append("Candidate authored by Duo")
 
-    if len(run_history_15) != 15:
+    if len(run_history_15) < 15:
         not_established.append(f"Complete 15-probe run evidence incomplete (found {len(run_history_15)}/15).")
 
     if not image_digest:

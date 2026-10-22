@@ -1,8 +1,16 @@
 {
-  "found": false,
-  "mr_iid": null,
-  "mr_url": null,
-  "source_branch": null,
-  "author_username": null,
-  "run_url": null
+  "found": true,
+  "mr_iid": 3,
+  "mr_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/merge_requests/3",
+  "source_branch": "fix/resilience-shipping-timeout",
+  "author_username": "rajpriyanid",
+  "commit_author": "FaultForge, Supervised, Resilience, Healer",
+  "commit_author_email": "service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com",
+  "run_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/automate/agent-sessions/9909079",
+  "run_id": "9909079",
+  "fix_sha": "f8aa9d98b8617b51c15b5fa6ceda39eb43762730",
+  "changed_files": [
+    "app/clients/shipping_client.py"
+  ],
+  "candidate_source": "duo-authored (MR !3)"
 }

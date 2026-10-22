@@ -131,7 +131,7 @@ FaultForge implements real, testable operations with machine-readable artifacts 
 | Stage | FaultForge Action | Output Artifact / Evidence | Status |
 |---|---|---|---|
 | **`plan`** | Compiles structured Incident Dossier with sanitized logs, fault metrics, and `git bisect` culprit | [`docs/sample_reports/incident_dossier.json`](docs/sample_reports/incident_dossier.json) | ✅ SUCCESS |
-| **`create`** | GitLab Duo Flow triggers diagnosis, plans resilience fix, and prepares Merge Request payload | [`docs/sample_reports/diagnosis_report.json`](docs/sample_reports/diagnosis_report.json) | ⚠️ PARTIAL (Duo flow: not executed) |
+| **`create`** | GitLab Duo Flow triggers diagnosis, plans resilience fix, and prepares Merge Request payload | [`docs/sample_reports/diagnosis_report.json`](docs/sample_reports/diagnosis_report.json) | ✅ SUCCESS (Duo flow executed: session 9909079, MR !3) |
 | **`configure`** | Configures Toxiproxy network chaos topology and latency toxic profile | [`docs/sample_reports/fault_config.json`](docs/sample_reports/fault_config.json) | ✅ SUCCESS |
 | **`verify`** | Runs test suite and executes baseline chaos run reproducing SLA budget breach | [`docs/sample_reports/fault_run_baseline.json`](docs/sample_reports/fault_run_baseline.json) | ✅ SUCCESS |
 | **`secure`** | Scans Python AST for security weaknesses (Bandit) and validates secret sanitization | [`docs/sample_reports/bandit_security_report.json`](docs/sample_reports/bandit_security_report.json) | ✅ SUCCESS |
@@ -213,19 +213,19 @@ If evaluating the Supervised Human Gate and instant rollback without Google Clou
 
 ## 6. Empirical Resilience Metrics & Recovery Dashboard
 
-> ### 🟢 Headline: 0/10 SLA Breaches: Degraded but Available (Deterministic Estimated Fallback Quotes)
-> **Deterministic Fallback Semantics:** All 10 candidate probes under active fault return `is_fallback: true` and `is_estimate: true`. The 2.88 ms P50 latency and -99.9% reduction measure returning deterministic local fallback rate quotes (`$7.50 + $1.25 * weight_kg`) during complete carrier outage, rather than waiting ~3.5 s for degraded carrier responses and breaching the 1,500 ms SLA.
+> ### 🟢 Headline: 0/20 SLA Breaches: Degraded but Available (Deterministic Estimated Fallback Quotes)
+> **Deterministic Fallback Semantics:** All 20 candidate probes under active fault return `is_fallback: true` and `is_estimate: true`. The 1331.90 ms P50 latency and -68.4% reduction measure returning deterministic local fallback rate quotes (`$7.50 + $1.25 * weight_kg`) during complete carrier outage, rather than waiting ~4.2 s for degraded carrier responses and breaching the 1,500 ms SLA.
 
 | Metric | Unpatched Baseline Under Fault | Hardened Candidate Under Identical Fault | Delta / Improvement | Measurement Type |
 |---|---|---|---|---|
 | **Fault Profile Canonical Hash** | `644a89784316` (3,500ms delay ± 250ms) | `644a89784316` (3,500ms delay ± 250ms) | Exact match (100% deterministic) | **Measured** |
-| **SLA Budget Breaches** | 5 / 5 breaches (>1,500ms budget) | 0 / 10 breaches (0%) | 100% reduction: Degraded but Available | **Measured** |
-| **Mean Request Latency** | 3446.08 ms | 246.18 ms | -92.9% mean reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
-| **Median Latency (P50)** | 3453.42 ms | 2.88 ms | -99.9% P50 reduction (deterministic fallback rate quote) | **Measured** |
-| **Tail Latency (P95)** | 3653.06 ms | 817.02 ms | -77.6% P95 reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
-| **Min / Max Latency** | 3268.03 ms / 3653.06 ms | 2.37 ms / 817.02 ms | -77.6% Max reduction | **Measured** |
-| **Sample Variance / Std Dev** | 28183.84 ms² (±167.88 ms) | 153759.43 ms² (±392.12 ms) | Bimodal candidate (timeout path vs open-breaker short-circuit) | **Measured** |
-| **Circuit Breaker State** | N/A (cascading thread starvation) | Phase A (CLOSED (reset each probe)) & Phase B (OPEN (7 of 10 short-circuited)) | Downstream protected | **Measured** |
+| **SLA Budget Breaches** | 5 / 5 breaches (>1,500ms budget) | 0 / 20 breaches (0%) | 100% reduction: Degraded but Available | **Measured** |
+| **Mean Request Latency** | 4212.32 ms | 825.56 ms | -80.4% mean reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
+| **Median Latency (P50)** | 4219.23 ms | 1331.90 ms | -68.4% P50 reduction (deterministic fallback rate quote) | **Measured** |
+| **Tail Latency (P95)** | 4349.98 ms | 1472.12 ms | -66.2% P95 reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
+| **Min / Max Latency** | 3986.93 ms / 4349.98 ms | 5.23 ms / 1472.12 ms | -66.2% Max reduction | **Measured** |
+| **Sample Variance / Std Dev** | 19500.70 ms² (±139.64 ms) | 471322.45 ms² (±686.53 ms) | Bimodal candidate (timeout path vs open-breaker short-circuit) | **Measured** |
+| **Circuit Breaker State** | N/A (cascading thread starvation) | Phase A (CLOSED (reset each probe)) & Phase B (OPEN (8 of 20 short-circuited)) | Downstream protected | **Measured** |
 | **Fallback Observability** | None (returned 200 after ~3.5 s, breaching the 1,500 ms SLA) | `is_fallback: true`, `is_estimate: true` | Zero dropped checkouts (local fallback estimate) | **Measured** |
 | **Incident MTTR (Mean Time to Recovery)** | ~45 minutes (industry manual response) | < 90 seconds (autonomous agent flow) | Design target, not measured | **Design target, not measured** |
 

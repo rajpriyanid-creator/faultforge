@@ -9,10 +9,10 @@ This matrix provides judges and auditors with an exact, file-and-line traceable 
 
 | GitLab / Duo Feature | Implementation Location | Evidence Artifact | Verification Status | Notes / Criteria |
 |---|---|---|---|---|
-| **Duo Agent Platform Custom Flow** | [`flows/faultforge-flow.yaml`](../flows/faultforge-flow.yaml) | `reports/duo_run.json` | `not_established` | Flow Registry Framework v1 schema with 3 specialized agents (`diagnostician`, `resilience_healer`, `chaos_hardener`), full toolset (`get_issue`, `create_branch`, `create_commit`, `create_merge_request`), and Jinja2 context templates. |
-| **Duo Flow Triggers** | [`flows/faultforge-flow.yaml:8-12`](../flows/faultforge-flow.yaml#L8-L12), [`docs/duo-run-guide.md:27-32`](duo-run-guide.md#L27-L32) | `reports/duo_run.json` | `not_established` | Supports both `@mention` trigger and issue `assign` trigger conditions configured in Automate → Flows. |
+| **Duo Agent Platform Custom Flow** | [`flows/faultforge-flow.yaml`](../flows/faultforge-flow.yaml) | `reports/duo_run.json` | `established` | Flow Registry Framework v1 schema with 3 specialized agents (`diagnostician`, `resilience_healer`, `chaos_hardener`), full toolset, verified live in Session `9909079` (CI Job `17391324956`, Model `claude_sonnet_5_5_vertex`). |
+| **Duo Flow Triggers** | [`flows/faultforge-flow.yaml:8-12`](../flows/faultforge-flow.yaml#L8-L12), [`docs/duo-run-guide.md:27-32`](duo-run-guide.md#L27-L32) | `reports/duo_run.json` | `established` | Supports both `@mention` trigger and issue `assign` trigger conditions configured in Automate → Flows; verified on Issue `#42`. |
 | **Incident Work Item / Issue Tracking** | [`scripts/plan_incident.py:45`](../scripts/plan_incident.py#L45), [`.gitlab-ci.yml:41-50`](../.gitlab-ci.yml#L41-L50) | [`docs/sample_reports/incident_dossier.json`](sample_reports/incident_dossier.json), `reports/issue.json` | `established` | Creates structured incident issue with sanitized logs, stack traces, and Toxiproxy reproduction parameters. |
-| **Duo-Authored Merge Request** | [`scripts/record_duo_evidence.py`](../scripts/record_duo_evidence.py), [`.gitlab-ci.yml:86-97`](../.gitlab-ci.yml#L86-L97) | `reports/duo_evidence.json` | `not_established` | Ready for live Duo flow execution; currently evaluates audited `reference-fix (not Duo-authored)` fallback with no faked records. |
+| **Duo-Authored Merge Request** | [`scripts/record_duo_evidence.py`](../scripts/record_duo_evidence.py), [`.gitlab-ci.yml:86-97`](../.gitlab-ci.yml#L86-L97) | `reports/duo_evidence.json` | `established` | Verified on GitLab Merge Request `!3` (Branch `fix/resilience-shipping-timeout`), Commit `f8aa9d98` authored by `FaultForge, Supervised, Resilience, Healer` (`service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com`). |
 | **9-Stage Lifecycle CI/CD Pipeline** | [`.gitlab-ci.yml:8-17`](../.gitlab-ci.yml#L8-L17) | [`docs/sample_reports/stage_ledger.json`](sample_reports/stage_ledger.json) | `established` | All 9 GitLab stages (`plan`, `create`, `configure`, `verify`, `secure`, `package`, `release`, `monitor`, `govern`) verified on GitLab SaaS runners (Pipeline `2967640493`). |
 | **Merge Request Event Pipelines** | [`.gitlab-ci.yml:9-14`](../.gitlab-ci.yml#L9-L14) | [`.gitlab-ci.yml`](../.gitlab-ci.yml) | `established` | Configured with `workflow:rules` to automatically run MR pipelines on Duo-authored MRs without duplicate branch runs. |
 | **GitLab Container Registry** | [`.gitlab-ci.yml:230-245`](../.gitlab-ci.yml#L230-L245) | [`docs/sample_reports/stage_ledger.json`](sample_reports/stage_ledger.json) | `established` | Authenticates with `$CI_REGISTRY_IMAGE` and builds multi-stage distroless container image. |
@@ -29,18 +29,22 @@ This matrix provides judges and auditors with an exact, file-and-line traceable 
 
 ---
 
-## 2. Status of Unestablished Items (`CONTAINED_NEEDS_REVIEW`)
+## 2. Platform Verification & Current Unestablished Items (`CONTAINED_NEEDS_REVIEW`)
 
-In strict accordance with the hackathon's truthfulness rules, FaultForge reports `final_status: "CONTAINED_NEEDS_REVIEW"` in [`docs/sample_reports/evidence_receipt.json`](sample_reports/evidence_receipt.json). The exact status of the three non-established items is:
+In strict accordance with the hackathon's truthfulness rules, FaultForge reports `final_status: "CONTAINED_NEEDS_REVIEW"` in [`docs/sample_reports/evidence_receipt.json`](sample_reports/evidence_receipt.json).
 
-1. **GitLab Duo Flow Execution:** `not_established`  
-   - *Status:* Unexecuted in sample pipeline due to absence of Duo Agent Platform credits in runner context (`reports/duo_run.json` status `NOT_EXECUTED_NO_CREDENTIALS`).  
-   - *Remediation:* Follow [`docs/duo-run-guide.md`](duo-run-guide.md) to execute the flow with credits and trigger the Duo MR.
+### Established GitLab Duo Artifacts:
+- **Duo Agent Session:** [Session 9909079](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/automate/agent-sessions/9909079) (`claude_sonnet_5_5_vertex`, CI Job `17391324956`)
+- **Incident Work Item:** [Issue #42](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/work_items/42)
+- **Duo Merge Request:** [Merge Request !3](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/merge_requests/3) (Branch `fix/resilience-shipping-timeout`, Commit `f8aa9d98`)
+- **Author Identity:** `FaultForge, Supervised, Resilience, Healer <service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com>`
+- **Candidate Replay Proof:** 0/20 SLA breaches (0%) under identical fault profile `644a89784316` (`candidate_source: duo-authored (MR !3)`)
 
-2. **Cloud Run Candidate Deployment:** `not_established`  
+### Current Non-Established Items:
+1. **Cloud Run Candidate Deployment:** `not_established`  
    - *Status:* Skipped in sample pipeline due to absence of GCP credentials in runner context (`reports/release.json` status `SKIPPED_NO_GCP_CREDENTIALS`).  
    - *Remediation:* Provide `GCP_PROJECT`, `GCP_SA_KEY`, and set `REQUIRE_GCP_DEPLOY=true` in project CI/CD variables.
 
-3. **Live Traffic Split Verification:** `not_established`  
+2. **Live Traffic Split Verification:** `not_established`  
    - *Status:* Unverified against live Cloud Run URL (`live_verification.json` status `NOT_VERIFIED`).  
    - *Remediation:* Run `python scripts/verify_live.py --base-url <LIVE_URL>` after deploying candidate revision with `--no-traffic --tag candidate`.

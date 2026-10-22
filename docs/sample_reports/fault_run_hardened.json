@@ -1,8 +1,8 @@
 {
-  "run_id": "run-1cd7a29d",
-  "timestamp": 1792502108.3777049,
+  "run_id": "run-1124ec3d",
+  "timestamp": 1792690765.4687574,
   "label": "candidate",
-  "git_sha": "a1702b002ea1fbc5a10bc0aa0a24158073b70eac",
+  "git_sha": "f8aa9d98b8617b51c15b5fa6ceda39eb43762730",
   "git_sha_verified": true,
   "proxy_engine": "toxiproxy",
   "toxiproxy_version": "{\"version\": \"2.9.0\"}",
@@ -17,99 +17,7 @@
   "sla_budget_ms": 1500,
   "sla_breaches": 0,
   "passed_sla": true,
-  "per_request_results": [
-    {
-      "probe_index": 1,
-      "order_id": "ORD-064ad325",
-      "latency_ms": 817.02,
-      "status_code": 200,
-      "is_fallback": true,
-      "is_estimate": true,
-      "error": null
-    },
-    {
-      "probe_index": 2,
-      "order_id": "ORD-7348f6d5",
-      "latency_ms": 812.74,
-      "status_code": 200,
-      "is_fallback": true,
-      "is_estimate": true,
-      "error": null
-    },
-    {
-      "probe_index": 3,
-      "order_id": "ORD-f73fcda8",
-      "latency_ms": 813.5,
-      "status_code": 200,
-      "is_fallback": true,
-      "is_estimate": true,
-      "error": null
-    },
-    {
-      "probe_index": 4,
-      "order_id": "ORD-b88b2b8c",
-      "latency_ms": 2.88,
-      "status_code": 200,
-      "is_fallback": true,
-      "is_estimate": true,
-      "error": null
-    },
-    {
-      "probe_index": 5,
-      "order_id": "ORD-26fd063e",
-      "latency_ms": 2.44,
-      "status_code": 200,
-      "is_fallback": true,
-      "is_estimate": true,
-      "error": null
-    },
-    {
-      "probe_index": 6,
-      "order_id": "ORD-02048e8e",
-      "latency_ms": 2.47,
-      "status_code": 200,
-      "is_fallback": true,
-      "is_estimate": true,
-      "error": null
-    },
-    {
-      "probe_index": 7,
-      "order_id": "ORD-37a175aa",
-      "latency_ms": 2.45,
-      "status_code": 200,
-      "is_fallback": true,
-      "is_estimate": true,
-      "error": null
-    },
-    {
-      "probe_index": 8,
-      "order_id": "ORD-32200b6c",
-      "latency_ms": 2.37,
-      "status_code": 200,
-      "is_fallback": true,
-      "is_estimate": true,
-      "error": null
-    },
-    {
-      "probe_index": 9,
-      "order_id": "ORD-e3c0da21",
-      "latency_ms": 2.51,
-      "status_code": 200,
-      "is_fallback": true,
-      "is_estimate": true,
-      "error": null
-    },
-    {
-      "probe_index": 10,
-      "order_id": "ORD-80652652",
-      "latency_ms": 3.46,
-      "status_code": 200,
-      "is_fallback": true,
-      "is_estimate": true,
-      "error": null
-    }
-  ],
-  "metrics": {
+  "phase_a_timeout_only": {
     "total_probes": 10,
     "successful_probes": 10,
     "failed_probes": 0,
@@ -128,20 +36,479 @@
     ],
     "errors": [],
     "latencies_ms": [
-      817.02,
-      812.74,
-      813.5,
-      2.88,
-      2.44,
-      2.47,
-      2.45,
-      2.37,
-      2.51,
-      3.46
+      1472.12,
+      1293.53,
+      1446.19,
+      1351.54,
+      1369.09,
+      1327.24,
+      1407.63,
+      1360.06,
+      1331.9,
+      1364.28
     ],
-    "p50_ms": 2.88,
-    "p95_ms": 817.02,
-    "p99_ms": 817.02,
-    "avg_ms": 246.18
+    "p50_ms": 1364.28,
+    "p95_ms": 1472.12,
+    "p99_ms": 1472.12,
+    "avg_ms": 1372.36,
+    "per_request_results": [
+      {
+        "probe_index": 1,
+        "order_id": "ORD-354fd248",
+        "latency_ms": 1472.12,
+        "status_code": 200,
+        "is_fallback": true,
+        "is_estimate": true,
+        "error": null
+      },
+      {
+        "probe_index": 2,
+        "order_id": "ORD-47e59da0",
+        "latency_ms": 1293.53,
+        "status_code": 200,
+        "is_fallback": true,
+        "is_estimate": true,
+        "error": null
+      },
+      {
+        "probe_index": 3,
+        "order_id": "ORD-60e30150",
+        "latency_ms": 1446.19,
+        "status_code": 200,
+        "is_fallback": true,
+        "is_estimate": true,
+        "error": null
+      },
+      {
+        "probe_index": 4,
+        "order_id": "ORD-61c2042b",
+        "latency_ms": 1351.54,
+        "status_code": 200,
+        "is_fallback": true,
+        "is_estimate": true,
+        "error": null
+      },
+      {
+        "probe_index": 5,
+        "order_id": "ORD-67aff6ba",
+        "latency_ms": 1369.09,
+        "status_code": 200,
+        "is_fallback": true,
+        "is_estimate": true,
+        "error": null
+      },
+      {
+        "probe_index": 6,
+        "order_id": "ORD-fbf29723",
+        "latency_ms": 1327.24,
+        "status_code": 200,
+        "is_fallback": true,
+        "is_estimate": true,
+        "error": null
+      },
+      {
+        "probe_index": 7,
+        "order_id": "ORD-06512770",
+        "latency_ms": 1407.63,
+        "status_code": 200,
+        "is_fallback": true,
+        "is_estimate": true,
+        "error": null
+      },
+      {
+        "probe_index": 8,
+        "order_id": "ORD-1488264b",
+        "latency_ms": 1360.06,
+        "status_code": 200,
+        "is_fallback": true,
+        "is_estimate": true,
+        "error": null
+      },
+      {
+        "probe_index": 9,
+        "order_id": "ORD-83be283c",
+        "latency_ms": 1331.9,
+        "status_code": 200,
+        "is_fallback": true,
+        "is_estimate": true,
+        "error": null
+      },
+      {
+        "probe_index": 10,
+        "order_id": "ORD-2d2f1b88",
+        "latency_ms": 1364.28,
+        "status_code": 200,
+        "is_fallback": true,
+        "is_estimate": true,
+        "error": null
+      }
+    ],
+    "sla_breaches": 0
+  },
+  "phase_b_breaker_open": {
+    "total_probes": 10,
+    "successful_probes": 10,
+    "failed_probes": 0,
+    "fallback_count": 10,
+    "status_codes": [
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200
+    ],
+    "errors": [],
+    "latencies_ms": [
+      1367.88,
+      1361.54,
+      11.38,
+      6.66,
+      6.68,
+      8.09,
+      7.7,
+      5.88,
+      6.63,
+      5.23
+    ],
+    "p50_ms": 7.7,
+    "p95_ms": 1367.88,
+    "p99_ms": 1367.88,
+    "avg_ms": 278.77,
+    "per_request_results": [
+      {
+        "probe_index": 11,
+        "order_id": "ORD-b4d65400",
+        "latency_ms": 1367.88,
+        "status_code": 200,
+        "is_fallback": true,
+        "is_estimate": true,
+        "error": null
+      },
+      {
+        "probe_index": 12,
+        "order_id": "ORD-914da565",
+        "latency_ms": 1361.54,
+        "status_code": 200,
+        "is_fallback": true,
+        "is_estimate": true,
+        "error": null
+      },
+      {
+        "probe_index": 13,
+        "order_id": "ORD-e6017dcb",
+        "latency_ms": 11.38,
+        "status_code": 200,
+        "is_fallback": true,
+        "is_estimate": true,
+        "error": null
+      },
+      {
+        "probe_index": 14,
+        "order_id": "ORD-bd2fae40",
+        "latency_ms": 6.66,
+        "status_code": 200,
+        "is_fallback": true,
+        "is_estimate": true,
+        "error": null
+      },
+      {
+        "probe_index": 15,
+        "order_id": "ORD-833bec24",
+        "latency_ms": 6.68,
+        "status_code": 200,
+        "is_fallback": true,
+        "is_estimate": true,
+        "error": null
+      },
+      {
+        "probe_index": 16,
+        "order_id": "ORD-bed0e55e",
+        "latency_ms": 8.09,
+        "status_code": 200,
+        "is_fallback": true,
+        "is_estimate": true,
+        "error": null
+      },
+      {
+        "probe_index": 17,
+        "order_id": "ORD-cc70598a",
+        "latency_ms": 7.7,
+        "status_code": 200,
+        "is_fallback": true,
+        "is_estimate": true,
+        "error": null
+      },
+      {
+        "probe_index": 18,
+        "order_id": "ORD-bd73b959",
+        "latency_ms": 5.88,
+        "status_code": 200,
+        "is_fallback": true,
+        "is_estimate": true,
+        "error": null
+      },
+      {
+        "probe_index": 19,
+        "order_id": "ORD-204e0894",
+        "latency_ms": 6.63,
+        "status_code": 200,
+        "is_fallback": true,
+        "is_estimate": true,
+        "error": null
+      },
+      {
+        "probe_index": 20,
+        "order_id": "ORD-e7dcaa68",
+        "latency_ms": 5.23,
+        "status_code": 200,
+        "is_fallback": true,
+        "is_estimate": true,
+        "error": null
+      }
+    ],
+    "sla_breaches": 0,
+    "short_circuited_count": 8
+  },
+  "per_request_results": [
+    {
+      "probe_index": 1,
+      "order_id": "ORD-354fd248",
+      "latency_ms": 1472.12,
+      "status_code": 200,
+      "is_fallback": true,
+      "is_estimate": true,
+      "error": null
+    },
+    {
+      "probe_index": 2,
+      "order_id": "ORD-47e59da0",
+      "latency_ms": 1293.53,
+      "status_code": 200,
+      "is_fallback": true,
+      "is_estimate": true,
+      "error": null
+    },
+    {
+      "probe_index": 3,
+      "order_id": "ORD-60e30150",
+      "latency_ms": 1446.19,
+      "status_code": 200,
+      "is_fallback": true,
+      "is_estimate": true,
+      "error": null
+    },
+    {
+      "probe_index": 4,
+      "order_id": "ORD-61c2042b",
+      "latency_ms": 1351.54,
+      "status_code": 200,
+      "is_fallback": true,
+      "is_estimate": true,
+      "error": null
+    },
+    {
+      "probe_index": 5,
+      "order_id": "ORD-67aff6ba",
+      "latency_ms": 1369.09,
+      "status_code": 200,
+      "is_fallback": true,
+      "is_estimate": true,
+      "error": null
+    },
+    {
+      "probe_index": 6,
+      "order_id": "ORD-fbf29723",
+      "latency_ms": 1327.24,
+      "status_code": 200,
+      "is_fallback": true,
+      "is_estimate": true,
+      "error": null
+    },
+    {
+      "probe_index": 7,
+      "order_id": "ORD-06512770",
+      "latency_ms": 1407.63,
+      "status_code": 200,
+      "is_fallback": true,
+      "is_estimate": true,
+      "error": null
+    },
+    {
+      "probe_index": 8,
+      "order_id": "ORD-1488264b",
+      "latency_ms": 1360.06,
+      "status_code": 200,
+      "is_fallback": true,
+      "is_estimate": true,
+      "error": null
+    },
+    {
+      "probe_index": 9,
+      "order_id": "ORD-83be283c",
+      "latency_ms": 1331.9,
+      "status_code": 200,
+      "is_fallback": true,
+      "is_estimate": true,
+      "error": null
+    },
+    {
+      "probe_index": 10,
+      "order_id": "ORD-2d2f1b88",
+      "latency_ms": 1364.28,
+      "status_code": 200,
+      "is_fallback": true,
+      "is_estimate": true,
+      "error": null
+    },
+    {
+      "probe_index": 11,
+      "order_id": "ORD-b4d65400",
+      "latency_ms": 1367.88,
+      "status_code": 200,
+      "is_fallback": true,
+      "is_estimate": true,
+      "error": null
+    },
+    {
+      "probe_index": 12,
+      "order_id": "ORD-914da565",
+      "latency_ms": 1361.54,
+      "status_code": 200,
+      "is_fallback": true,
+      "is_estimate": true,
+      "error": null
+    },
+    {
+      "probe_index": 13,
+      "order_id": "ORD-e6017dcb",
+      "latency_ms": 11.38,
+      "status_code": 200,
+      "is_fallback": true,
+      "is_estimate": true,
+      "error": null
+    },
+    {
+      "probe_index": 14,
+      "order_id": "ORD-bd2fae40",
+      "latency_ms": 6.66,
+      "status_code": 200,
+      "is_fallback": true,
+      "is_estimate": true,
+      "error": null
+    },
+    {
+      "probe_index": 15,
+      "order_id": "ORD-833bec24",
+      "latency_ms": 6.68,
+      "status_code": 200,
+      "is_fallback": true,
+      "is_estimate": true,
+      "error": null
+    },
+    {
+      "probe_index": 16,
+      "order_id": "ORD-bed0e55e",
+      "latency_ms": 8.09,
+      "status_code": 200,
+      "is_fallback": true,
+      "is_estimate": true,
+      "error": null
+    },
+    {
+      "probe_index": 17,
+      "order_id": "ORD-cc70598a",
+      "latency_ms": 7.7,
+      "status_code": 200,
+      "is_fallback": true,
+      "is_estimate": true,
+      "error": null
+    },
+    {
+      "probe_index": 18,
+      "order_id": "ORD-bd73b959",
+      "latency_ms": 5.88,
+      "status_code": 200,
+      "is_fallback": true,
+      "is_estimate": true,
+      "error": null
+    },
+    {
+      "probe_index": 19,
+      "order_id": "ORD-204e0894",
+      "latency_ms": 6.63,
+      "status_code": 200,
+      "is_fallback": true,
+      "is_estimate": true,
+      "error": null
+    },
+    {
+      "probe_index": 20,
+      "order_id": "ORD-e7dcaa68",
+      "latency_ms": 5.23,
+      "status_code": 200,
+      "is_fallback": true,
+      "is_estimate": true,
+      "error": null
+    }
+  ],
+  "metrics": {
+    "total_probes": 20,
+    "successful_probes": 20,
+    "failed_probes": 0,
+    "fallback_count": 20,
+    "status_codes": [
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200,
+      200
+    ],
+    "errors": [],
+    "latencies_ms": [
+      1472.12,
+      1293.53,
+      1446.19,
+      1351.54,
+      1369.09,
+      1327.24,
+      1407.63,
+      1360.06,
+      1331.9,
+      1364.28,
+      1367.88,
+      1361.54,
+      11.38,
+      6.66,
+      6.68,
+      8.09,
+      7.7,
+      5.88,
+      6.63,
+      5.23
+    ],
+    "p50_ms": 1331.9,
+    "p95_ms": 1472.12,
+    "p99_ms": 1472.12,
+    "avg_ms": 825.56
   }
 }
