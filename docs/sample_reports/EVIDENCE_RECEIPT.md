@@ -1,11 +1,11 @@
 # FaultForge Evidence Receipt & Audit Record
 
-**Receipt ID:** `rcpt-3876c8e2fbdb`  
-**Generated At:** `2026-10-20 13:19:01 UTC`  
+**Receipt ID:** `rcpt-9d6818a1b938`  
+**Generated At:** `2026-10-22 17:44:53 UTC`  
 **Final Status:** **`CONTAINED_NEEDS_REVIEW`**  
 **Autonomy Level:** `SUPERVISED` (Supervised Gate)  
-**Approver:** `rajpriyanid`  
-**Tamper-Evident Seal (SHA-256):** `a3dfe5ab8fdefd831ed75b46d37e3bbc79181fae1dfd33db05bb36728b9ec05d`
+**Approver:** `SUPERVISED_OPERATOR`  
+**Tamper-Evident Seal (SHA-256):** `f38e2cf55b0b789ba4bba6ed3cb1476b16e7263af62ad0e7a5ee0c72028e586b`
 
 ---
 
@@ -13,19 +13,24 @@
 - **Injected Fault:** `latency_cascading_hang` (latency)
 - **Profile Hash:** `644a89784316`
 - **Identical Replay Confirmed:** `True`
-- **Duo Run ID:** `unconfirmed`
+- **Candidate Source:** `duo-authored (MR !3)`
+- **Duo Run ID:** `9909079`
+- **Pipeline URL:** `not established`
+- **Incident Issue URL:** `https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/issues/29`
+- **Duo Merge Request URL:** `https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/merge_requests/3`
+- **Duo Flow Run URL:** `https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/automate/agent-sessions/9909079`
 
 ## 2. Before & After Verified Metrics
 | Metric | Baseline (Unpatched) | Hardened (Candidate Patch) |
 |---|---|---|
-| **Average Latency** | 3446.08 ms | 246.18 ms |
-| **p95 Latency** | 3653.06 ms | 817.02 ms |
+| **Average Latency** | 4212.32 ms | 825.56 ms |
+| **p95 Latency** | 4349.98 ms | 1472.12 ms |
 | **Graceful Fallback** | Missing (Hangs/Errors) | Active (`is_fallback`: true, `is_estimate`: true) |
 
 ## 3. Diagnosis & Culprit Discovery
-- **Status:** `CONFIRMED_REGRESSION` (Confidence: `HIGH`)
+- **Status:** `SUSPECTED_WEAKNESS` (Confidence: `MEDIUM`)
 - **Target Component:** `app/clients/shipping_client.py`
-- **Culprit Commit:** `974035c6e45e7c177452df260a155b6508b828e9`
+- **Culprit Commit:** `Hypothesized via AST`
 
 ## 4. Governance & Promotion Gate
 - **Risk Tier:** `MEDIUM`
@@ -33,6 +38,4 @@
 - Human reviewer authorization is strictly required for live production traffic migration.
 
 ## 5. Items Not Established
-- GitLab Duo flow execution
-- Candidate authored by Duo
 - Cloud Run revision deployment unconfirmed from release stage.

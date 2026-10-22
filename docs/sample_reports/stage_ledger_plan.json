@@ -2,8 +2,8 @@
   "stage": "plan",
   "job_name": "plan:incident_tracking",
   "status": "SUCCESS",
-  "commit_sha": "275c598ce2d128aa1107bc9b28c36c9572065ddb",
-  "pipeline_id": "2967640493",
+  "commit_sha": "b063a91b95e8b9e7e8f6492a8cbb3c1211f1bd81",
+  "pipeline_id": "local-run",
   "approval_required": false,
   "artifacts_declared": [
     "reports/issue.json"
@@ -14,11 +14,11 @@
   "artifacts_details": [
     {
       "path": "reports/issue.json",
-      "size_bytes": 460,
-      "sha256": "747e238a46cadb957e30b28a8492eb1f58520b8146a65b1a0218d8e96ffa4d26"
+      "size_bytes": 479,
+      "sha256": "f3d26ac0d974588a8a0b3c1a67a4678e241082dfe2256877755b34c4c46c3db6"
     }
   ],
-  "timestamp": 1792501971.2570982,
+  "timestamp": 1792691042.1338527,
   "duo_executed": false,
   "notes": ""
 }

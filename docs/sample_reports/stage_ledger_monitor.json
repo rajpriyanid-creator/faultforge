@@ -2,8 +2,8 @@
   "stage": "monitor",
   "job_name": "monitor:telemetry_probes",
   "status": "SUCCESS",
-  "commit_sha": "275c598ce2d128aa1107bc9b28c36c9572065ddb",
-  "pipeline_id": "2967640493",
+  "commit_sha": "b063a91b95e8b9e7e8f6492a8cbb3c1211f1bd81",
+  "pipeline_id": "local-run",
   "approval_required": false,
   "artifacts_declared": [
     "reports/monitor.json"
@@ -18,7 +18,7 @@
       "sha256": "0a5b0140257b32428bf2b8e8fb899bc3dded197405288bc3519ab2db90edd111"
     }
   ],
-  "timestamp": 1792502303.0899115,
+  "timestamp": 1792691043.1749816,
   "duo_executed": false,
   "notes": ""
 }
