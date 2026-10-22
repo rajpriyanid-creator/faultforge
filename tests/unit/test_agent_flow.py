@@ -16,7 +16,11 @@ def test_flow_yaml_schema_and_components():
     assert flow.get("coding_environment") == "full"
 
     # 2. Validate Prompts
-    prompts = flow.get("prompts", {})
+    raw_prompts = flow.get("prompts")
+    if isinstance(raw_prompts, list):
+        prompts = {p.get("prompt_id"): p.get("prompt_template", p) for p in raw_prompts}
+    else:
+        prompts = raw_prompts or {}
     assert "diagnose_prompt" in prompts
     assert "heal_prompt" in prompts
     assert "hardener_prompt" in prompts
