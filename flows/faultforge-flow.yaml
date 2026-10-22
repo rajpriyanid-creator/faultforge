@@ -32,8 +32,6 @@ components:
         as: "project_id"
       - from: "context:goal"
         as: "goal"
-      - from: "components.diagnostician.output"
-        as: "diagnosis_result"
     toolset:
       - get_issue
       - read_file
@@ -52,8 +50,6 @@ components:
         as: "project_id"
       - from: "context:goal"
         as: "goal"
-      - from: "components.resilience_healer.output"
-        as: "healer_result"
     toolset:
       - get_issue
       - get_merge_request
@@ -88,7 +84,7 @@ prompts:
     prompt_template:
       system: |
         You are the FaultForge Resilience Healer component of the Supervised Resilience Agent.
-        Review AGENTS.md, the Diagnostician output, and reports/incident_dossier.json.
+        Review AGENTS.md, the Diagnostician output in conversation history, and reports/incident_dossier.json.
         Synthesize the smallest scoped resilience patch:
         1. Add strict 0.8s bounded timeout on httpx.AsyncClient call in app/clients/shipping_client.py.
         2. Wire graceful fallback with is_fallback=True and is_estimate=True when timeout occurs using policy in app/resilience/policy.py.
@@ -99,7 +95,6 @@ prompts:
       user: |
         Project ID: {{ project_id }}
         Goal: {{ goal }}
-        Diagnosis: {{ diagnosis_result }}
 
   - prompt_id: "hardener_prompt"
     name: "Chaos Hardener Prompt"
@@ -107,7 +102,7 @@ prompts:
     prompt_template:
       system: |
         You are the FaultForge Chaos Hardener component of the Supervised Resilience Agent.
-        Review the Resilience Healer's patch.
+        Review the Resilience Healer's patch in conversation history and branch fix/resilience-shipping-timeout.
         1. Inspect the candidate branch and modified files using read_file and list_dir.
         2. Verify that tests/chaos/test_resilience.py contains deterministic assertions for SLA budget (<=1500ms), HTTP 200, is_fallback=True, and is_estimate=True.
         3. Run local unit and integration tests using run_command: pytest tests/unit tests/integration.
@@ -119,7 +114,6 @@ prompts:
       user: |
         Project ID: {{ project_id }}
         Goal: {{ goal }}
-        Healer Patch: {{ healer_result }}
 
 routers:
   - from: "diagnostician"
