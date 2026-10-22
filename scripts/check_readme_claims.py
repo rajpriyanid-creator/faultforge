@@ -140,18 +140,30 @@ def validate_claims(
                 print(f"{stage:<12} {ledger_status:<16} {claim_str:<24} [FAIL]")
             else:
                 print(f"{stage:<12} {ledger_status:<16} {claim_str:<24} [PASS]")
+        elif ledger_status in ("PARTIAL", "NOT_EXECUTED"):
+            if "PARTIAL" not in claim_str.upper() and "NOT EXECUTED" not in claim_str.upper():
+                discrepancies.append(f"Stage '{stage}' is {ledger_status} in ledger, but README does not state PARTIAL or NOT EXECUTED ('{claim_str}').")
+                print(f"{stage:<12} {ledger_status:<16} {claim_str:<24} [FAIL]")
+            elif "SUCCESS" in claim_str.upper() and "PARTIAL" not in claim_str.upper():
+                discrepancies.append(f"Stage '{stage}' is {ledger_status} in ledger, but README claims SUCCESS ('{claim_str}').")
+                print(f"{stage:<12} {ledger_status:<16} {claim_str:<24} [FAIL]")
+            else:
+                print(f"{stage:<12} {ledger_status:<16} {claim_str:<24} [PASS]")
         elif ledger_status == "SUCCESS":
-            if "SUCCESS" not in claim_str.upper():
+            if stage == "create" and not ledger_entry.get("duo_executed", False):
+                if "PARTIAL" not in claim_str.upper() and ("NOT EXECUTED" not in claim_str.upper() and "DUO:" not in claim_str.upper() and "DUO FLOW:" not in claim_str.upper()):
+                    discrepancies.append("Stage 'create' duo_executed is false in ledger, but README claims unqualified SUCCESS without stating PARTIAL / Duo flow not executed.")
+                    print(f"{stage:<12} {ledger_status:<16} {claim_str:<24} [FAIL]")
+                    continue
+                elif "SUCCESS" in claim_str.upper() and "PARTIAL" not in claim_str.upper() and ("NOT EXECUTED" not in claim_str.upper()):
+                    discrepancies.append("Stage 'create' duo_executed is false in ledger; README must state PARTIAL (Duo flow: not executed) instead of SUCCESS.")
+                    print(f"{stage:<12} {ledger_status:<16} {claim_str:<24} [FAIL]")
+                    continue
+                print(f"{stage:<12} {ledger_status:<16} {claim_str:<24} [PASS]")
+            elif "SUCCESS" not in claim_str.upper():
                 discrepancies.append(f"Stage '{stage}' succeeded in ledger, but README does not indicate SUCCESS ('{claim_str}').")
                 print(f"{stage:<12} {ledger_status:<16} {claim_str:<24} [FAIL]")
             else:
-                # Check create stage duo_executed status
-                if stage == "create":
-                    duo_exec = ledger_entry.get("duo_executed", False)
-                    if not duo_exec and ("NOT EXECUTED" not in claim_str.upper() and "DUO:" not in claim_str.upper() and "DUO FLOW:" not in claim_str.upper()):
-                        discrepancies.append("Stage 'create' duo_executed is false in ledger, but README claims unqualified SUCCESS without stating Duo flow was not executed.")
-                        print(f"{stage:<12} {ledger_status:<16} {claim_str:<24} [FAIL]")
-                        continue
                 print(f"{stage:<12} {ledger_status:<16} {claim_str:<24} [PASS]")
         else:
             discrepancies.append(f"Stage '{stage}' has unknown ledger status: {ledger_status}")

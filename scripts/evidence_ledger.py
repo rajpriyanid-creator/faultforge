@@ -78,7 +78,7 @@ def record_stage(
     ledger_path: str = LEDGER_PATH,
     duo_executed: bool = False
 ) -> Dict[str, Any]:
-    valid_statuses = ("SUCCESS", "SKIPPED", "FAILED")
+    valid_statuses = ("SUCCESS", "SKIPPED", "FAILED", "PARTIAL", "NOT_EXECUTED")
     norm_status = status.upper().strip()
     if norm_status not in valid_statuses:
         print(f"[-] Error: Invalid status '{status}'. Must be one of {valid_statuses}", file=sys.stderr)

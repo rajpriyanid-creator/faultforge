@@ -97,3 +97,32 @@ def test_evidence_ledger_accepts_skipped_and_failed(tmp_path, monkeypatch):
     ledger = load_ledger(ledger_path)
     assert ledger["stages"]["release"]["status"] == "SKIPPED"
     assert ledger["stages"]["verify"]["status"] == "FAILED"
+
+def test_evidence_ledger_accepts_partial_and_not_executed(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    reports_dir = tmp_path / "reports"
+    reports_dir.mkdir()
+    ledger_path = str(reports_dir / "stage_ledger.json")
+
+    partial_entry = record_stage(
+        stage="create",
+        job="create:duo_remediation_mr",
+        status="PARTIAL",
+        artifacts=[],
+        notes="Duo flow not executed",
+        ledger_path=ledger_path
+    )
+    assert partial_entry["status"] == "PARTIAL"
+
+    not_exec_entry = record_stage(
+        stage="create",
+        job="create:duo_remediation_mr",
+        status="NOT_EXECUTED",
+        artifacts=[],
+        notes="No Duo credits",
+        ledger_path=ledger_path
+    )
+    assert not_exec_entry["status"] == "NOT_EXECUTED"
+
+    ledger = load_ledger(ledger_path)
+    assert ledger["stages"]["create"]["status"] == "NOT_EXECUTED"

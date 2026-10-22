@@ -1,0 +1,13 @@
+# FaultForge GitLab Code Owners
+# Supervised Autonomy & Resilience Governance
+# Ref: https://docs.gitlab.com/user/project/codeowners/
+
+# Application runtime and resilience policies
+/app/ @rajpr9698
+
+# Duo Agent Platform flow specifications and agent definitions
+/flows/ @rajpr9698
+
+# CI/CD pipelines and governance configurations
+.gitlab-ci.yml @rajpr9698
+/.gitlab/ @rajpr9698

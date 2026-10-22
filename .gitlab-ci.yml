@@ -4,6 +4,14 @@
 
 include:
   - template: Jobs/Secret-Detection.gitlab-ci.yml
+  - template: Jobs/SAST.gitlab-ci.yml
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH
 
 stages:
   - plan
@@ -17,6 +25,10 @@ stages:
   - govern
 
 secret_detection:
+  stage: secure
+  allow_failure: false
+
+semgrep-sast:
   stage: secure
   allow_failure: false
 
@@ -73,7 +85,14 @@ create:duo_remediation_mr:
     - python scripts/diagnose_and_bisect.py
     - python scripts/trigger_duo_flow.py
     - python scripts/record_duo_evidence.py
-    - python scripts/evidence_ledger.py --stage create --job create:duo_remediation_mr --status SUCCESS --artifacts reports/fault_run_baseline.json reports/incident_dossier.json reports/diagnosis_report.json reports/duo_run.json reports/duo_evidence.json
+    - |
+      if [ -f reports/duo_run.json ] && python -c "import json; d=json.load(open('reports/duo_run.json')); exit(0 if d.get('executed') else 1)"; then
+        echo "[+] Duo flow executed successfully; recording SUCCESS in evidence ledger."
+        python scripts/evidence_ledger.py --stage create --job create:duo_remediation_mr --status SUCCESS --artifacts reports/fault_run_baseline.json reports/incident_dossier.json reports/diagnosis_report.json reports/duo_run.json reports/duo_evidence.json --duo-executed
+      else
+        echo "[!] Duo flow not executed; recording PARTIAL in evidence ledger."
+        python scripts/evidence_ledger.py --stage create --job create:duo_remediation_mr --status PARTIAL --artifacts reports/fault_run_baseline.json reports/incident_dossier.json reports/diagnosis_report.json reports/duo_run.json reports/duo_evidence.json --notes "Duo flow not executed (no credentials or unconfigured)"
+      fi
   artifacts:
     name: "remediation-mr-$CI_COMMIT_SHA"
     expire_in: 30 days
@@ -116,11 +135,14 @@ verify:unit_and_integration:
   image: python:3.12-slim
   script:
     - pip install -r requirements.txt
-    - pytest tests/unit tests/integration tests/test_*.py -v --junitxml=reports/junit_tests.xml
+    - pytest tests/unit tests/integration tests/test_*.py -v --junitxml=reports/junit_tests.xml --cov=app --cov-report=xml:reports/coverage.xml --cov-report=term
   artifacts:
     expire_in: 30 days
     reports:
       junit: reports/junit_tests.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: reports/coverage.xml
 
 verify:exact_fault_replay_proof:
   stage: verify
@@ -140,8 +162,17 @@ verify:exact_fault_replay_proof:
         CANDIDATE_SRC=$(python -c "import json; print(json.load(open('reports/duo_evidence.json'))['candidate_source'])")
         echo "[+] Testing Duo-authored candidate branch: $CANDIDATE_BRANCH ($CANDIDATE_SRC)"
         git fetch origin "$CANDIDATE_BRANCH"
+        CHANGED_FILES=$(git diff --name-only origin/main...origin/$CANDIDATE_BRANCH)
+        echo "[+] Changed files on candidate branch:"
+        echo "$CHANGED_FILES"
+        python scripts/check_forbidden_paths.py --files $CHANGED_FILES
         git checkout "origin/$CANDIDATE_BRANCH" -- app/
+        if echo "$CHANGED_FILES" | grep -q "^tests/chaos/"; then
+          echo "[+] Checking out tests/chaos/ from candidate branch"
+          git checkout "origin/$CANDIDATE_BRANCH" -- tests/chaos/
+        fi
         FIX_SHA=$(git rev-parse "origin/$CANDIDATE_BRANCH")
+        python -c "import json; d=json.load(open('reports/duo_evidence.json')); d['fix_sha']='$FIX_SHA'; d['changed_files']='''$CHANGED_FILES'''.strip().splitlines(); json.dump(d, open('reports/duo_evidence.json', 'w'), indent=2)"
       else
         echo "[!] No Duo-authored MR branch detected; falling back to reference-fix"
         git fetch origin reference-fix
@@ -162,6 +193,7 @@ verify:exact_fault_replay_proof:
       - reports/fault_run_baseline.json
       - reports/fault_run_hardened.json
       - reports/replay_evaluation.json
+      - reports/duo_evidence.json
       - reports/stage_ledger.json
       - reports/stage_ledger_*.json
 
@@ -217,6 +249,18 @@ package:container_build:
       - reports/image_digest.txt
       - reports/stage_ledger.json
       - reports/stage_ledger_*.json
+
+pages:
+  stage: package
+  image: alpine:latest
+  script:
+    - mkdir -p public
+    - cp app/dashboard.html public/index.html
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 # -------------------------------------------------------------
 # 7. RELEASE STAGE: Google Cloud Run Candidate Revision Deployment
@@ -381,3 +425,36 @@ govern:promote_to_production:
   environment:
     name: production
     url: $PRODUCTION_URL
+
+# Official GitLab Native Release Creation
+release:official_gitlab_release:
+  stage: govern
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  needs:
+    - job: govern:audit_receipt_and_gate
+      artifacts: true
+    - job: package:container_build
+      artifacts: true
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $REQUIRE_GITLAB_RELEASE == "true"
+  script:
+    - echo "[+] Creating verified native GitLab Release for $CI_COMMIT_SHA..."
+  release:
+    name: "FaultForge Verified Resilience Release $CI_COMMIT_SHA"
+    description: |
+      ## FaultForge Supervised Resilience Release
+      - **Pipeline:** $CI_PIPELINE_ID
+      - **Commit SHA:** $CI_COMMIT_SHA
+      - **Docker Image:** $DOCKER_IMAGE
+      - **Governance:** Verified by Supervised Autonomy Gate & Evidence Ledger
+    tag_name: "release-$CI_COMMIT_SHORT_SHA"
+    ref: "$CI_COMMIT_SHA"
+    assets:
+      links:
+        - name: "Evidence Receipt (JSON)"
+          url: "$CI_PROJECT_URL/-/jobs/artifacts/$CI_COMMIT_SHA/raw/reports/evidence_receipt.json?job=govern:audit_receipt_and_gate"
+          link_type: "other"
+        - name: "Container Image Digest"
+          url: "$CI_PROJECT_URL/-/jobs/artifacts/$CI_COMMIT_SHA/raw/reports/image_digest.txt?job=package:container_build"
+          link_type: "image"

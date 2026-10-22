@@ -49,7 +49,7 @@ $$\text{Mean Reduction (\%)} = \left( \frac{\text{Baseline Mean (ms)} - \text{Ca
 $$\text{P50 Reduction (\%)} = \left( \frac{3,453.42 - 2.88}{3,453.42} \right) \times 100 = \mathbf{99.9\%}$$
 
 #### Percentile Rank Method Documentation:
-FaultForge's telemetry scripts (`scripts/render_metrics.py`, `scripts/evaluate_replay.py`) use the standard **Nearest-Rank Method** with zero-indexed rank selection:
+FaultForge's telemetry script `scripts/render_metrics.py` uses the standard **Nearest-Rank Method** with zero-indexed rank selection:
 
 $$\text{Index} = \lfloor N \times P \rfloor$$
 

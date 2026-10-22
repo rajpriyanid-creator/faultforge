@@ -16,6 +16,7 @@ Follow these exact steps if you have available GitLab Duo Agent Platform credits
    - **Display Name:** `FaultForge Supervised Resilience Healer`
    - **Source:** Select **Repository file** and enter `flows/faultforge-flow.yaml`.
    - **Environment:** `ambient` (Full workspace execution).
+   - **Trigger Conditions (Optional):** In Trigger Conditions, enable **Issue Mentions** and **Issue Assignment** to trigger automatically when assigned to the flow service account.
    - Click **Save & Activate**.
 3. **Configure CI/CD Variables:**
    - In GitLab: Navigate to **Settings → CI/CD → Variables**.
@@ -28,11 +29,13 @@ Follow these exact steps if you have available GitLab Duo Agent Platform credits
      ```markdown
      @ai-faultforge_resilience_flow Please run resilience flow flows/faultforge-flow.yaml to repair the shipping client timeout.
      ```
-   - Wait for the Duo Agent service account (`ai-faultforge_resilience_flow`) to run the flow, synthesize the fix in `app/clients/` and `app/resilience/`, and open a candidate Merge Request targeting `main`. Do not edit the synthesized code.
-6. **Rerun the Pipeline on Main:**
+   - Alternatively, assign the issue to `ai-faultforge_resilience_flow` if assignment triggers are enabled.
+   - Wait for the Duo Agent service account (`ai-faultforge_resilience_flow`) to run the flow, synthesize the fix in `app/clients/` and `app/resilience/`, open candidate branch `fix/resilience-shipping-timeout`, and open a candidate Merge Request targeting `main`. Do not edit the synthesized code.
+   - (Optional) On the candidate MR, request a Duo Code Review by commenting `/duo review`. The review evaluates compliance against `.gitlab/duo/mr-review-instructions.yaml`.
+6. **Rerun the Pipeline on Main (or MR Pipeline):**
    - In GitLab: Navigate to **Build → Pipelines → Run Pipeline** on `main`.
-   - Stage `create:duo_remediation_mr` records the real Duo run and MR evidence.
-   - Stage `verify:exact_fault_replay_proof` checks out the Duo candidate branch, replays the exact Toxiproxy fault (`644a89784316`), and records `candidate_source: "duo-authored (MR !<iid>)"`.
+   - Stage `create:duo_remediation_mr` records the real Duo run and MR evidence (recording `SUCCESS` if executed, `PARTIAL` if unexecuted).
+   - Stage `verify:exact_fault_replay_proof` enforces `scripts/check_forbidden_paths.py`, checks out the Duo candidate branch `app/`, replays the exact Toxiproxy fault (`644a89784316`), and records `candidate_source: "duo-authored (MR !<iid>)"`.
    - Stage `release:cloudrun_candidate_deploy` deploys the candidate revision with `--no-traffic --tag candidate`.
 7. **Collect the Evidence Links:**
    - Pipeline URL, Incident Issue URL, Duo-authored MR URL, and Flow Run URL.

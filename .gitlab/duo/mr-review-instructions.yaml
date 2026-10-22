@@ -1,0 +1,11 @@
+# GitLab Duo Code Review Custom Review Instructions
+# Ref: https://docs.gitlab.com/user/duo_agent_platform/code_review/custom_instructions/
+instructions:
+  - name: Resilience and Safety Review
+    fileFilters:
+      - "app/**"
+      - "tests/**"
+    instructions: |
+      Verify that any resilience patches include bounded timeouts (<=1.5s), fallback handling (is_fallback=True, is_estimate=True), and circuit breaker shedding.
+      Ensure candidate changes strictly preserve security boundaries: NEVER alter authentication, authorization, payments, database schemas, secrets, IAM, or CI/flow configurations.
+      Verify that latency budgets (<= 1500ms) and SLA assertions are maintained in tests/chaos/test_resilience.py.

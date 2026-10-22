@@ -3,6 +3,10 @@
 # Supervised Resilience Agent Flow
 # Target Prize: Best Supervised Agent ($4,000) — Path A: Start Fresh
 # Validated against official schema: https://docs.gitlab.com/user/duo_agent_platform/flows/custom_flows_schema/
+# Supported Triggers (Configured in GitLab UI under Automate -> Flows -> Trigger conditions):
+#   - Mention: @ai-faultforge-flow <remediation request> in issue / MR comments
+#   - Assignment: Assign the flow service account directly to incident issues
+#   - API: Programmatic invocation via POST /ai/duo_workflows/
 
 version: "v1"
 environment: ambient
@@ -19,6 +23,9 @@ prompts:
       Confirm the failing chaos test in tests/chaos/test_resilience.py.
       If unsure of root cause, report UNKNOWN rather than guessing.
       Summarize findings concisely for the resilience healer.
+    user: |
+      Project ID: {{ project_id }}
+      Goal: {{ goal }}
 
   heal_prompt:
     system: |
@@ -29,18 +36,29 @@ prompts:
       2. Wire graceful fallback with is_fallback=True and is_estimate=True when timeout occurs using policy in app/resilience/policy.py.
       3. Ensure checkout order status reflects CONFIRMED_ESTIMATED_SHIPPING under fallback.
       4. Reinstate circuit breaker in app/resilience/policy.py to shed degraded dependency load.
-      5. Open a new branch 'fix/resilience-shipping-timeout' targeting app/clients/, app/resilience/ and tests/chaos/test_resilience.py.
-      6. Safety constraints: NEVER alter authentication, authorization, payment, database schemas, secrets, or IAM. Max 2 patch attempts.
+      5. Create a candidate branch 'fix/resilience-shipping-timeout' targeting app/clients/ and app/resilience/ using create_branch and create_commit.
+      6. Safety constraints: NEVER alter authentication, authorization, payment, database schemas, secrets, IAM, .gitlab-ci.yml, or flows/. Max 2 patch attempts.
+    user: |
+      Project ID: {{ project_id }}
+      Goal: {{ goal }}
+      Diagnosis: {{ diagnosis_result }}
 
   hardener_prompt:
     system: |
       You are the FaultForge Chaos Hardener component of the Supervised Resilience Agent.
       Review the Resilience Healer's patch.
-      1. Inspect the candidate branch and modified files.
+      1. Inspect the candidate branch and modified files using read_file and list_dir.
       2. Verify that tests/chaos/test_resilience.py contains deterministic assertions for SLA budget (<=1500ms), HTTP 200, is_fallback=True, and is_estimate=True.
       3. Run local unit and integration tests using run_command: pytest tests/unit tests/integration.
-      4. Prepare a structured verification report and open the Merge Request targeting 'main'.
-      5. Ensure the MR description links to the incident dossier and includes the verification summary for human review at the Supervised Human Gate.
+      4. Open a Merge Request targeting 'main' from branch 'fix/resilience-shipping-timeout' using create_merge_request.
+      5. Mandatory governance constraints:
+         - Post a summary note on the incident issue with the MR link using create_issue_note.
+         - The MR description must link the incident dossier (reports/incident_dossier.json) and provide the exact Toxiproxy replay command: python scripts/evaluate_replay.py.
+         - Ensure the candidate branch touches only app/clients/, app/resilience/, and tests/chaos/.
+    user: |
+      Project ID: {{ project_id }}
+      Goal: {{ goal }}
+      Healer Patch: {{ healer_result }}
 
 components:
   - name: "diagnostician"
@@ -49,10 +67,13 @@ components:
     inputs:
       - from: "context:project_id"
         as: "project_id"
-      - "context:goal"
+      - from: "context:goal"
+        as: "goal"
     toolset:
+      - get_issue
       - read_file
       - list_dir
+      - find_files
       - run_command
 
   - name: "resilience_healer"
@@ -61,13 +82,17 @@ components:
     inputs:
       - from: "context:project_id"
         as: "project_id"
+      - from: "context:goal"
+        as: "goal"
       - from: "components.diagnostician.output"
         as: "diagnosis_result"
-      - "context:goal"
     toolset:
+      - get_issue
       - read_file
       - list_dir
       - run_command
+      - create_branch
+      - create_commit
 
   - name: "chaos_hardener"
     type: AgentComponent
@@ -75,10 +100,16 @@ components:
     inputs:
       - from: "context:project_id"
         as: "project_id"
+      - from: "context:goal"
+        as: "goal"
       - from: "components.resilience_healer.output"
         as: "healer_result"
-      - "context:goal"
     toolset:
+      - get_issue
+      - get_merge_request
+      - create_merge_request
+      - create_issue_note
+      - create_merge_request_note
       - read_file
       - list_dir
       - run_command
