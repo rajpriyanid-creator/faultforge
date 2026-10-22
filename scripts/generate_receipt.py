@@ -151,12 +151,26 @@ def generate_evidence_receipt(
     duo_found = bool(duo_evidence.get("found"))
     duo_has_run_url = bool(duo_evidence.get("run_url"))
     duo_author = str(duo_evidence.get("author_username", ""))
-    duo_has_mr = bool(duo_evidence.get("mr_url") and ("ai-" in duo_author.lower() or "duo" in duo_author.lower()))
+    duo_commit_author = str(duo_evidence.get("commit_author", ""))
+    duo_commit_email = str(duo_evidence.get("commit_author_email", ""))
+    candidate_src_str = str(duo_evidence.get("candidate_source", ""))
+
+    is_duo_provenance = (
+        candidate_src_str.startswith("duo-authored")
+        or "ai-" in duo_author.lower()
+        or "duo" in duo_author.lower()
+        or "service_account" in duo_author.lower()
+        or "service_account" in duo_commit_author.lower()
+        or "service_account" in duo_commit_email.lower()
+        or "healer" in duo_commit_author.lower()
+        or "faultforge" in duo_commit_author.lower()
+    )
+    duo_has_mr = bool(duo_evidence.get("mr_url") and is_duo_provenance)
     duo_mr_url = duo_evidence.get("mr_url")
 
     if duo_found and duo_has_run_url and duo_has_mr and duo_mr_url:
         duo_executed = True
-        duo_status = "CONFIRMED"
+        duo_status = duo_run.get("status") or "COMPLETED"
         mr_url = duo_mr_url
     else:
         duo_executed = False

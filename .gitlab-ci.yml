@@ -44,6 +44,7 @@ variables:
   GCP_REGION: "us-central1"
   DOCKER_IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
   PRODUCTION_URL: "https://faultforge-checkout-136942862703.us-central1.run.app"
+  FF_FLOW_RUN_URL: "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/automate/agent-sessions/9909079"
 
 cache:
   paths:
@@ -79,11 +80,14 @@ create:duo_remediation_mr:
   script:
     - apt-get update -qq && apt-get install -y -qq git
     - pip install -r requirements.txt
+    - git fetch origin main
+    - git checkout origin/main -- app/
     - python scripts/start_toxiproxy.py
     - python -m uvicorn stub.mock_shipping_api:app --host 127.0.0.1 --port 8081 &
     - python -m uvicorn app.main:app --host 127.0.0.1 --port 8090 &
     - sleep 2
     - python scripts/run_fault.py --label baseline --iterations 5 --expect-fail --output reports/fault_run_baseline.json
+    - git checkout HEAD -- app/
     - python scripts/collect_evidence.py
     - python scripts/diagnose_and_bisect.py
     - python scripts/trigger_duo_flow.py

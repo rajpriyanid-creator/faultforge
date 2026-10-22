@@ -14,6 +14,18 @@ def test_determine_candidate_source_duo_authored():
     src = determine_candidate_source(evidence)
     assert src == "duo-authored (MR !42)"
 
+def test_determine_candidate_source_service_account_commit():
+    evidence = {
+        "found": True,
+        "author_username": "rajpriyanid",
+        "commit_author": "FaultForge, Supervised, Resilience, Healer",
+        "commit_author_email": "service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com",
+        "run_url": "https://gitlab.com/test/automate/agent-sessions/9909079",
+        "mr_iid": 3
+    }
+    src = determine_candidate_source(evidence)
+    assert src == "duo-authored (MR !3)"
+
 def test_determine_candidate_source_missing_run_url():
     evidence = {
         "found": True,
