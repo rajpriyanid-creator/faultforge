@@ -91,7 +91,7 @@ create:duo_remediation_mr:
     - python scripts/collect_evidence.py
     - python scripts/diagnose_and_bisect.py
     - python scripts/trigger_duo_flow.py
-    - python scripts/record_duo_evidence.py
+    - python scripts/record_duo_evidence.py --from-ci-env
     - |
       if [ -f reports/duo_run.json ] && python -c "import json; d=json.load(open('reports/duo_run.json')); exit(0 if d.get('executed') else 1)"; then
         echo "[+] Duo flow executed successfully; recording SUCCESS in evidence ledger."
