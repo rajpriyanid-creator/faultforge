@@ -61,6 +61,77 @@ def test_pipeline_window_validator_passes_when_timestamps_inside_window(tmp_path
     violations = audit_sample_reports_provenance(str(sample_dir))
     assert violations == []
 
+def test_table_row_pipeline_window_fails_when_timestamp_outside(tmp_path):
+    """
+    Test that audit_sample_reports_provenance fails when a table row attributes
+    a file to a pipeline whose execution window does not contain the row timestamp.
+    """
+    sample_dir = tmp_path / "sample_reports"
+    sample_dir.mkdir(parents=True, exist_ok=True)
+
+    readme_content = """# Sample Reports
+## 1. Pipelines
+- Pipeline ID: [2977803091](https://gitlab.com/...)
+  Execution Window: `2026-10-22T18:00:55Z` to `2026-10-22T18:08:00Z`
+
+## 2. Table
+| Artifact File | Stage | SHA | Source Pipeline / Execution Context | Generation Time (UTC) | Notes |
+|---|---|---|---|---|---|
+| `issue.json` | `plan` | `b063a91b` | Pipeline [2977803091] | 2026-10-22 16:46:39 | False attribution outside window |
+"""
+    (sample_dir / "README.md").write_text(readme_content, encoding="utf-8")
+
+    violations = audit_sample_reports_provenance(str(sample_dir))
+    assert len(violations) >= 1
+    assert any("table row 'issue.json' attributes generation to pipeline 2977803091" in v for v in violations)
+    assert any("falls outside this window" in v for v in violations)
+
+def test_table_row_pipeline_window_passes_when_timestamp_inside(tmp_path):
+    """
+    Test that audit_sample_reports_provenance passes when a row timestamp falls
+    accurately inside the pipeline's window, or is marked as Local run.
+    """
+    sample_dir = tmp_path / "sample_reports"
+    sample_dir.mkdir(parents=True, exist_ok=True)
+
+    readme_content = """# Sample Reports
+## 1. Pipelines
+- Pipeline ID: [2977803091](https://gitlab.com/...)
+  Execution Window: `2026-10-22T18:00:55Z` to `2026-10-22T18:08:00Z`
+- Pipeline ID: [2967640493](https://gitlab.com/...)
+  Execution Window: `2026-10-20T13:12:30Z` to `2026-10-20T13:19:09Z`
+
+## 2. Table
+| Artifact File | Stage | SHA | Source Pipeline / Execution Context | Generation Time (UTC) | Notes |
+|---|---|---|---|---|---|
+| `image_digest.txt` | `package` | `e5a9752b` | Pipeline [2977803091] | 2026-10-22 18:04:12 | Inside window |
+| `release.json` | `release` | `275c598c` | Pipeline [2967640493] | 2026-10-20 13:17:54 | Inside window |
+| `issue.json` | `plan` | `b063a91b` | Local run (pipeline not recorded) | 2026-10-22 16:46:39 | Local run |
+"""
+    (sample_dir / "README.md").write_text(readme_content, encoding="utf-8")
+
+    violations = audit_sample_reports_provenance(str(sample_dir))
+    assert violations == []
+
+def test_table_row_fails_when_receipt_attributed_to_job(tmp_path):
+    """
+    Test that attributing evidence_receipt.json to job 17392416795 without
+    disclosing local sealing fails.
+    """
+    sample_dir = tmp_path / "sample_reports"
+    sample_dir.mkdir(parents=True, exist_ok=True)
+
+    readme_content = """# Sample Reports
+## 2. Table
+| Artifact File | Stage | SHA | Source Pipeline / Execution Context | Generation Time (UTC) | Notes |
+|---|---|---|---|---|---|
+| `evidence_receipt.json` | `govern` | `372ef5f9` | Pipeline 2977803091 / Job 17392416795 | 2026-10-23 03:44:01 | Falsely attributed |
+"""
+    (sample_dir / "README.md").write_text(readme_content, encoding="utf-8")
+
+    violations = audit_sample_reports_provenance(str(sample_dir))
+    assert any("attributes evidence_receipt.json to job 17392416795" in v for v in violations)
+
 def test_live_sample_reports_provenance_clean():
     """
     Test that the live docs/sample_reports directory passes provenance validation

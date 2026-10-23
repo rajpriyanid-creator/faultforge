@@ -143,6 +143,11 @@ FaultForge implements real, testable operations with machine-readable artifacts 
 ### Evidence Snapshot
 > Machine-readable receipts and audit logs are produced in real-time by the GitLab CI/CD pipeline in `reports/` and retained as CI job artifacts. Sample reports in `docs/sample_reports/` are populated from verified pipeline runs, copied unmodified from job artifacts per `docs/sample_reports/README.md`.
 
+### Verified SaaS CI/CD Pipeline Runs
+- **`main` Branch Pipeline:** [#2979433516](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2979433516) (commit `9ed64d69`, executed `2026-10-23T04:06:14Z` to `04:14:56Z`) — **Status: Success / Manual** (All 13 active jobs passed: `plan:incident_tracking`, `create:duo_remediation_mr`, `configure:chaos_topology`, `verify:unit_and_integration`, `verify:exact_fault_replay_proof`, `secure:secret_detection`, `secure:semgrep-sast`, `secure:sast_and_secret_scan`, `package:container_build`, `package:pages`, `release:cloudrun_candidate_deploy`, `monitor:telemetry_probes`, `govern:audit_receipt_and_gate`; manual production promotion gate `govern:promote_to_production` pending human sign-off).
+- **Candidate Merge Request !3 Pipeline:** [#2979434153](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2979434153) (commit `eafbb697`, executed `2026-10-23T04:06:21Z` to `04:12:38Z`) — **Status: Success / Manual** (All 10 active jobs passed; manual production promotion gate pending human sign-off).
+- **Sample Baseline Pipeline:** [#2977803091](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2977803091) (commit `e5a9752b`, executed `2026-10-22T18:00:55Z` to `18:08:00Z`) — **Status: Success / Manual**.
+
 ---
 
 ## 5. Quickstart & Judge Reproducibility
