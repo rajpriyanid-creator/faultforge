@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 FaultForge Authors
 
+import asyncio
 import time
 import logging
 import httpx
@@ -14,7 +15,7 @@ from app.resilience.policy import (
 
 logger = logging.getLogger("faultforge.client")
 
-# Strict SLA budget for the outbound shipping call (connect/read/write/pool).
+# Strict SLA budget for the shipping dependency (connect + read + write + pool).
 SHIPPING_TIMEOUT_SECONDS = 0.8
 
 
@@ -31,10 +32,18 @@ class ShippingClient:
         data["latency_ms"] = round(duration_ms, 2)
         return data
 
+    async def _fetch(self, url: str, params: Dict[str, Any]) -> Dict[str, Any]:
+        timeout = httpx.Timeout(SHIPPING_TIMEOUT_SECONDS)
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            response = await client.get(url, params=params)
+            response.raise_for_status()
+            return response.json()
+
     async def get_shipping_rate(self, destination_zip: str, weight_kg: float) -> Dict[str, Any]:
         """
-        Fetch a shipping rate (idempotent read) with a strict 0.8s timeout, a circuit
-        breaker that sheds load on a degraded dependency, and a deterministic fallback.
+        Fetch a shipping rate with a strict 0.8s bounded timeout, circuit breaker,
+        and deterministic fallback estimate (is_fallback=True, is_estimate=True).
+        Idempotent read only: no retries, to stay within the SLA budget.
         """
         start_time = time.perf_counter()
         url = f"{self.base_url.rstrip('/')}/rates"
@@ -45,31 +54,24 @@ class ShippingClient:
             return self._fallback(destination_zip, weight_kg, "Circuit breaker OPEN", start_time)
 
         try:
-            timeout = httpx.Timeout(SHIPPING_TIMEOUT_SECONDS, connect=SHIPPING_TIMEOUT_SECONDS)
-            async with httpx.AsyncClient(timeout=timeout) as client:
-                response = await client.get(url, params=params)
-                response.raise_for_status()
-                data = response.json()
+            # wait_for enforces a hard overall deadline in addition to per-phase httpx timeouts
+            data = await asyncio.wait_for(
+                self._fetch(url, params), timeout=SHIPPING_TIMEOUT_SECONDS
+            )
+        except (httpx.TimeoutException, asyncio.TimeoutError, TimeoutError) as exc:
+            logger.warning(f"Shipping call exceeded {SHIPPING_TIMEOUT_SECONDS}s budget: {type(exc).__name__}")
+            shipping_circuit_breaker.record_failure()
+            return self._fallback(destination_zip, weight_kg, f"Timeout after {SHIPPING_TIMEOUT_SECONDS}s", start_time)
         except httpx.HTTPStatusError as exc:
             if exc.response.status_code < 500:
-                # Caller error, not a dependency degradation: do not trip breaker or mask it.
                 raise
+            logger.warning(f"Shipping dependency returned {exc.response.status_code}")
             shipping_circuit_breaker.record_failure()
-            logger.error(f"Shipping dependency returned {exc.response.status_code}")
-            if not settings.FALLBACK_ENABLED:
-                raise
             return self._fallback(destination_zip, weight_kg, f"Upstream HTTP {exc.response.status_code}", start_time)
-        except (httpx.TimeoutException, httpx.TransportError) as exc:
+        except httpx.HTTPError as exc:
+            logger.warning(f"Shipping dependency error: {type(exc).__name__}")
             shipping_circuit_breaker.record_failure()
-            logger.error(f"Shipping dependency timed out or unreachable: {type(exc).__name__}")
-            if not settings.FALLBACK_ENABLED:
-                raise
-            return self._fallback(
-                destination_zip,
-                weight_kg,
-                f"Timeout/transport error ({type(exc).__name__}) within {SHIPPING_TIMEOUT_SECONDS}s budget",
-                start_time,
-            )
+            return self._fallback(destination_zip, weight_kg, f"Upstream error: {type(exc).__name__}", start_time)
 
         shipping_circuit_breaker.record_success()
         duration_ms = (time.perf_counter() - start_time) * 1000
@@ -77,5 +79,6 @@ class ShippingClient:
         data["is_fallback"] = False
         data["latency_ms"] = round(duration_ms, 2)
         return data
+
 
 shipping_client = ShippingClient()
