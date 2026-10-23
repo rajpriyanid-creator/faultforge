@@ -1,11 +1,11 @@
 # FaultForge Evidence Receipt & Audit Record
 
-**Receipt ID:** `rcpt-f6cdccae325e`  
-**Generated At:** `2026-10-23 03:38:36 UTC`  
+**Receipt ID:** `rcpt-fcde72b26ebf`  
+**Generated At:** `2026-10-23 03:44:01 UTC`  
 **Final Status:** **`CONTAINED_NEEDS_REVIEW`**  
 **Autonomy Level:** `SUPERVISED` (Supervised Gate)  
 **Approver:** `SUPERVISED_OPERATOR`  
-**Tamper-Evident Seal (SHA-256):** `e4ceb7fe00e315c8ba62f64562638f41d0cd39f64b212d123f4c4f7d24dfc471`
+**Tamper-Evident Seal (SHA-256):** `05dfdca7d72b1fb9e9dd36f9a652d3a24c683437837bce74bb7786d6dc68b156`
 
 ---
 
@@ -38,5 +38,5 @@
 - Human reviewer authorization is strictly required for live production traffic migration.
 
 ## 5. Items Not Established
-- Dossier commit SHA (b063a91b) differs from current HEAD (e5a9752b).
+- Dossier commit SHA (b063a91b) differs from current HEAD (372ef5f9).
 - Cloud Run revision deployment unconfirmed from release stage.

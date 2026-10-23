@@ -2,7 +2,7 @@
   "stage": "monitor",
   "job_name": "monitor:telemetry_probes",
   "status": "SUCCESS",
-  "commit_sha": "e5a9752ba63115d6744a7996f0565272b2804762",
+  "commit_sha": "372ef5f972355e657d3d55f9e9547be198c5a2e7",
   "pipeline_id": "local-run",
   "approval_required": false,
   "artifacts_declared": [

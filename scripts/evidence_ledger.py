@@ -153,11 +153,11 @@ def record_stage(
 
     # 1. Save individual stage record for non-conflicting multi-runner artifact aggregation
     stage_file = os.path.join(reports_dir, f"stage_ledger_{stage}.json")
-    with open(stage_file, "w", encoding="utf-8") as f:
+    with open(stage_file, "w", encoding="utf-8", newline="\n") as f:
         json.dump(stage_entry, f, indent=2)
 
     # 2. Save aggregated ledger
-    with open(ledger_path, "w", encoding="utf-8") as f:
+    with open(ledger_path, "w", encoding="utf-8", newline="\n") as f:
         json.dump(ledger, f, indent=2)
 
     print(f"[+] Evidence Ledger updated for stage '{stage}': {norm_status} ({len(verified_details)} artifacts verified)")
