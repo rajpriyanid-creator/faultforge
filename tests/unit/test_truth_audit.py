@@ -97,16 +97,16 @@ def test_audit_docs_claims_detects_mismatched_replay_metrics(tmp_path, monkeypat
     # Create replay_evaluation.json with specific baseline_avg_ms
     (sample_dir / "replay_evaluation.json").write_text(json.dumps({
         "raw_metrics": {
-            "baseline_avg_ms": 4212.32,
-            "hardened_avg_ms": 825.56,
-            "hardened_p95_ms": 1472.12
+            "baseline_avg_ms": 3478.57,
+            "hardened_avg_ms": 484.36,
+            "hardened_p95_ms": 806.83
         }
     }), encoding="utf-8")
 
-    # README with mismatched number (e.g. 5000.00ms instead of 4212.32)
+    # README with mismatched number (e.g. 5000.00ms instead of 3478.57)
     (tmp_path / "README.md").write_text("SLA budget 1500ms, 9 Stages, culprit 974035c, mean 5000.00ms", encoding="utf-8")
     violations = audit_docs_claims()
-    assert any("Baseline mean 4212.32ms from replay_evaluation.json missing in README" in v for v in violations)
+    assert any("Baseline mean 3478.57ms from replay_evaluation.json missing in README" in v for v in violations)
 
 def test_audit_docs_claims_clean_on_repo():
     from scripts.truth_audit import audit_docs_claims
@@ -182,4 +182,23 @@ def test_audit_report_consistency_fails_when_duo_run_true_and_receipt_false(tmp_
 
     violations = audit_report_consistency()
     assert any("duo_run.json records executed: true, but evidence_receipt.json records duo_execution.executed: false" in v for v in violations)
+
+def test_audit_docs_claims_fails_on_unverified_latency_in_docs(tmp_path, monkeypatch):
+    from scripts.truth_audit import audit_docs_claims
+    monkeypatch.chdir(tmp_path)
+
+    docs_dir = tmp_path / "docs"
+    docs_dir.mkdir(parents=True, exist_ok=True)
+
+    # Valid README
+    (tmp_path / "README.md").write_text("SLA budget 1500ms, 9 Stages, culprit 974035c", encoding="utf-8")
+
+    # Document under docs/ quoting unverified stale latency
+    (docs_dir / "custom_report.md").write_text("Unverified baseline was 4212.32 ms and candidate was 825.56 ms with 80.4% reduction", encoding="utf-8")
+
+    violations = audit_docs_claims()
+    assert any("Stale baseline mean latency (4212/4212.32 ms)" in v for v in violations)
+    assert any("Stale candidate mean latency (825/825.56 ms)" in v for v in violations)
+    assert any("Stale reduction percentage (80.4%)" in v for v in violations)
+
 

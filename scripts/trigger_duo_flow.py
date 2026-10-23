@@ -86,7 +86,7 @@ Failing Test: {dossier.get('evidence', {}).get('failed_test', 'tests/chaos/test_
             "status": "COMPLETED",
             "executed": True,
             "web_url": flow_run_url,
-            "triggered_at": time.time(),
+            "recorded_at": time.time(),
             "inputs_hash": dossier.get("fault", {}).get("profile_hash", "644a89784316")
         }
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
@@ -108,7 +108,7 @@ Failing Test: {dossier.get('evidence', {}).get('failed_test', 'tests/chaos/test_
             "status": status_val,
             "executed": False,
             "web_url": f"{gitlab_project_url}/-/work_items/30",
-            "triggered_at": time.time(),
+            "recorded_at": time.time(),
             "inputs_hash": dossier.get("fault", {}).get("profile_hash", "644a89784316")
         }
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
@@ -151,7 +151,7 @@ Failing Test: {dossier.get('evidence', {}).get('failed_test', 'tests/chaos/test_
             "status": data.get("status", "RUNNING"),
             "executed": True,
             "web_url": data.get("web_url", f"{gitlab_project_url}/-/flows/{flow_id}"),
-            "triggered_at": time.time(),
+            "recorded_at": time.time(),
             "inputs_hash": dossier.get("fault", {}).get("profile_hash")
         }
         print(f"[+] GitLab Duo Custom Flow triggered via REST API.")
@@ -187,7 +187,7 @@ Failing Test: {dossier.get('evidence', {}).get('failed_test', 'tests/chaos/test_
                 "status": "DISPATCHED_TO_AGENT",
                 "executed": True,
                 "web_url": issue_url,
-                "triggered_at": time.time(),
+                "recorded_at": time.time(),
                 "inputs_hash": dossier.get("fault", {}).get("profile_hash")
             }
             print(f"[+] GitLab Duo Agent triggered via Issue #{issue_iid}: {issue_url}")
@@ -202,7 +202,7 @@ Failing Test: {dossier.get('evidence', {}).get('failed_test', 'tests/chaos/test_
                 "status": "NOT_EXECUTED_NO_CREDENTIALS",
                 "executed": False,
                 "web_url": None,
-                "triggered_at": time.time(),
+                "recorded_at": time.time(),
                 "inputs_hash": dossier.get("fault", {}).get("profile_hash", "644a89784316")
             }
 

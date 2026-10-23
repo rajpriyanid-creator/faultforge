@@ -75,6 +75,7 @@ def verify_live_service(
             cand_url = None
             cand_rev = None
             prod_rev = None
+            best_prod_pct = -1
             for t in traffic:
                 pct = t.get("percent", 0)
                 tag = t.get("tag")
@@ -85,7 +86,8 @@ def verify_live_service(
                     cand_rev = rev
                 else:
                     prod_pct += pct
-                    if not prod_rev or pct > 0:
+                    if pct > best_prod_pct:
+                        best_prod_pct = pct
                         prod_rev = rev
             record["traffic_split"]["candidate_percent"] = cand_pct
             record["traffic_split"]["production_percent"] = prod_pct

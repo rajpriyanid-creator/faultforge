@@ -333,10 +333,16 @@ release:cloudrun_candidate_deploy:
           exit 1
         fi
         
-        echo "[+] Setting canary traffic split candidate=10..."
+        STABLE_REVISION=$(python3 -c "import json; t=json.load(open('/tmp/svc_desc.json')).get('status',{}).get('traffic',[]); non_cand=[x for x in t if x.get('tag')!='candidate']; print(max(non_cand, key=lambda x: x.get('percent',0)).get('revisionName','') if non_cand else '')")
+        if [ -z "$STABLE_REVISION" ]; then
+          STABLE_REVISION=$(python3 -c "import json; print(json.load(open('/tmp/svc_desc.json')).get('status',{}).get('latestReadyRevisionName',''))")
+        fi
+        echo "[+] Primary stable production revision: $STABLE_REVISION"
+        echo "[+] Setting clean canary traffic split: $STABLE_REVISION=90, candidate ($REVISION_NAME)=10..."
         gcloud run services update-traffic "$SERVICE_NAME" \
           --region "$GCP_REGION" \
-          --to-tags candidate=10
+          --to-revisions="$STABLE_REVISION=90,$REVISION_NAME=10" \
+          --set-tags="candidate=$REVISION_NAME"
         
         echo "CANDIDATE_URL=$CANDIDATE_URL" >> deploy.env
         echo "STAGING_ENV_NAME=staging" >> deploy.env

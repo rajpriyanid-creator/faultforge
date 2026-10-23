@@ -499,7 +499,7 @@ def audit_docs_claims() -> List[str]:
         except Exception as e:
             violations.append(f"Could not load {receipt_path} for claims audit: {e}")
 
-    doc_files = [
+    core_doc_files = [
         "README.md",
         "docs/architecture.md",
         "docs/measurement-method.md",
@@ -507,6 +507,15 @@ def audit_docs_claims() -> List[str]:
         "docs/hackathon-submission.md",
         "docs/demo-script.md",
     ]
+    # Dynamically scan all markdown files under docs/ for stale figures
+    all_markdown_files = list(core_doc_files)
+    if os.path.exists("docs"):
+        for root, _, files in os.walk("docs"):
+            for f in files:
+                if f.endswith(".md"):
+                    full_p = os.path.join(root, f).replace("\\", "/")
+                    if full_p not in all_markdown_files:
+                        all_markdown_files.append(full_p)
 
     expected_stages = 9
     expected_budget = 1500
@@ -550,18 +559,39 @@ def audit_docs_claims() -> List[str]:
         (r"2\.88\s*ms", "Stale reference candidate p50 latency (2.88 ms)"),
         (r"within\s+820\s*ms", "Stale reference candidate bound (within 820 ms)"),
         (r"issues/29\b", "Stale incident issue URL (issues/29, expected work_items/42)"),
+        (r"4212(?:\.32)?", "Stale baseline mean latency (4212/4212.32 ms)"),
+        (r"825(?:\.56)?\s*ms", "Stale candidate mean latency (825/825.56 ms)"),
+        (r"1472(?:\.12)?", "Stale candidate p95 latency (1472/1472.12 ms)"),
+        (r"4349(?:\.98)?", "Stale baseline p95 latency (4349/4349.98 ms)"),
+        (r"4219(?:\.23)?", "Stale baseline p50 latency (4219/4219.23 ms)"),
+        (r"1331(?:\.90)?", "Stale candidate p50 latency (1331/1331.90 ms)"),
+        (r"3454(?:\.97)?", "Stale baseline mean latency (3454/3454.97 ms)"),
+        (r"124(?:\.24)?\s*ms", "Stale candidate mean latency (124/124.24 ms)"),
+        (r"817(?:\.61)?", "Stale candidate p95 latency (817/817.61 ms)"),
+        (r"27\.88\s*ms", "Stale safety margin (27.88 ms)"),
+        (r"80\.4\s*%", "Stale reduction percentage (80.4%)"),
+        (r"66\.2\s*%", "Stale reduction percentage (66.2%)"),
+        (r"68\.4\s*%", "Stale reduction percentage (68.4%)"),
+        (r"96\.4\s*%", "Stale reduction percentage (96.4%)"),
     ]
 
-    for doc in doc_files:
+    # 1. Enforce zero stale figures across all markdown files
+    for doc in all_markdown_files:
         if not os.path.exists(doc):
             continue
         with open(doc, "r", encoding="utf-8", errors="ignore") as f:
             content = f.read()
 
-        # Enforce zero stale figures
         for pattern, desc in stale_figures:
             if re.search(pattern, content):
                 violations.append(f"{doc} - Stale metric detected: {desc}")
+
+    # 2. Enforce core doc claims on primary architecture/submission docs
+    for doc in core_doc_files:
+        if not os.path.exists(doc):
+            continue
+        with open(doc, "r", encoding="utf-8", errors="ignore") as f:
+            content = f.read()
 
         # Check track selection: Path A
         if "Path B — Bring Your Own" in content:

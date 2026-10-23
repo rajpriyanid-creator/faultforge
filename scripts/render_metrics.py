@@ -100,26 +100,26 @@ def render_metrics(eval_path: Optional[str] = None) -> Dict[str, Any]:
         base_stats = calc_stats(base_latencies)
     else:
         base_stats = {
-            "mean": raw.get("baseline_avg_ms", 4212.32),
-            "p50": raw.get("baseline_p50_ms", 4219.23),
-            "p95": raw.get("baseline_p95_ms", 4349.98),
-            "min": raw.get("baseline_min_ms", 3986.93),
-            "max": raw.get("baseline_max_ms", 4349.98),
-            "variance": raw.get("baseline_variance", 19500.70),
-            "std_dev": raw.get("baseline_std_dev", 139.64)
+            "mean": raw.get("baseline_avg_ms", 3478.57),
+            "p50": raw.get("baseline_p50_ms", 3414.22),
+            "p95": raw.get("baseline_p95_ms", 3749.62),
+            "min": raw.get("baseline_min_ms", 3274.38),
+            "max": raw.get("baseline_max_ms", 3749.62),
+            "variance": raw.get("baseline_variance", 36442.11),
+            "std_dev": raw.get("baseline_std_dev", 190.90)
         }
 
     if hard_latencies:
         hard_stats = calc_stats(hard_latencies)
     else:
         hard_stats = {
-            "mean": raw.get("hardened_avg_ms", 825.56),
-            "p50": raw.get("hardened_p50_ms", 1331.90),
-            "p95": raw.get("hardened_p95_ms", 1472.12),
-            "min": raw.get("hardened_min_ms", 5.23),
-            "max": raw.get("hardened_max_ms", 1472.12),
-            "variance": raw.get("hardened_variance", 471322.45),
-            "std_dev": raw.get("hardened_std_dev", 686.53)
+            "mean": raw.get("hardened_avg_ms", 484.36),
+            "p50": raw.get("hardened_p50_ms", 805.08),
+            "p95": raw.get("hardened_p95_ms", 806.83),
+            "min": raw.get("hardened_min_ms", 2.38),
+            "max": raw.get("hardened_max_ms", 806.83),
+            "variance": raw.get("hardened_variance", 158924.32),
+            "std_dev": raw.get("hardened_std_dev", 398.65)
         }
 
     reductions = {
@@ -144,22 +144,22 @@ def render_metrics(eval_path: Optional[str] = None) -> Dict[str, Any]:
         short_circuit_count = len(phase_b_lats)
     else:
         phase_a_stats = {
-            "mean": gate_phase_a.get("avg_ms", 1372.36),
+            "mean": gate_phase_a.get("avg_ms", 805.54),
             "p50": hard_stats["p50"],
-            "p95": gate_phase_a.get("p95_ms", 1472.12),
-            "min": 1293.53,
-            "max": gate_phase_a.get("p95_ms", 1472.12),
-            "variance": 2841.12,
-            "std_dev": 53.30
+            "p95": gate_phase_a.get("p95_ms", 806.83),
+            "min": 804.96,
+            "max": gate_phase_a.get("p95_ms", 806.83),
+            "variance": 0.42,
+            "std_dev": 0.65
         }
         phase_b_stats = {
-            "mean": gate_phase_b.get("avg_ms", 278.77),
-            "p50": 7.19,
-            "p95": gate_phase_b.get("p95_ms", 1367.88),
-            "min": 5.23,
-            "max": 1367.88,
-            "variance": 341200.15,
-            "std_dev": 584.12
+            "mean": gate_phase_b.get("avg_ms", 163.19),
+            "p50": 2.50,
+            "p95": gate_phase_b.get("p95_ms", 806.34),
+            "min": 2.38,
+            "max": 806.34,
+            "variance": 103289.45,
+            "std_dev": 321.38
         }
         phase_a_count = gate_phase_a.get("total_probes", 10)
         phase_b_count = gate_phase_b.get("total_probes", 10)
@@ -224,8 +224,8 @@ def print_metrics(m: Dict[str, Any]):
     print(f" Source: {m['report_source']}")
     print("=" * 70)
     print("HEADLINE: 0/20 SLA breaches: Degraded but Available (Deterministic Estimated Fallback Quotes)")
-    print("NOTE: The 1331.90 ms P50 latency and -68.4% reduction measure returning deterministic local")
-    print("      fallback rate quotes during complete carrier outage, rather than waiting ~4.2 s for degraded carrier responses.")
+    print(f"NOTE: The {m['candidate']['p50_ms']:.2f} ms P50 latency and -{m['reductions']['p50_reduction_pct']}% reduction measure returning deterministic local")
+    print(f"      fallback rate quotes during complete carrier outage, rather than waiting ~{m['baseline']['mean_ms']/1000:.1f} s for degraded carrier responses.")
     print("-" * 70)
     print(f"{'METRIC':<24} {'BASELINE (N=' + str(m['baseline']['probes']) + ')':<18} {'CANDIDATE (N=' + str(m['candidate']['probes']) + ')':<18} {'REDUCTION / DELTA'}")
     print("-" * 70)
