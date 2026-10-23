@@ -1,20 +1,14 @@
 {
-  "diagnosis_id": "diag-0c3df1ab",
+  "diagnosis_id": "diag-8f3df5e9",
   "status": "CONFIRMED_REGRESSION",
   "confidence": "HIGH",
   "target_component": "app/clients/shipping_client.py",
-  "ast_findings": [
-    {
-      "type": "UNBOUNDED_REQUEST",
-      "severity": "HIGH",
-      "detail": "AST inspection confirmed httpx.AsyncClient call lacks bounded timeout keyword argument."
-    },
-    {
-      "type": "MISSING_FALLBACK",
-      "severity": "MEDIUM",
-      "detail": "AST inspection confirmed no reference or call to fallback rate quote generator."
-    }
-  ],
+  "graph_resolution_path": "fallback_ast_git",
+  "graph_analysis": {
+    "resolution_path": "fallback_ast_git",
+    "error": "No module named 'app'"
+  },
+  "ast_findings": [],
   "bisect_result": {
     "bisect_executed": true,
     "status": "CONFIRMED_REGRESSION",

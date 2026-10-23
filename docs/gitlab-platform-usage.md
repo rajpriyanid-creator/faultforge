@@ -47,6 +47,12 @@ In the CI stage `verify:exact_fault_replay_proof`:
 5. It executes 20 probes under the identical Toxiproxy latency profile `644a89784316`.
 Consequently, the candidate commit SHA recorded in `fault_run_hardened.json` (`d3720143...`) represents the candidate patch applied to the pipeline commit, while the candidate source branch references Duo commit `f8aa9d98`.
 
+### Code Provenance: Why app_tree_matches_duo_commit is false
+In `reports/duo_evidence.json` and the sealed receipt, `app_tree_matches_duo_commit` is recorded as `false`:
+- **Duo-Authored Commit (`f8aa9d98`):** Synthesized by the GitLab Duo service account in session 9909079, providing the core 0.8s timeout, circuit breaker (3 failures, 10s cooldown), and fallback estimate in `app/clients/shipping_client.py`.
+- **Subsequent Evaluated Commit (`d372014`):** During candidate replay hardening, the pair-programming agent added `asyncio.wait_for` as a hard wall-clock outer deadline to guard against asynchronous hanging connections and updated navigation in `app/dashboard.html`.
+- **Exact Diff:** `app/clients/shipping_client.py` (+24/-21) and `app/dashboard.html` (+5/-4). Both commits reside on candidate branch `fix/resilience-shipping-timeout` (MR !3).
+
 ### Verified Deployment Status:
 1. **Cloud Run Candidate Deployment:** `VERIFIED (SUCCESS)`  
    - *Status:* Candidate revision (`faultforge-checkout-00026-sam`) actively deployed to Google Cloud Run staging in `us-central1` via CI stage `release:cloudrun_candidate_deploy` (`reports/release.json` status `STAGED`).

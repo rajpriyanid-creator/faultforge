@@ -1,13 +1,18 @@
 {
-  "timestamp": 1792774521.8979776,
+  "timestamp": 1792782684.1539466,
   "service_name": "faultforge-checkout",
   "region": "us-central1",
   "production_url": "https://faultforge-checkout-tiottsrikq-uc.a.run.app",
   "health": {
-    "status_code": null,
-    "body": null,
-    "verified": false,
-    "error": "The read operation timed out"
+    "status_code": 200,
+    "body": {
+      "status": "healthy",
+      "service": "faultforge-checkout",
+      "revision": "faultforge-checkout-00002-kpl",
+      "uptime_seconds": 2148.99,
+      "environment": "production"
+    },
+    "verified": true
   },
   "traffic_split": {
     "verified": true,
@@ -19,7 +24,7 @@
       },
       {
         "percent": 10,
-        "revisionName": "faultforge-checkout-00026-sam",
+        "revisionName": "faultforge-checkout-00036-pih",
         "tag": "candidate",
         "url": "https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app"
       }
@@ -28,7 +33,7 @@
     "production_percent": 90,
     "candidate_tag": "candidate",
     "candidate_url": "https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app",
-    "candidate_revision": "faultforge-checkout-00026-sam",
+    "candidate_revision": "faultforge-checkout-00036-pih",
     "production_revision": "faultforge-checkout-00002-kpl"
   }
 }

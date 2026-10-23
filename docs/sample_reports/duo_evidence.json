@@ -16,5 +16,24 @@
   "app_tree_matches_duo_commit": false,
   "changed_files": [
     "app/clients/shipping_client.py"
-  ]
+  ],
+  "diff_stat": "app/clients/shipping_client.py | 47 +++---\napp/dashboard.html | 7 +-\n2 files changed, 29 insertions(+), 25 deletions(-)",
+  "commits_after_duo": [
+    {
+      "commit": "d372014",
+      "author": "FaultForge, Supervised, Resilience, Healer",
+      "message": "fix(resilience): bound shipping call to 0.8s with circuit breaker and fallback estimate"
+    },
+    {
+      "commit": "7fbd086",
+      "author": "FaultForge Agent",
+      "message": "Merge branch main into fix/resilience-shipping-timeout"
+    },
+    {
+      "commit": "559dc4d",
+      "author": "FaultForge Agent",
+      "message": "fix: honest cloud run claims, referenced receipt URLs, and Part B CI integration"
+    }
+  ],
+  "explanation": "Duo synthesized core resilience in f8aa9d98. Subsequent commits on the branch added asyncio.wait_for outer timeout guard and updated dashboard.html, so app_tree_matches_duo_commit is false."
 }

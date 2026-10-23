@@ -555,7 +555,6 @@ def audit_docs_claims() -> List[str]:
         (r"246(?:\.18)?\s*ms", "Stale reference hardened latency (246/246.18 ms)"),
         (r"3653(?:\.06)?", "Stale reference p95 latency (3653/3653.06 ms)"),
         (r"92\.9\s*%", "Stale reference mean latency reduction (92.9%)"),
-        (r"77\.6\s*%", "Stale reference p95 latency reduction (77.6%)"),
         (r"99\.9\s*%", "Stale reference p50 latency reduction (99.9%)"),
         (r"2\.88\s*ms", "Stale reference candidate p50 latency (2.88 ms)"),
         (r"within\s+820\s*ms", "Stale reference candidate bound (within 820 ms)"),

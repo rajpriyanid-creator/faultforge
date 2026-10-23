@@ -39,13 +39,14 @@ def plan_incident(
         "labels": ["incident", "chaos-breach", "faultforge"]
     }
 
+    dossier_proj_url = dossier.get("project_url") or (f"https://gitlab.com/{dossier.get('project_path')}" if dossier.get("project_path") else None)
     gitlab_project_url = os.getenv(
         "CI_PROJECT_URL",
-        "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase"
+        dossier_proj_url or "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase"
     ).rstrip("/")
     project_path = os.getenv(
         "CI_PROJECT_PATH",
-        "gitlab-ai-hackathon/transcend-october-2026/43424456/showcase"
+        dossier.get("project_path", "gitlab-ai-hackathon/transcend-october-2026/43424456/showcase")
     )
 
     # 1. Environment variable override

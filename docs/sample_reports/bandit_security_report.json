@@ -1,6 +1,6 @@
 {
   "errors": [],
-  "generated_at": "2026-10-23T16:52:23Z",
+  "generated_at": "2026-10-23T19:08:27Z",
   "metrics": {
     "_totals": {
       "CONFIDENCE.HIGH": 1,
@@ -11,7 +11,7 @@
       "SEVERITY.LOW": 1,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 458,
+      "loc": 630,
       "nosec": 0,
       "skipped_tests": 1
     },
@@ -37,7 +37,20 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 2,
+      "loc": 3,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "app/clients/orbit_client.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 107,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -50,7 +63,7 @@
       "SEVERITY.LOW": 0,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 28,
+      "loc": 66,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -89,7 +102,7 @@
       "SEVERITY.LOW": 1,
       "SEVERITY.MEDIUM": 0,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 198,
+      "loc": 224,
       "nosec": 0,
       "skipped_tests": 0
     },

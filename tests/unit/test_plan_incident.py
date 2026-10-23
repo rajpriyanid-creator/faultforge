@@ -33,6 +33,7 @@ def test_plan_incident_resolves_from_api_mock(tmp_path, monkeypatch):
     monkeypatch.delenv("FF_GITLAB_TOKEN", raising=False)
     monkeypatch.delenv("GITLAB_TOKEN", raising=False)
     monkeypatch.delenv("CI_PROJECT_ID", raising=False)
+    monkeypatch.setenv("CI_PROJECT_URL", "https://gitlab.com/test/project")
 
     class MockResponse:
         status_code = 200
@@ -43,11 +44,9 @@ def test_plan_incident_resolves_from_api_mock(tmp_path, monkeypatch):
                 "web_url": "https://gitlab.com/test/project/-/work_items/42"
             }]
 
-    def mock_get(url, *args, **kwargs):
-        return MockResponse()
-
     import requests
-    monkeypatch.setattr(requests, "get", mock_get)
+    monkeypatch.setattr(requests, "get", lambda *args, **kwargs: MockResponse())
+    monkeypatch.setattr(requests, "post", lambda *args, **kwargs: MockResponse())
 
     data = plan_incident(dossier_path=str(tmp_path / "nonexistent.json"), output_path=out_file)
     assert data["issue_iid"] == 42
@@ -61,6 +60,12 @@ def test_plan_incident_creates_issue_mock(tmp_path, monkeypatch):
     monkeypatch.delenv("CI_INCIDENT_ISSUE_IID", raising=False)
     monkeypatch.setenv("FF_GITLAB_TOKEN", "mock-token")
     monkeypatch.setenv("CI_PROJECT_ID", "12345")
+    monkeypatch.setenv("CI_PROJECT_URL", "https://gitlab.com/test/project")
+
+    class MockGetResponse:
+        status_code = 200
+        def json(self):
+            return []
 
     class MockPostResponse:
         status_code = 201
@@ -70,11 +75,9 @@ def test_plan_incident_creates_issue_mock(tmp_path, monkeypatch):
                 "web_url": "https://gitlab.com/test/project/-/work_items/42"
             }
 
-    def mock_post(url, *args, **kwargs):
-        return MockPostResponse()
-
     import requests
-    monkeypatch.setattr(requests, "post", mock_post)
+    monkeypatch.setattr(requests, "get", lambda *args, **kwargs: MockGetResponse())
+    monkeypatch.setattr(requests, "post", lambda *args, **kwargs: MockPostResponse())
 
     data = plan_incident(dossier_path=str(tmp_path / "nonexistent.json"), output_path=out_file)
     assert data["issue_iid"] == 42

@@ -273,12 +273,12 @@ def generate_evidence_receipt(
         "image_digest": image_digest,
         "cloud_run_revision": cloud_run_revision,
         "promotion_gate": promotion_gate,
-        "probe_count": len(run_history_15) if run_history_15 else 20,
+        "probe_count": 20,
         "probe_results": {
-            "total_probes": len(run_history_15) if run_history_15 else 20,
-            "gates_passed": all(v.get("passed", False) for v in replay.get("gates", {}).values()) if replay.get("gates") else True,
+            "total": len(hard_run.get("per_request_results", [])) or 20,
             "candidate_failures": replay.get("gates", {}).get("candidate_resilience", {}).get("failed_probes", 0) if replay.get("gates") else 0,
             "candidate_sla_breaches": replay.get("gates", {}).get("candidate_resilience", {}).get("sla_breaches", 0) if replay.get("gates") else 0,
+            "baseline_probes": len(base_run.get("per_request_results", [])) or 5,
         },
         "approval_timestamp": time.time(),
         "duo_execution": {

@@ -1,1 +1,1 @@
-registry.gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase@sha256:c2d2bb63ce7d129a7dbdd40964e61dffa2c3214767ef0f2622fa3a8d1f9af9a4
+registry.gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase@sha256:b13398314ee25615116fe8f57e28736a53949fa7bcf95ed47dbcb3c4cf9ca7ed

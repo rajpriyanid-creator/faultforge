@@ -228,7 +228,7 @@ secure:sast_and_secret_scan:
 secure:gitleaks:
   stage: secure
   image:
-    name: zricethezav/gitleaks:latest
+    name: zricethezav/gitleaks:v8.21.2
     entrypoint: [""]
   dependencies: []
   script:
