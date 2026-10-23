@@ -181,7 +181,6 @@ verify:exact_fault_replay_proof:
           git checkout "origin/$CANDIDATE_BRANCH" -- tests/chaos/
         fi
         FIX_SHA=$(git rev-parse "origin/$CANDIDATE_BRANCH")
-        python -c "import json; d=json.load(open('reports/duo_evidence.json')); d['fix_sha']='$FIX_SHA'; d['changed_files']='''$CHANGED_FILES'''.strip().splitlines(); json.dump(d, open('reports/duo_evidence.json', 'w'), indent=2)"
       else
         echo "[!] No Duo-authored MR branch detected; falling back to reference-fix"
         git fetch origin reference-fix
