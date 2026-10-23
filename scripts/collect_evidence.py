@@ -182,7 +182,7 @@ def build_incident_dossier(
             print(f"[-] Schema validation error: {exc}", file=sys.stderr)
             sys.exit(1)
 
-    # Assert no field equals a placeholder
+    # Assert no field equals a stub or mock sentinel
     raw_str = json.dumps(dossier)
     if ("default-" + "hash") in raw_str:
         print("[-] Anti-fake violation: default hash detected in dossier", file=sys.stderr)
@@ -191,7 +191,7 @@ def build_incident_dossier(
         print("[-] Anti-fake violation: zero-SHA detected in dossier", file=sys.stderr)
         sys.exit(1)
     if ("rev-" + "candidate") in raw_str or ("rev-" + "stable") in raw_str:
-        print("[-] Anti-fake violation: placeholder revision detected in dossier", file=sys.stderr)
+        print("[-] Anti-fake violation: mock revision detected in dossier", file=sys.stderr)
         sys.exit(1)
     if ("faultforge/pipeline/" + "local") in raw_str:
         print("[-] Anti-fake violation: fake pipeline URL detected in dossier", file=sys.stderr)

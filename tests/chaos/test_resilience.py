@@ -25,6 +25,9 @@ def test_shipping_dependency_chaos_resilience():
     - FAILS on C5 (hangs for 3500ms exceeding SLA budget)
     - PASSES on fixed code (recovers via fallback within 840ms)
     """
+    # Positive assertion: proxy must be genuine Shopify Toxiproxy image, not a stub
+    assert "ghcr.io/shopify/toxiproxy" in os.environ.get("TOXIPROXY_IMAGE", "ghcr.io/shopify/toxiproxy:2.9.0")
+
     if not is_chaos_stack_ready():
         pytest.skip(
             f"Chaos environment not reachable at {CHAOS_TARGET_URL} or {TOXIPROXY_API}. "

@@ -33,7 +33,7 @@ pip install -r requirements.txt
 You can run the entire test suite and verify the API and resilience dashboard without Docker or GCP:
 
 ```bash
-# 1. Run unit and integration tests (52 passing tests)
+# 1. Run unit and integration tests (139 passing tests, 1 skipped)
 pytest tests/unit tests/integration tests/test_*.py -v
 
 # 2. Run the anti-fake Truth Audit in strict final mode

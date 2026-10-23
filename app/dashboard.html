@@ -460,7 +460,7 @@
           <span class="text-emerald-400 font-bold mt-0.5">✓</span>
           <div>
             <div class="font-semibold text-slate-200">3. Profile Hash Match</div>
-            <div class="text-[11px] text-slate-400">Exact match <span id="gate-hash-val" class="text-sky-300">644a89784316</span> verified</div>
+            <div class="text-[11px] text-slate-400">Exact match <span id="gate-hash-val" class="text-sky-300">PENDING</span> verified</div>
           </div>
         </div>
 
@@ -468,7 +468,7 @@
           <span class="text-emerald-400 font-bold mt-0.5">✓</span>
           <div>
             <div class="font-semibold text-slate-200">4. Consecutive Passes</div>
-            <div class="text-[11px] text-slate-400"><span id="gate-probes-val">10 / 10</span> probes passed under fault</div>
+            <div class="text-[11px] text-slate-400"><span id="gate-probes-val">PENDING</span> probes passed under fault</div>
           </div>
         </div>
 
@@ -859,7 +859,7 @@
               sealEl.textContent = ev.tamper_evident_seal_sha256.substring(0, 16) + '...';
               sealEl.title = ev.tamper_evident_seal_sha256;
             } else {
-              sealEl.textContent = "706f7ca7450ee032...";
+              sealEl.textContent = "PENDING";
             }
           }
 
@@ -874,7 +874,7 @@
 
           const hashEl = document.getElementById('gate-hash-val');
           if (hashEl) {
-            hashEl.textContent = (ev.fault_profile && ev.fault_profile.hash) ? ev.fault_profile.hash : "644a89784316";
+            hashEl.textContent = (ev.fault_profile && ev.fault_profile.hash) ? ev.fault_profile.hash : "PENDING";
           }
 
           const probesEl = document.getElementById('gate-probes-val');
@@ -883,7 +883,7 @@
               const candidateProbes = ev.run_history_15_probes.filter(p => p.label === 'candidate');
               probesEl.textContent = `${candidateProbes.length} / ${candidateProbes.length}`;
             } else {
-              probesEl.textContent = "10 / 10";
+              probesEl.textContent = "PENDING";
             }
           }
 
@@ -893,7 +893,7 @@
               const gStatus = ev.governance.promotion_gate;
               gateEl.textContent = `${gStatus} (Human Sign-off Required)`;
             } else {
-              gateEl.textContent = "BLOCKED_PENDING_APPROVAL (Human Sign-off Required)";
+              gateEl.textContent = "PENDING";
             }
           }
 

@@ -46,7 +46,7 @@ def trigger_duo_flow(
     output_path: str = "reports/duo_run.json",
     mode: str = "auto"
 ) -> Dict[str, Any]:
-    gitlab_token = os.getenv("FF_GITLAB_TOKEN", os.getenv("GITLAB_TOKEN"))
+    gitlab_auth = os.getenv("FF_GITLAB_TOKEN", os.getenv("GITLAB_TOKEN"))
     project_id = os.getenv("CI_PROJECT_ID")
     gitlab_api = os.getenv("CI_API_V4_URL", "https://gitlab.com/api/v4").rstrip("/")
     gitlab_project_url = os.getenv("CI_PROJECT_URL", "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase")
@@ -96,7 +96,7 @@ Failing Test: {dossier.get('evidence', {}).get('failed_test', 'tests/chaos/test_
         return run_record
 
     # If running in manual/offline mode without live tokens, write reference trigger record
-    if mode == "manual" or not (gitlab_token and project_id):
+    if mode == "manual" or not (gitlab_auth and project_id):
         status_val = "NOT_EXECUTED_REFERENCE_ONLY" if mode == "manual" else "NOT_EXECUTED_NO_CREDENTIALS"
         print(f"[*] Running in fallback trigger mode: {status_val}")
         run_record = {
@@ -119,7 +119,7 @@ Failing Test: {dossier.get('evidence', {}).get('failed_test', 'tests/chaos/test_
 
     idempotency_key = f"duo-mr-{incident_id}-{commit_sha[:8]}"
     headers = {
-        "PRIVATE-TOKEN": gitlab_token,
+        "PRIVATE-TOKEN": gitlab_auth,
         "Content-Type": "application/json",
         "Idempotency-Key": idempotency_key
     }

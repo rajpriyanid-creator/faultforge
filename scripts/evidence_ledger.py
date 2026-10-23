@@ -115,6 +115,9 @@ def record_stage(
     ledger = load_ledger(ledger_path)
     commit_sha = get_ledger_commit_sha()
     pipeline_id = os.getenv("CI_PIPELINE_ID", "local-run")
+    job_id = os.getenv("CI_JOB_ID", "local-job")
+    project_url = os.getenv("CI_PROJECT_URL", "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase")
+    artifact_url = f"{project_url}/-/jobs/{job_id}/artifacts/browse" if job_id != "local-job" else f"{project_url}/-/pipelines/{pipeline_id}"
 
     existing_artifacts = [item["path"] for item in verified_details]
 
@@ -136,6 +139,8 @@ def record_stage(
         "status": norm_status,
         "commit_sha": commit_sha,
         "pipeline_id": pipeline_id,
+        "job_id": job_id,
+        "artifact_url": artifact_url,
         "approval_required": approval_required,
         "artifacts_declared": artifacts,
         "artifacts_verified_on_disk": existing_artifacts,

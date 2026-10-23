@@ -9,9 +9,11 @@ venv/
 .env
 .env.*
 *.pem
+*.p12
 *.key
 credentials*.json
 service_account*.json
+service-account*.json
 .cache/
 bin/
 gate_data/

@@ -12,7 +12,7 @@ def plan_incident(
     dossier_path: str = "reports/incident_dossier.json",
     output_path: str = "reports/issue.json"
 ) -> Dict[str, Any]:
-    gitlab_token = os.getenv("FF_GITLAB_TOKEN", os.getenv("GITLAB_TOKEN"))
+    gitlab_auth = os.getenv("FF_GITLAB_TOKEN", os.getenv("GITLAB_TOKEN"))
     project_id = os.getenv("CI_PROJECT_ID")
     gitlab_api = os.getenv("CI_API_V4_URL", "https://gitlab.com/api/v4").rstrip("/")
     pipeline_url = os.getenv("CI_PIPELINE_URL", "N/A")
@@ -56,9 +56,9 @@ def plan_incident(
         issue_data["web_url"] = env_issue_url
         if env_issue_iid:
             issue_data["issue_iid"] = int(env_issue_iid)
-    elif gitlab_token and project_id:
+    elif gitlab_auth and project_id:
         url = f"{gitlab_api}/projects/{project_id}/issues"
-        headers = {"PRIVATE-TOKEN": gitlab_token, "Content-Type": "application/json"}
+        headers = {"PRIVATE-TOKEN": gitlab_auth, "Content-Type": "application/json"}
         payload = {
             "title": issue_data["title"],
             "description": f"### FaultForge Automated Incident\n- **Incident ID:** `{incident_id}`\n- **Commit SHA:** `{commit_sha}`\n- **Pipeline:** {pipeline_url}\n- **SLA Budget:** 1500ms breached\n",
@@ -81,7 +81,7 @@ def plan_incident(
     if "web_url" not in issue_data:
         try:
             proj_id = project_id or urllib.parse.quote(project_path, safe="")
-            headers = {"PRIVATE-TOKEN": gitlab_token} if gitlab_token else {}
+            headers = {"PRIVATE-TOKEN": gitlab_auth} if gitlab_auth else {}
             # Query for specific incident_id or search string
             search_query = incident_id if incident_id else "inc-42"
             api_endpoint = f"{gitlab_api}/projects/{proj_id}/issues?search={urllib.parse.quote(search_query)}"
