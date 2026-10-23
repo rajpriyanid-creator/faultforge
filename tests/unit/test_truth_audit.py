@@ -112,3 +112,54 @@ def test_audit_docs_claims_clean_on_repo():
     from scripts.truth_audit import audit_docs_claims
     violations = audit_docs_claims()
     assert len(violations) == 0, f"Expected clean audit on repo, got: {violations}"
+
+def test_audit_cloud_run_claims_fails_on_unverified_claim(tmp_path, monkeypatch):
+    from scripts.truth_audit import audit_cloud_run_claims
+    monkeypatch.chdir(tmp_path)
+    reports_dir = tmp_path / "reports"
+    reports_dir.mkdir(parents=True, exist_ok=True)
+
+    # release.json is SKIPPED
+    (reports_dir / "release.json").write_text(json.dumps({
+        "status": "SKIPPED_NO_GCP_CREDENTIALS"
+    }), encoding="utf-8")
+    (reports_dir / "live_verification.json").write_text(json.dumps({
+        "traffic_split": {"verified": False}
+    }), encoding="utf-8")
+
+    # README claiming "Verified Live Google Cloud Run Deployment"
+    readme = tmp_path / "README.md"
+    readme.write_text("We achieved Verified Live Google Cloud Run Deployment in production.", encoding="utf-8")
+
+    violations = audit_cloud_run_claims(str(readme), str(reports_dir))
+    assert len(violations) > 0
+    assert any("Cloud Run deployment is not verified" in v for v in violations)
+
+def test_audit_cloud_run_claims_passes_honest_wording(tmp_path, monkeypatch):
+    from scripts.truth_audit import audit_cloud_run_claims
+    monkeypatch.chdir(tmp_path)
+    reports_dir = tmp_path / "reports"
+    reports_dir.mkdir(parents=True, exist_ok=True)
+
+    (reports_dir / "release.json").write_text(json.dumps({
+        "status": "SKIPPED_NO_GCP_CREDENTIALS"
+    }), encoding="utf-8")
+    (reports_dir / "live_verification.json").write_text(json.dumps({
+        "traffic_split": {"verified": False}
+    }), encoding="utf-8")
+
+    # Honest README phrasing
+    readme = tmp_path / "README.md"
+    readme.write_text(
+        "Cloud Run service responded 200 OK on 2026-10-20 (local probe, live_verification.json); "
+        "CI-driven candidate release and traffic split: not established.",
+        encoding="utf-8"
+    )
+
+    violations = audit_cloud_run_claims(str(readme), str(reports_dir))
+    assert len(violations) == 0
+
+def test_audit_cloud_run_claims_clean_on_repo():
+    from scripts.truth_audit import audit_cloud_run_claims
+    violations = audit_cloud_run_claims()
+    assert len(violations) == 0, f"Expected clean cloud run claims on repo, got: {violations}"

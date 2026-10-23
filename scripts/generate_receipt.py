@@ -250,8 +250,8 @@ def generate_evidence_receipt(
         "approver": approver,
         "candidate_source": candidate_source,
         "urls": {
-            "pipeline_url": pipeline_url,
-            "job_url": job_url,
+            "referenced_pipeline_url": pipeline_url,
+            "referenced_job_url": job_url,
             "issue_url": issue_url,
             "merge_request_url": mr_url,
             "flow_run_url": flow_run_url
@@ -323,7 +323,8 @@ def generate_evidence_receipt(
 - **Identical Replay Confirmed:** `{receipt_data['fault_profile']['identical_replay_confirmed']}`
 - **Candidate Source:** `{receipt_data['candidate_source']}`
 - **Duo Run ID:** `{receipt_data['duo_execution']['run_id'] or 'not established'}`
-- **Pipeline URL:** `{receipt_data['urls']['pipeline_url'] or 'not established'}`
+- **Referenced Pipeline URL:** `{receipt_data['urls'].get('referenced_pipeline_url') or 'not established'}`
+- **Referenced Job URL:** `{receipt_data['urls'].get('referenced_job_url') or 'not established'}`
 - **Incident Issue URL:** `{receipt_data['urls']['issue_url'] or 'not established'}`
 - **Duo Merge Request URL:** `{receipt_data['urls']['merge_request_url'] or 'not established'}`
 - **Duo Flow Run URL:** `{receipt_data['urls']['flow_run_url'] or 'not established'}`

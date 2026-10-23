@@ -574,6 +574,52 @@ def audit_docs_claims() -> List[str]:
 
     return violations
 
+def audit_cloud_run_claims(readme_path: str = "README.md", reports_dir: str = "reports") -> List[str]:
+    violations = []
+    if not os.path.exists(readme_path):
+        return violations
+
+    with open(readme_path, "r", encoding="utf-8", errors="ignore") as f:
+        readme_content = f.read()
+
+    sample_dir = os.path.join("docs", "sample_reports")
+    rel_path = os.path.join(reports_dir, "release.json")
+    if not os.path.exists(rel_path):
+        rel_path = os.path.join(sample_dir, "release.json")
+
+    live_path = os.path.join(reports_dir, "live_verification.json")
+    if not os.path.exists(live_path):
+        live_path = os.path.join(sample_dir, "live_verification.json")
+
+    release_status = None
+    if os.path.exists(rel_path):
+        try:
+            with open(rel_path, "r", encoding="utf-8") as rf:
+                release_status = json.load(rf).get("status")
+        except Exception:
+            pass
+
+    traffic_split_verified = False
+    if os.path.exists(live_path):
+        try:
+            with open(live_path, "r", encoding="utf-8") as lf:
+                live_data = json.load(lf)
+                traffic_split_verified = bool(live_data.get("traffic_split", {}).get("verified", False))
+        except Exception:
+            pass
+
+    verified_claim_match = re.search(r"verified.*cloud\s*run", readme_content, re.IGNORECASE)
+    is_skipped = (release_status is not None and "SKIPPED" in str(release_status).upper())
+
+    if verified_claim_match:
+        if is_skipped or not traffic_split_verified:
+            violations.append(
+                f"README claims '{verified_claim_match.group(0)}' but Cloud Run deployment is not verified: "
+                f"release.json status is '{release_status}' and traffic_split.verified is {traffic_split_verified}."
+            )
+
+    return violations
+
 def main():
     final_audit = ("--final-audit" in sys.argv) or (os.getenv("FINAL_AUDIT") == "1")
     print("=================================================================")
@@ -588,6 +634,7 @@ def main():
     violations.extend(audit_report_consistency(final_mode=final_audit))
     violations.extend(audit_sample_reports_provenance())
     violations.extend(audit_docs_claims())
+    violations.extend(audit_cloud_run_claims())
 
     if violations:
         print(f"\n[-] FAILED: Found {len(violations)} truth audit violation(s):")

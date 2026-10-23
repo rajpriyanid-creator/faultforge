@@ -5,14 +5,15 @@
 > Built for the **GitLab Transcend 2026: Life After Code** Hackathon (Path A — Start Fresh).
 
 [![Target Prize](https://img.shields.io/badge/Target_Prize-Best_Supervised_Agent_($4,000)-gold.svg)](#2-why-faultforge-wins-best-supervised-agent)
-[![Google Cloud Run](https://img.shields.io/badge/Google_Cloud_Run-Live_Active_(+0.2_Bonus)-success.svg)](https://faultforge-checkout-136942862703.us-central1.run.app/dashboard)
+[![Google Cloud Run](https://img.shields.io/badge/Google_Cloud_Run-Deployment_Target-blue.svg)](https://faultforge-checkout-136942862703.us-central1.run.app/dashboard)
 [![GitLab Duo Agent Platform](https://img.shields.io/badge/GitLab_Duo-Custom_Flow-orange.svg)](flows/faultforge-flow.yaml)
 [![Autonomy Model](https://img.shields.io/badge/Autonomy-Supervised-brightgreen.svg)](docs/safety-policy.md)
 [![Lifecycle Stages](https://img.shields.io/badge/Stages-9_Covered-brightgreen.svg)](.gitlab-ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-> [!TIP]
-> **Live Google Cloud Run Deployment (Google Cloud Bonus +0.2 Points):**  
+> [!NOTE]
+> **Google Cloud Run Deployment Target:**  
+> Cloud Run service responded 200 OK on 2026-10-20 (local probe, live_verification.json); CI-driven candidate release and traffic split: not established.  
 > 🌐 **Interactive Dashboard:** [https://faultforge-checkout-136942862703.us-central1.run.app/dashboard](https://faultforge-checkout-136942862703.us-central1.run.app/dashboard)  
 > 🩺 **Live Health Probe:** [https://faultforge-checkout-136942862703.us-central1.run.app/health](https://faultforge-checkout-136942862703.us-central1.run.app/health) (HTTP 200 OK, revision `faultforge-checkout-00002-kpl`)  
 > 📜 **Cryptographic Evidence Receipt:** [https://faultforge-checkout-136942862703.us-central1.run.app/api/v1/evidence](https://faultforge-checkout-136942862703.us-central1.run.app/api/v1/evidence)  
@@ -257,7 +258,7 @@ In strict compliance with the **Never Fabricate Evidence** and **Claim Only What
 - **Primary Category:** **Best Supervised Agent ($4,000)**. Full multi-step automation for investigation, bisecting, code patching, replay verification, and staging deployment, with an explicit risk-gated human promotion gate for live production traffic.
 - **Secondary Category:** **Most Stages Covered ($5,000)**. All 9 GitLab lifecycle stages actively verified with real machine-readable artifacts.
 - **Additional Category:** **Most Creative ($4,000)**. Novel "Break It, Heal It" closed-loop system pairing chaos testing with exact-fault replay verification.
-- **Google Cloud Bonus (+0.2 points):** **Verified Live Google Cloud Run Deployment** in `us-central1`. Service URL: [`https://faultforge-checkout-136942862703.us-central1.run.app`](https://faultforge-checkout-136942862703.us-central1.run.app) (Active revision `faultforge-checkout-00002-kpl`, verified responding HTTP 200 on `/health`). Full Knative service YAML in [`infra/cloudrun/service.yaml`](infra/cloudrun/service.yaml), deployment scripts in [`infra/cloudrun/deploy.sh`](infra/cloudrun/deploy.sh), and automated candidate routing / instant traffic rollback in [`scripts/cloudrun_traffic.py`](scripts/cloudrun_traffic.py). In GitLab CI, `release:cloudrun_candidate_deploy` executes a real deployment with `--no-traffic --tag candidate` whenever `GCP_PROJECT` and `GCP_SA_KEY` CI variables are present; otherwise, it records `SKIPPED_NO_GCP_CREDENTIALS` and links to the live reference deployment without fabricating success.
+- **Google Cloud Deployment Target:** Cloud Run service responded 200 OK on 2026-10-20 (local probe, live_verification.json); CI-driven candidate release and traffic split: not established. Service URL: [`https://faultforge-checkout-136942862703.us-central1.run.app`](https://faultforge-checkout-136942862703.us-central1.run.app) (revision `faultforge-checkout-00002-kpl`, responded HTTP 200 on `/health`). Full Knative service YAML in [`infra/cloudrun/service.yaml`](infra/cloudrun/service.yaml), deployment scripts in [`infra/cloudrun/deploy.sh`](infra/cloudrun/deploy.sh), and automated candidate routing / instant traffic rollback in [`scripts/cloudrun_traffic.py`](scripts/cloudrun_traffic.py). In GitLab CI, `release:cloudrun_candidate_deploy` executes a real deployment with `--no-traffic --tag candidate` whenever `GCP_PROJECT` and `GCP_SA_KEY` CI variables are present; otherwise, it records `SKIPPED_NO_GCP_CREDENTIALS` and marks CI deployment as not established without fabricating success.
 
 ### Authorship and Autonomy
 - **AI Agent Authorship:** In accordance with the Transcend Hackathon theme (*"Life After Code"*), most commits, test generations, and evidence harvesting scripts in this repository were synthesized by an autonomous DevSecOps coding agent working under supervision.

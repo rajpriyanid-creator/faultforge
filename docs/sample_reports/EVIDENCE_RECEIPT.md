@@ -5,7 +5,7 @@
 **Final Status:** **`CONTAINED_NEEDS_REVIEW`**  
 **Autonomy Level:** `SUPERVISED` (Supervised Gate)  
 **Approver:** `SUPERVISED_OPERATOR`  
-**Tamper-Evident Seal (SHA-256):** `05dfdca7d72b1fb9e9dd36f9a652d3a24c683437837bce74bb7786d6dc68b156`
+**Tamper-Evident Seal (SHA-256):** `cc61d87f14e94045590332047f0e3d1d52ea304a6b64b5e4013c50961356bf1e`
 
 ---
 
@@ -15,7 +15,8 @@
 - **Identical Replay Confirmed:** `True`
 - **Candidate Source:** `commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token`
 - **Duo Run ID:** `9909079`
-- **Pipeline URL:** `https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2977803091`
+- **Referenced Pipeline URL:** `https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2977803091`
+- **Referenced Job URL:** `https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17392416795`
 - **Incident Issue URL:** `https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/work_items/42`
 - **Duo Merge Request URL:** `https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/merge_requests/3`
 - **Duo Flow Run URL:** `https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/automate/agent-sessions/9909079`

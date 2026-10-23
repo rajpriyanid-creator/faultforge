@@ -10,11 +10,11 @@
   "approver": "SUPERVISED_OPERATOR",
   "candidate_source": "commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token",
   "urls": {
-    "pipeline_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2977803091",
-    "job_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17392416795",
     "issue_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/work_items/42",
     "merge_request_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/merge_requests/3",
-    "flow_run_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/automate/agent-sessions/9909079"
+    "flow_run_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/automate/agent-sessions/9909079",
+    "referenced_pipeline_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2977803091",
+    "referenced_job_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17392416795"
   },
   "fault_profile": {
     "name": "latency_cascading_hang",
@@ -434,5 +434,5 @@
     "requires_human_approval_to_promote": true,
     "promotion_gate": "BLOCKED_PENDING_REVIEW"
   },
-  "tamper_evident_seal_sha256": "05dfdca7d72b1fb9e9dd36f9a652d3a24c683437837bce74bb7786d6dc68b156"
+  "tamper_evident_seal_sha256": "cc61d87f14e94045590332047f0e3d1d52ea304a6b64b5e4013c50961356bf1e"
 }
