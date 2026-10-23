@@ -17,6 +17,8 @@ def test_generate_receipt_creates_valid_seal(tmp_path, monkeypatch):
     assert os.path.exists(json_path)
     assert os.path.exists(md_path)
     assert len(receipt["tamper_evident_seal_sha256"]) == 64
+    assert "referenced_pipeline_url" in receipt["urls"]
+    assert "referenced_job_url" in receipt["urls"]
 
     # Recalculate canonical hash
     seal = receipt.pop("tamper_evident_seal_sha256")

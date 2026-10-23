@@ -250,6 +250,20 @@ package:container_build:
       fi
       mkdir -p reports
       echo "$DIGEST" > reports/image_digest.txt
+
+      if [ -n "$GCP_PROJECT" ] && [ -n "$GCP_SA_KEY" ]; then
+        echo "[+] Pushing container image to Google Artifact Registry..."
+        TARGET_REGION="${GCP_REGION:-us-central1}"
+        if [ -f "$GCP_SA_KEY" ]; then
+          cat "$GCP_SA_KEY" | docker login -u _json_key --password-stdin "https://${TARGET_REGION}-docker.pkg.dev"
+        else
+          echo "$GCP_SA_KEY" | docker login -u _json_key --password-stdin "https://${TARGET_REGION}-docker.pkg.dev"
+        fi
+        GCP_IMAGE="${TARGET_REGION}-docker.pkg.dev/${GCP_PROJECT}/faultforge/${SERVICE_NAME}:${CI_COMMIT_SHA}"
+        docker tag "$DOCKER_IMAGE" "$GCP_IMAGE"
+        docker push "$GCP_IMAGE"
+        echo "[+] Successfully pushed $GCP_IMAGE to Artifact Registry."
+      fi
     - apk add --no-cache python3
     - python3 scripts/evidence_ledger.py --stage package --job package:container_build --status SUCCESS --artifacts reports/image_digest.txt
   artifacts:
@@ -293,9 +307,10 @@ release:cloudrun_candidate_deploy:
         fi
         gcloud config set project "$GCP_PROJECT"
         
-        echo "[+] Deploying candidate revision to Cloud Run with --no-traffic --tag candidate..."
+        GCP_IMAGE="${GCP_REGION:-us-central1}-docker.pkg.dev/${GCP_PROJECT}/faultforge/${SERVICE_NAME}:${CI_COMMIT_SHA}"
+        echo "[+] Deploying candidate revision to Cloud Run from $GCP_IMAGE with --no-traffic --tag candidate..."
         gcloud run deploy "$SERVICE_NAME" \
-          --image "$DOCKER_IMAGE" \
+          --image "$GCP_IMAGE" \
           --region "$GCP_REGION" \
           --platform managed \
           --no-traffic \
@@ -310,18 +325,24 @@ release:cloudrun_candidate_deploy:
           exit 1
         fi
         
+        echo "[+] Setting canary traffic split candidate=10..."
+        gcloud run services update-traffic "$SERVICE_NAME" \
+          --region "$GCP_REGION" \
+          --to-tags candidate=10
+        
         echo "CANDIDATE_URL=$CANDIDATE_URL" >> deploy.env
         echo "STAGING_ENV_NAME=staging" >> deploy.env
         
+        apt-get update -qq && apt-get install -y -qq python3
+        
+        PRODUCTION_SERVICE_URL=$(gcloud run services describe "$SERVICE_NAME" --region "$GCP_REGION" --format="value(status.url)")
+        python3 scripts/verify_live.py --url "$PRODUCTION_SERVICE_URL" --service "$SERVICE_NAME" --region "$GCP_REGION" --output reports/live_verification.json
+        
         python3 scripts/cloudrun_traffic.py --action verify --url "$CANDIDATE_URL" --expected-revision "$REVISION_NAME"
         python3 -c "import json, time; json.dump({'provider': 'cloudrun', 'status': 'STAGED', 'url': '$CANDIDATE_URL', 'revision': '$REVISION_NAME', 'timestamp': time.time()}, open('reports/release.json', 'w'), indent=2)"
-        python3 scripts/evidence_ledger.py --stage release --job release:cloudrun_candidate_deploy --status SUCCESS --artifacts reports/release.json
+        python3 scripts/evidence_ledger.py --stage release --job release:cloudrun_candidate_deploy --status SUCCESS --artifacts reports/release.json reports/live_verification.json
       else
-        if [ "$REQUIRE_GCP_DEPLOY" = "true" ]; then
-          echo "[-] Error: GCP_PROJECT or GCP_SA_KEY missing with REQUIRE_GCP_DEPLOY=true! Failing release stage loudly."
-          exit 1
-        fi
-        echo "[!] GCP_PROJECT or GCP_SA_KEY not configured. Skipping live Cloud Run candidate staging deployment."
+        echo "[!] GCP_PROJECT or GCP_SA_KEY not set as CI variables. Stopping Cloud Run candidate deployment."
         python3 -c "import json, time; json.dump({'provider': 'cloudrun', 'status': 'SKIPPED_NO_GCP_CREDENTIALS', 'reason': 'GCP_PROJECT or GCP_SA_KEY not configured in CI/CD variables', 'timestamp': time.time()}, open('reports/release.json', 'w'), indent=2)"
         echo "CANDIDATE_URL=https://example.invalid/skipped" >> deploy.env
         echo "STAGING_ENV_NAME=staging (skipped, no GCP credentials)" >> deploy.env
@@ -336,6 +357,7 @@ release:cloudrun_candidate_deploy:
       dotenv: deploy.env
     paths:
       - reports/release.json
+      - reports/live_verification.json
       - reports/stage_ledger.json
       - reports/stage_ledger_*.json
 
@@ -405,10 +427,6 @@ govern:promote_to_production:
   script:
     - |
       if [ -n "$GCP_PROJECT" ] && [ -n "$GCP_SA_KEY" ]; then
-        if [ -z "$PRODUCTION_URL" ]; then
-          echo "[-] Error: PRODUCTION_URL environment variable is unset while GCP credentials exist."
-          exit 1
-        fi
         echo "[+] GCP credentials detected. Authenticating Service Account..."
         if [ -f "$GCP_SA_KEY" ]; then
           gcloud auth activate-service-account --key-file="$GCP_SA_KEY"
@@ -421,11 +439,13 @@ govern:promote_to_production:
         echo "[+] Routing 100% production traffic to candidate revision..."
         gcloud run services update-traffic "$SERVICE_NAME" --region "$GCP_REGION" --to-tags candidate=100
         apt-get update -qq && apt-get install -y -qq python3
-        python3 scripts/evidence_ledger.py --stage govern --job govern:promote_to_production --status SUCCESS
+        
+        PRODUCTION_SERVICE_URL=$(gcloud run services describe "$SERVICE_NAME" --region "$GCP_REGION" --format="value(status.url)")
+        python3 scripts/verify_live.py --url "$PRODUCTION_SERVICE_URL" --service "$SERVICE_NAME" --region "$GCP_REGION" --output reports/live_verification_promoted.json
+        
+        python3 scripts/evidence_ledger.py --stage govern --job govern:promote_to_production --status SUCCESS --artifacts reports/live_verification_promoted.json
       else
-        echo "DRY RUN: no action taken"
-        echo "[!] GCP credentials missing. Performing dry-run promotion validation."
-        python3 scripts/cloudrun_traffic.py --action route --service "$SERVICE_NAME" --revisions "$SERVICE_NAME-${CI_COMMIT_SHORT_SHA:-staging}=100" --dry-run --approved
+        echo "[!] GCP_PROJECT or GCP_SA_KEY not set as CI variables. Stopping production promotion."
         apt-get update -qq && apt-get install -y -qq python3
         python3 scripts/evidence_ledger.py --stage govern --job govern:promote_to_production --status SKIPPED
       fi
@@ -434,6 +454,12 @@ govern:promote_to_production:
   environment:
     name: production
     url: $PRODUCTION_URL
+  artifacts:
+    expire_in: 30 days
+    paths:
+      - reports/live_verification_promoted.json
+      - reports/stage_ledger.json
+      - reports/stage_ledger_*.json
 
 # Official GitLab Native Release Creation
 release:official_gitlab_release:

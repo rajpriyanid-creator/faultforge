@@ -863,11 +863,12 @@
             }
           }
 
-          if (ev.urls && ev.urls.pipeline_url) {
+          const pipeUrl = (ev.urls && (ev.urls.referenced_pipeline_url || ev.urls.pipeline_url)) || null;
+          if (pipeUrl) {
             const pipeLink = document.getElementById('nav-pipeline-link');
             const pipeText = document.getElementById('nav-pipeline-text');
-            if (pipeLink) pipeLink.href = ev.urls.pipeline_url;
-            const pMatch = ev.urls.pipeline_url.match(/pipelines\/(\d+)/);
+            if (pipeLink) pipeLink.href = pipeUrl;
+            const pMatch = pipeUrl.match(/pipelines\/(\d+)/);
             if (pipeText && pMatch) pipeText.textContent = `GitLab Pipeline #${pMatch[1]}`;
           }
 
