@@ -34,14 +34,15 @@ Auditors will observe different commit SHAs and generation timestamps across the
    - Built the multi-stage container image (`sha256:7cf1e09f...`) and executed audit job [17392416795](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17392416795).
 
 6. **Recent Verified CI Pipeline Runs:**
-   - **`main` Pipeline [2979433516](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2979433516):**
-     - Execution Window: `2026-10-23T04:06:14Z` to `2026-10-23T04:14:56Z` (UTC)
-     - Commit SHA: `9ed64d69aec025d449b19ee5a9da5a57c46f4060`
-     - Final Status: **Success / Manual** (All 13 active CI jobs passed: plan, create, configure, verify, secure, package, pages, release, monitor, govern; manual promotion gate pending human sign-off).
-   - **MR !3 Pipeline [2979434153](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2979434153):**
-     - Execution Window: `2026-10-23T04:06:21Z` to `2026-10-23T04:12:38Z` (UTC)
-     - Commit SHA: `eafbb6975b7e4019952fc3520d5ce32f556f9650`
+   - **`main` Pipeline [2979551166](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2979551166):**
+     - Execution Window: `2026-10-23T04:39:13Z` to `2026-10-23T04:47:50Z` (UTC)
+     - Commit SHA: `26ff5ee93eda33bcf60a48078e79ba7feea34b5d`
+     - Final Status: **Success / Manual** (All 13 active CI jobs passed; manual promotion gate pending human sign-off).
+   - **MR !3 Pipeline [2979551844](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2979551844):**
+     - Execution Window: `2026-10-23T04:39:29Z` to `2026-10-23T04:45:36Z` (UTC)
+     - Commit SHA: `de50b642a8b98150495f36e4f3263ce0dafc4fe0`
      - Final Status: **Success / Manual** (All 10 active CI jobs passed; manual promotion gate pending human sign-off).
+   - **Prior Verified Runs:** Pipeline [2979433516](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2979433516) (`main`, commit `9ed64d69`) and Pipeline [2979434153](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2979434153) (`!3`, commit `eafbb697`), both **Success / Manual**.
 
 ---
 
