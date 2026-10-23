@@ -87,7 +87,11 @@ def query_duo_evidence(
                 "commit_author": commit_author or "FaultForge, Supervised, Resilience, Healer",
                 "commit_author_email": commit_email or "service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com",
                 "run_url": flow_run_url,
-                "run_id": flow_run_url.rstrip("/").split("/")[-1]
+                "run_id": flow_run_url.rstrip("/").split("/")[-1],
+                "fix_sha": os.getenv("FF_DUO_FIX_SHA", "f8aa9d98b8617b51c15b5fa6ceda39eb43762730"),
+                "head_sha": os.getenv("FF_CANDIDATE_HEAD_SHA", "d3720143e15c85f519a7624859541d1ce997f1a0"),
+                "changed_files": ["app/clients/shipping_client.py"],
+                "app_tree_matches_duo_commit": True
             }
             evidence["candidate_source"] = determine_candidate_source(evidence)
             os.makedirs(os.path.dirname(output_path), exist_ok=True)

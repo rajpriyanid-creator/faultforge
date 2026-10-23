@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 # GitLab Duo Code Review Custom Review Instructions
 # Ref: https://docs.gitlab.com/user/duo_agent_platform/code_review/custom_instructions/
 instructions:

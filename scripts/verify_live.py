@@ -39,21 +39,29 @@ def verify_live_service(
         }
     }
 
-    # 1. Probe Live Production Service /health
+    # 1. Probe Live Production Service /health (warmup + retries for container cold start)
     health_url = f"{service_url.rstrip('/')}/health"
-    try:
-        req = urllib.request.Request(health_url, headers={"User-Agent": "FaultForge-Verifier"})
-        with urllib.request.urlopen(req, timeout=5.0) as resp:
-            record["health"]["status_code"] = resp.status
-            body_bytes = resp.read()
-            try:
-                record["health"]["body"] = json.loads(body_bytes.decode("utf-8"))
-            except Exception:
-                record["health"]["body"] = body_bytes.decode("utf-8")[:500]
-            record["health"]["verified"] = (resp.status == 200)
-    except Exception as exc:
-        record["health"]["error"] = str(exc)
-        record["health"]["verified"] = False
+    max_retries = 3
+    for attempt in range(1, max_retries + 1):
+        try:
+            req = urllib.request.Request(health_url, headers={"User-Agent": f"FaultForge-Verifier/attempt-{attempt}"})
+            # Use generous 12.0s timeout to allow Cloud Run cold start instance provisioning
+            with urllib.request.urlopen(req, timeout=12.0) as resp:
+                record["health"]["status_code"] = resp.status
+                body_bytes = resp.read()
+                try:
+                    record["health"]["body"] = json.loads(body_bytes.decode("utf-8"))
+                except Exception:
+                    record["health"]["body"] = body_bytes.decode("utf-8")[:500]
+                record["health"]["verified"] = (resp.status == 200)
+                record["health"].pop("error", None)
+                if record["health"]["verified"]:
+                    break
+        except Exception as exc:
+            record["health"]["error"] = str(exc)
+            record["health"]["verified"] = False
+            if attempt < max_retries:
+                time.sleep(2.0 * attempt)
 
     # 2. Check Cloud Run Traffic Split via gcloud if available
     try:

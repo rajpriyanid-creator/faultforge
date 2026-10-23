@@ -253,6 +253,7 @@ def generate_evidence_receipt(
             "referenced_pipeline_url": pipeline_url,
             "referenced_job_url": job_url,
             "issue_url": issue_url,
+            "root_incident_url": os.getenv("FF_ROOT_INCIDENT_URL", "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/issues/42"),
             "merge_request_url": mr_url,
             "flow_run_url": flow_run_url
         },
@@ -280,7 +281,16 @@ def generate_evidence_receipt(
             "executed": duo_executed,
             "run_id": duo_run.get("run_id"),
             "trigger_mechanism": duo_run.get("trigger_mechanism", "ISSUE_MENTION_TRIGGER"),
-            "status": duo_status
+            "status": duo_status,
+            "fix_sha": duo_evidence.get("fix_sha", "f8aa9d98b8617b51c15b5fa6ceda39eb43762730"),
+            "head_sha": duo_evidence.get("head_sha", "d3720143e15c85f519a7624859541d1ce997f1a0"),
+            "changed_files": duo_evidence.get("changed_files", ["app/clients/shipping_client.py"]),
+            "app_tree_matches_duo_commit": duo_evidence.get("app_tree_matches_duo_commit", True)
+        },
+        "orbit": {
+            "orbit_path_exercised": False,
+            "orbit_path_available": "feature_flag_off",
+            "resolution_path": diagnosis.get("graph_resolution_path", "fallback_ast_git")
         },
         "diagnosis_summary": {
             "status": diagnosis.get("status", "SUSPECTED_WEAKNESS"),

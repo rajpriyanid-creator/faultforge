@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 # FaultForge GitLab CI/CD Pipeline
 # Complete 9 Lifecycle Stages: plan, create, configure, verify, secure, package, release, monitor, govern
 # Verified against GitLab Transcend 2026 specification

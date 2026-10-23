@@ -39,7 +39,7 @@ Evaluators and judges can run these 5 curl commands to verify live production he
 ```bash
 # 1. Health & Revision Probe (Production Revision 00002-kpl)
 curl -sf https://faultforge-checkout-136942862703.us-central1.run.app/health
-# Expected: {"status":"healthy","service":"checkout-service","revision":"faultforge-checkout-00002-kpl",...}
+# Expected: {"status":"healthy","service":"faultforge-checkout","revision":"faultforge-checkout-00002-kpl",...}
 
 # 2. Cryptographic Evidence Receipt (Sealed with SHA-256)
 curl -sf https://faultforge-checkout-136942862703.us-central1.run.app/api/v1/evidence
@@ -47,11 +47,11 @@ curl -sf https://faultforge-checkout-136942862703.us-central1.run.app/api/v1/evi
 
 # 3. 9-Stage Cryptographic Lifecycle Ledger
 curl -sf https://faultforge-checkout-136942862703.us-central1.run.app/api/v1/ledger
-# Expected: {"project":"faultforge/checkout-service","stages":{"plan":...,"create":...,"configure":...,"verify":...,"secure":...,"package":...,"release":...,"monitor":...,"govern":...}} (all 9 stages)
+# Expected: {"project":"faultforge/checkout-service","ledger_version":"1.1.0","stages":{"plan":...,"create":...,"configure":...,"verify":...,"secure":...,"package":...,"release":...,"monitor":...,"govern":...}}
 
 # 4. Live Prometheus-Style Resilience Telemetry
 curl -sf https://faultforge-checkout-136942862703.us-central1.run.app/metrics
-# Expected: {"service":"checkout-service","circuit_breaker":{"state":"CLOSED",...},"resilience_metrics":{"total_requests":...,"p95_latency_ms":...}}
+# Expected: {"service":"faultforge-checkout","circuit_breaker":{"state":"CLOSED",...},"resilience_metrics":{"total_requests":...,"p95_latency_ms":...}}
 
 # 5. Public CI/CD Pipeline Verification (Unauthenticated HTTP 200)
 curl -sI https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2982183259
@@ -180,13 +180,27 @@ FaultForge implements real, testable operations with machine-readable artifacts 
 | **`monitor`** | Evaluates exact-fault candidate replay (10 probes) and tracks sliding-window percentiles | [`docs/sample_reports/replay_evaluation.json`](docs/sample_reports/replay_evaluation.json) | ✅ SUCCESS |
 | **`govern`** | Enforces Supervised Autonomy gate and signs tamper-evident SHA-256 seal | [`docs/sample_reports/evidence_receipt.json`](docs/sample_reports/evidence_receipt.json) | ✅ SUCCESS |
 
+### Substantive Artifacts by Lifecycle Stage
+
+| Stage | CI Job Name | Output Artifact | What It Proves |
+|---|---|---|---|
+| **Plan** | `plan:incident_tracking` | [`reports/issue.json`](docs/sample_reports/issue.json) | Incident Work Item #50 created linking SLA breach logs, commit SHA, and pipeline URL. |
+| **Create** | `create:duo_remediation_mr` | [`reports/duo_evidence.json`](docs/sample_reports/duo_evidence.json) + MR !3 | Duo session `9909079`, Duo commit `f8aa9d98` on branch `fix/resilience-shipping-timeout`, and culprit commit `974035c`. |
+| **Configure** | `configure:chaos_topology` | [`reports/fault_config.json`](docs/sample_reports/fault_config.json) | Toxiproxy deterministic toxic configuration (3,500ms delay ± 250ms jitter, canonical hash `644a89784316`). |
+| **Verify** | `verify:unit_and_integration` + `verify:exact_fault_replay_proof` | [`reports/replay_evaluation.json`](docs/sample_reports/replay_evaluation.json) | 100% baseline SLA failure (5/5) vs 0% candidate SLA breaches (0/20) under identical fault hash. |
+| **Secure** | `secure:secret_detection` + `secure:semgrep-sast` + `secure:sast_and_secret_scan` | [`reports/bandit_security_report.json`](docs/sample_reports/bandit_security_report.json) | 0 high/medium AST security vulnerabilities, 0 hardcoded credentials, clean Gitleaks scan. |
+| **Package** | `package:container_build` + `pages` | [`reports/image_digest.txt`](docs/sample_reports/image_digest.txt) | Multi-stage production container image digest and published dashboard page. |
+| **Release** | `release:cloudrun_candidate_deploy` | [`reports/release.json`](docs/sample_reports/release.json) + [`reports/live_verification.json`](docs/sample_reports/live_verification.json) | Candidate container revision deployed to Cloud Run staging canary with verified 90/10 traffic split. |
+| **Monitor** | `monitor:telemetry_probes` | [`reports/monitor.json`](docs/sample_reports/monitor.json) | Live HTTP probe telemetry: 0 SLA breaches, -86.4% mean latency reduction, observable fallbacks. |
+| **Govern** | `govern:audit_receipt_and_gate` + `govern:promote_to_production` | [`reports/evidence_receipt.json`](docs/sample_reports/evidence_receipt.json) | SHA-256 sealed cryptographic receipt and Supervised human approval gate for production traffic promotion. |
+
 ### Evidence Snapshot
 > Machine-readable receipts and audit logs are produced in real-time by the GitLab CI/CD pipeline in `reports/` and retained as CI job artifacts. Sample reports in `docs/sample_reports/` are populated from verified pipeline runs, copied unmodified from job artifacts per `docs/sample_reports/README.md`.
 
 ### Verified SaaS CI/CD Pipeline Runs
-- **`main` Branch Pipeline:** [#2979551166](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2979551166) (commit `26ff5ee9`, executed `2026-10-23T04:39:13Z` to `04:47:50Z`) & [#2979433516](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2979433516) (commit `9ed64d69`) — **Status: Success / Manual** (All 13 active jobs passed: `plan:incident_tracking`, `create:duo_remediation_mr`, `configure:chaos_topology`, `verify:unit_and_integration`, `verify:exact_fault_replay_proof`, `secure:secret_detection`, `secure:semgrep-sast`, `secure:sast_and_secret_scan`, `package:container_build`, `package:pages`, `release:cloudrun_candidate_deploy`, `monitor:telemetry_probes`, `govern:audit_receipt_and_gate`; manual production promotion gate `govern:promote_to_production` pending human sign-off).
-- **Candidate Merge Request !3 Pipeline:** [#2979551844](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2979551844) (commit `de50b642`, executed `2026-10-23T04:39:29Z` to `04:45:36Z`) & [#2979434153](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2979434153) (commit `eafbb697`) — **Status: Success / Manual** (All 10 active jobs passed; manual production promotion gate pending human sign-off).
-- **Sample Baseline Pipeline:** [#2977803091](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2977803091) (commit `e5a9752b`, executed `2026-10-22T18:00:55Z` to `18:08:00Z`) — **Status: Success / Manual**.
+- **Primary 9-Stage Baseline Pipeline:** [#2982183259](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2982183259) (commit `156c9a77`, executed `2026-10-23T16:49:09Z` to `16:56:46Z`) — **Status: Success / Manual** (All 13 active jobs passed; manual production promotion gate `govern:promote_to_production` pending human sign-off).
+- **Candidate Merge Request !3 Pipeline:** [#2982289232](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2982289232) (commit `b57584ae`, evaluated MR !3 branch).
+- **Pre-Submission Full Verification Pipeline:** [#2982435953](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2982435953) (commit `c0f81df6`, executed `2026-10-23T18:07:32Z`) — **Status: Success / Manual** (All 12 automated jobs passed; candidate revision `faultforge-checkout-00030-dit` deployed to Cloud Run).
 
 ---
 
@@ -196,7 +210,7 @@ FaultForge implements real, testable operations with machine-readable artifacts 
 For evaluators and judges seeking instant verification of repository integrity, test suites, and cryptographic seals:
 
 ```bash
-# 1. Run full unit and integration test suite (137 passed, 1 skipped)
+# 1. Run full unit and integration test suite (139 passed, 1 skipped)
 pytest tests/unit tests/integration tests/test_*.py -v
 
 # 2. Run anti-fake truth audit in strict final mode
@@ -285,19 +299,42 @@ In strict compliance with the **Never Fabricate Evidence** and **Claim Only What
 1. **System Scope:** FaultForge is evaluated on a single FastAPI checkout microservice (`checkout-service`) with an external shipping carrier dependency.
 2. **Evaluated Fault Profiles:** Evaluated under both downstream latency cascading hang (3500ms delay ± 250ms jitter, hash `644a89784316`) and connection reset (`reset_peer`, hash `0496439547a1`).
 3. **Estimated Fallback Semantics:** The fallback quote returned under network degradation is a deterministic flat estimate explicitly flagged with `is_fallback: true` and `is_estimate: true` to prevent misrepresenting live carrier rates.
-4. **Orbit Dependency Unused:** The repository contains no active Orbit dependency calls; carrier communications strictly use the HTTP stub.
+4. **Orbit Dependency Unexercised in Submitted Evidence:** While the client stub is implemented in [`app/clients/orbit_client.py`](app/clients/orbit_client.py) for forward compatibility with GitLab Duo Orbit MCP (`ENABLE_ORBIT_MCP`), Orbit was not exercised during submitted pipeline executions due to platform feature-flag constraints in the hackathon namespace. All submitted runs deterministically used `resolution_path: "fallback_ast_git"` (AST call-site inspection + `git bisect`).
 5. **Dual-Proxy Engine Architecture:** CI downloads and runs the official Shopify Toxiproxy v2.9.0 binary inside the job container (`scripts/start_toxiproxy.py`); Docker Compose runs the container image; the in-process standalone proxy exists only for local dev with `--allow-standalone-proxy` and downgrades the receipt to `NOT_VERIFIED_STANDALONE`.
 6. **GitLab Duo Flow Requirements & Fallback Wording:** Automated Duo Flow execution relies on GitLab Duo Agent Platform enabled on the GitLab instance or namespace. If API credits or platform access are unconfigured, `scripts/trigger_duo_flow.py` falls back to Issue Mention/Assignment or manual workflow execution without generating fake MR payloads. If Duo did not execute, describe the Duo flow as implemented and verified for spec validity, and the pipeline as agent-agnostic verification of any candidate fix. FaultForge never claims Duo authored the fix unless `duo_run.json` confirms `executed: true`.
+7. **Test Suite Details & Single Skipped Test:** Running `pytest tests/unit tests/integration tests/test_*.py` executes 140 tests with 139 passed and 1 skipped. The single skipped test (`tests/chaos/test_resilience.py`) tests live socket interception and requires a running Toxiproxy daemon (`http://127.0.0.1:8474`); in GitLab CI (`verify:exact_fault_replay_proof`), Toxiproxy is started as a native background service, running the full suite.
 
 ---
 
 ## 8. Hackathon Prize Strategy & Compliance
 
+### Prize Readiness Matrix
+
+| Target Prize | Readiness | Status & Highest-Leverage Action |
+|---|:---:|---|
+| **Best Supervised Agent ($4,000)** | 🟡 **AMBER** | Blocked on demo video only.* Autonomous 11-step workflow, AST bisecting, and manual promotion gate verified. |
+| **Most Stages Covered ($5,000)** | 🟡 **AMBER** | Blocked on demo video only.* All 9 stages active with verified artifacts in CI. |
+| **Most Creative ($4,000)** | 🟡 **AMBER** | Blocked on demo video only.* "Break It, Heal It" exact-fault replay verified under identical profile hash. |
+| **Google Cloud Bonus (+0.2 Points)** | 🟡 **AMBER** | Blocked on demo video only.* Cloud Run live in `us-central1` with Knative canary split and rollback verified. |
+
+*\*Note: All engineering conditions, platform integrations, and CI pipelines for these prizes are 100% complete and independently verifiable via the 60-second gate. Status flips to 🟢 GREEN once the human maintainer records and embeds the demo video URL.*
+
+### Active Cloud Run Revisions & Canary Traffic Split
+
+| Environment / Role | Revision Name | Traffic Weight | Direct URL / Access Route |
+|---|---|:---:|---|
+| **Stable Production** | `faultforge-checkout-00002-kpl` | 90% | [`https://faultforge-checkout-136942862703.us-central1.run.app`](https://faultforge-checkout-136942862703.us-central1.run.app) |
+| **Candidate Canary (CI Staged)** | `faultforge-checkout-00030-dit` | 10% | [`https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app`](https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app) |
+
+> [!NOTE]
+> **Canary Traffic Split Observability:**  
+> Candidate revisions are deployed using `gcloud run deploy --no-traffic --tag candidate`, and traffic routing is updated via `gcloud run services update-traffic --to-revisions="$STABLE_REVISION=90,$CANDIDATE_REVISION=10"`. Because Cloud Run load-balances requests across revisions according to these weights, repeated requests to the apex domain will hit the production revision (90%) or canary revision (10%). To query the candidate revision deterministically, append the tag prefix (`candidate---`). In historical sample report `docs/sample_reports/live_verification.json`, the initial health probe timed out during cold start (`health.verified: false`), while the 90/10 traffic split was verified (`traffic_split.verified: true`). Live probes against the warmed service return HTTP 200 OK.
+
 - **Track Selection:** **Path A — Start Fresh**. Built cleanly for GitLab Transcend 2026.
 - **Primary Category:** **Best Supervised Agent ($4,000)**. Full multi-step automation for investigation, bisecting, code patching, replay verification, and staging deployment, with an explicit risk-gated human promotion gate for live production traffic.
 - **Secondary Category:** **Most Stages Covered ($5,000)**. All 9 GitLab lifecycle stages actively verified with real machine-readable artifacts.
 - **Additional Category:** **Most Creative ($4,000)**. Novel "Break It, Heal It" closed-loop system pairing chaos testing with exact-fault replay verification.
-- **Google Cloud Deployment Target:** Verified Google Cloud Run Deployment. Candidate revision `faultforge-checkout-00026-sam` deployed to Cloud Run in `us-central1` with 10% canary traffic split (verified HTTP 200 via `reports/live_verification.json`). Production URL: [`https://faultforge-checkout-136942862703.us-central1.run.app`](https://faultforge-checkout-136942862703.us-central1.run.app), Candidate URL: [`https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app`](https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app). Full Knative service YAML in [`infra/cloudrun/service.yaml`](infra/cloudrun/service.yaml), deployment scripts in [`infra/cloudrun/deploy.sh`](infra/cloudrun/deploy.sh), and automated candidate routing / instant traffic rollback in [`scripts/cloudrun_traffic.py`](scripts/cloudrun_traffic.py).
+- **Google Cloud Deployment Target:** Verified Google Cloud Run Deployment. Candidate revision `faultforge-checkout-00030-dit` deployed to Cloud Run in `us-central1` with 10% canary traffic split (verified HTTP 200 via candidate URL). Production URL: [`https://faultforge-checkout-136942862703.us-central1.run.app`](https://faultforge-checkout-136942862703.us-central1.run.app), Candidate URL: [`https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app`](https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app). Full Knative service YAML in [`infra/cloudrun/service.yaml`](infra/cloudrun/service.yaml), deployment scripts in [`infra/cloudrun/deploy.sh`](infra/cloudrun/deploy.sh), and automated candidate routing / instant traffic rollback in [`scripts/cloudrun_traffic.py`](scripts/cloudrun_traffic.py).
 
 ### Authorship and Autonomy
 - **AI Agent Authorship:** In accordance with the Transcend Hackathon theme (*"Life After Code"*), most commits, test generations, and evidence harvesting scripts in this repository were synthesized by an autonomous DevSecOps coding agent working under supervision.
@@ -346,6 +383,8 @@ flowchart LR
     O2 --> R["Evidence Receipt<br/>(graph_resolution_path: orbit_mcp)"]
     A2 --> S["Evidence Receipt<br/>(graph_resolution_path: fallback_ast_git)"]
 ```
+
+*Figure: Design-time architecture; the fallback path (`fallback_ast_git`: AST Call-Site + Git Bisect) is what produced all submitted evidence.*
 
 ---
 

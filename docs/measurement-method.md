@@ -99,7 +99,7 @@ FaultForge evaluates timeout verification and circuit-breaker short-circuit veri
 ## 6. Earlier Local Run vs. CI Linux Container Run (Historical Context)
 
 Reviewers evaluating different test logs may note differences between early pre-CI workstation runs and official GitLab CI runs:
-- **Historical Workstation Run (Local Windows/Hyper-V Bridge):** An early exploratory run on a Windows development workstation measured Phase A around ~1.4 s (due to host OS virtualization networking overhead and event loop serialization), leaving a narrow margin against the 1,500 ms SLA.
+- **Historical Workstation Run (Local Windows):** An early exploratory run on a Windows development workstation measured Phase A around ~1.4 s (observed difference, cause not measured), leaving a narrow margin against the 1,500 ms SLA.
 - **Official GitLab CI Run (Containerized Linux `python:3.12-slim`):** In the official containerized CI runner, `httpx.Timeout(0.8, connect=0.8)` executes with minimal Linux network stack overhead (~5–6 ms), yielding candidate Phase A latencies of 805–806 ms (P95 806.79 ms) and expanding the safety margin to **693.21 ms**.
 
 Both environments prove candidate resilience under identical Toxiproxy chaos (0% SLA breaches vs 100% baseline failure), but all production reports, cryptographic receipts, and scorecards cite the containerized CI pipeline replay (`reports/replay_evaluation.json`).
