@@ -299,11 +299,10 @@ def audit_report_consistency(final_mode: bool = False) -> List[str]:
                     art_path = detail.get("path")
                     art_sha = detail.get("sha256")
                     if art_path:
-                        disk_path = art_path
-                        if not os.path.exists(disk_path) and reports_dir != "reports":
-                            alt_path = os.path.join(sample_dir, os.path.basename(art_path))
-                            if os.path.exists(alt_path):
-                                disk_path = alt_path
+                        if reports_dir != "reports":
+                            disk_path = os.path.join(reports_dir, os.path.basename(art_path))
+                        else:
+                            disk_path = art_path
 
                         if not os.path.exists(disk_path):
                             violations.append(f"Ledger stage '{stg_name}' verified artifact missing on disk: {art_path}")

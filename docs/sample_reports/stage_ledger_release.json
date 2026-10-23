@@ -2,8 +2,8 @@
   "stage": "release",
   "job_name": "release:cloudrun_candidate_deploy",
   "status": "SUCCESS",
-  "commit_sha": "d64c35d4771113092df8d33a70408a1045ae108e",
-  "pipeline_id": "2981670120",
+  "commit_sha": "34eb7ebd520feeb83706c3b853589c195cbe953f",
+  "pipeline_id": "2981969651",
   "approval_required": false,
   "artifacts_declared": [
     "reports/release.json",
@@ -17,15 +17,15 @@
     {
       "path": "reports/release.json",
       "size_bytes": 207,
-      "sha256": "c39e80897645cde3eb4cf7f5b0ece56158ad918f515cb6696dc27d679b35beaf"
+      "sha256": "202405d2f71d09156ecf48358b24a13c6acec578b3475d037e694a389377d408"
     },
     {
       "path": "reports/live_verification.json",
-      "size_bytes": 1241,
-      "sha256": "39f2f9af6ea70c5555da58f07aae128d519d61fb2a66b1c18832c386bf61c942"
+      "size_bytes": 1577,
+      "sha256": "0694b46b785b20fbd9a2bd78567a6142c2ebbd9528939f21845cf0d8d8ae8c25"
     }
   ],
-  "timestamp": 1792767224.6062965,
+  "timestamp": 1792771735.953113,
   "duo_executed": false,
   "notes": ""
 }

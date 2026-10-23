@@ -1,17 +1,17 @@
 {
   "evaluation_status": "RECOVERED_AND_VERIFIED",
   "verified": true,
-  "candidate_source": "reference-fix (not Duo-authored)",
+  "candidate_source": "commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token",
   "gates": {
     "valid_git_shas": {
       "passed": true,
-      "baseline_sha": "d64c35d4771113092df8d33a70408a1045ae108e",
-      "hardened_sha": "a1702b002ea1fbc5a10bc0aa0a24158073b70eac"
+      "baseline_sha": "34eb7ebd520feeb83706c3b853589c195cbe953f",
+      "hardened_sha": "d3720143e15c85f519a7624859541d1ce997f1a0"
     },
     "distinct_revisions": {
       "passed": true,
-      "baseline_sha": "d64c35d4",
-      "hardened_sha": "a1702b00"
+      "baseline_sha": "34eb7ebd",
+      "hardened_sha": "d3720143"
     },
     "identical_profile_hash": {
       "passed": true,
@@ -26,7 +26,7 @@
     "proxy_in_request_path": {
       "passed": true,
       "fault_delay_ms": 3500,
-      "candidate_min_ms": 2.35
+      "candidate_min_ms": 2.38
     },
     "identical_payload_hash": {
       "passed": true,
@@ -67,23 +67,23 @@
       "breaker_state": "CLOSED (reset each probe)",
       "total_probes": 10,
       "sla_breaches": 0,
-      "p95_ms": 817.61,
-      "avg_ms": 245.97
+      "p95_ms": 806.83,
+      "avg_ms": 805.54
     },
     "candidate_breaker_short_circuit": {
       "passed": true,
       "phase": "Phase B (Circuit Breaker Tripped - Short Circuit)",
       "breaker_state": "OPEN (N of 10 short-circuited)",
       "total_probes": 10,
-      "short_circuited_probes": 10,
-      "p95_ms": 2.88,
-      "avg_ms": 2.51
+      "short_circuited_probes": 8,
+      "p95_ms": 806.34,
+      "avg_ms": 163.19
     },
     "latency_budget": {
       "passed": true,
       "budget_ms": 1500,
-      "candidate_p95_ms": 817.61,
-      "candidate_max_ms": 817.61
+      "candidate_p95_ms": 806.83,
+      "candidate_max_ms": 806.83
     },
     "fallback_marked_estimated": {
       "passed": true,
@@ -96,39 +96,39 @@
     }
   },
   "raw_metrics": {
-    "baseline_avg_ms": 3454.97,
-    "baseline_p50_ms": 3457.75,
-    "baseline_p95_ms": 3541.19,
-    "baseline_max_ms": 3541.19,
-    "hardened_avg_ms": 124.24,
-    "hardened_p50_ms": 2.53,
-    "hardened_p95_ms": 817.61,
-    "hardened_max_ms": 817.61
+    "baseline_avg_ms": 3478.57,
+    "baseline_p50_ms": 3414.22,
+    "baseline_p95_ms": 3749.62,
+    "baseline_max_ms": 3749.62,
+    "hardened_avg_ms": 484.36,
+    "hardened_p50_ms": 805.08,
+    "hardened_p95_ms": 806.83,
+    "hardened_max_ms": 806.83
   },
   "latency_reduction": {
     "mean_basis": {
       "metric": "mean_candidate_vs_mean_baseline",
-      "baseline_ms": 3454.97,
-      "candidate_ms": 124.24,
-      "percent": 96.4
+      "baseline_ms": 3478.57,
+      "candidate_ms": 484.36,
+      "percent": 86.1
     },
     "p50_basis": {
       "metric": "p50_candidate_vs_p50_baseline",
-      "baseline_ms": 3457.75,
-      "candidate_ms": 2.53,
-      "percent": 99.9
+      "baseline_ms": 3414.22,
+      "candidate_ms": 805.08,
+      "percent": 76.4
     },
     "p95_basis": {
       "metric": "p95_candidate_vs_p95_baseline",
-      "baseline_ms": 3541.19,
-      "candidate_ms": 817.61,
-      "percent": 76.9
+      "baseline_ms": 3749.62,
+      "candidate_ms": 806.83,
+      "percent": 78.5
     },
     "max_basis": {
       "metric": "max_candidate_vs_max_baseline",
-      "baseline_ms": 3541.19,
-      "candidate_ms": 817.61,
-      "percent": 76.9
+      "baseline_ms": 3749.62,
+      "candidate_ms": 806.83,
+      "percent": 78.5
     }
   }
 }

@@ -1,34 +1,49 @@
 {
-  "timestamp": 1792767218.2722292,
+  "timestamp": 1792771729.4205186,
   "service_name": "faultforge-checkout",
   "region": "us-central1",
   "production_url": "https://faultforge-checkout-tiottsrikq-uc.a.run.app",
   "health": {
-    "status_code": 200,
-    "body": {
-      "status": "healthy",
-      "service": "faultforge-checkout",
-      "revision": "faultforge-checkout-00002-kpl",
-      "uptime_seconds": 39.41,
-      "environment": "production"
-    },
-    "verified": true
+    "status_code": null,
+    "body": null,
+    "verified": false,
+    "error": "The read operation timed out"
   },
   "traffic_split": {
     "verified": true,
     "status": "VERIFIED",
     "traffic": [
       {
-        "percent": 81,
+        "percent": 49,
         "revisionName": "faultforge-checkout-00002-kpl"
       },
       {
-        "percent": 9,
+        "percent": 6,
         "revisionName": "faultforge-checkout-00010-baz"
       },
       {
+        "percent": 5,
+        "revisionName": "faultforge-checkout-00012-xoc"
+      },
+      {
+        "percent": 6,
+        "revisionName": "faultforge-checkout-00014-vey"
+      },
+      {
+        "percent": 7,
+        "revisionName": "faultforge-checkout-00016-sav"
+      },
+      {
+        "percent": 8,
+        "revisionName": "faultforge-checkout-00018-tox"
+      },
+      {
+        "percent": 9,
+        "revisionName": "faultforge-checkout-00020-woy"
+      },
+      {
         "percent": 10,
-        "revisionName": "faultforge-checkout-00012-xoc",
+        "revisionName": "faultforge-checkout-00022-dej",
         "tag": "candidate",
         "url": "https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app"
       }
@@ -37,7 +52,7 @@
     "production_percent": 90,
     "candidate_tag": "candidate",
     "candidate_url": "https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app",
-    "candidate_revision": "faultforge-checkout-00012-xoc",
-    "production_revision": "faultforge-checkout-00010-baz"
+    "candidate_revision": "faultforge-checkout-00022-dej",
+    "production_revision": "faultforge-checkout-00020-woy"
   }
 }

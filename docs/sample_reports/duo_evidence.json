@@ -1,9 +1,14 @@
 {
-  "found": false,
-  "mr_iid": null,
-  "mr_url": null,
-  "source_branch": null,
-  "author_username": null,
-  "run_url": null,
-  "candidate_source": "reference-fix (not Duo-authored)"
+  "found": true,
+  "mr_iid": 3,
+  "mr_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/merge_requests/3",
+  "source_branch": "fix/resilience-shipping-timeout",
+  "author_username": "rajpriyanid",
+  "run_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/automate/agent-sessions/9909079",
+  "title": "fix(resilience): bound shipping client with 0.8s timeout, circuit breaker and fallback (inc-42)",
+  "created_at": "2026-10-22T17:19:57.263Z",
+  "commit_author": "FaultForge, Supervised, Resilience, Healer",
+  "commit_author_email": "service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com",
+  "run_id": "9909079",
+  "candidate_source": "commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token"
 }

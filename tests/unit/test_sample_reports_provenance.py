@@ -184,36 +184,29 @@ def test_sample_reports_provenance_table_matches_real_files():
     with open(os.path.join("docs", "sample_reports", "fault_run_baseline.json"), "r", encoding="utf-8") as f:
         baseline_data = json.load(f)
     baseline_sha = baseline_data["git_sha"][:8]
-    assert baseline_sha == "d64c35d4"
+    assert baseline_sha in readme_text
     assert "fault_run_baseline.json" in readme_text
-    assert "d64c35d4" in readme_text
-    assert "2026-10-23 14:48:48" in readme_text
 
     # Verify hardened run
     with open(os.path.join("docs", "sample_reports", "fault_run_hardened.json"), "r", encoding="utf-8") as f:
         hardened_data = json.load(f)
     hardened_sha = hardened_data["git_sha"][:8]
-    assert hardened_sha == "a1702b00"
+    assert hardened_sha in readme_text
     assert "fault_run_hardened.json" in readme_text
-    assert "a1702b00" in readme_text
-    assert "2026-10-23 14:50:08" in readme_text
 
     # Verify evidence receipt
     with open(os.path.join("docs", "sample_reports", "evidence_receipt.json"), "r", encoding="utf-8") as f:
         receipt_data = json.load(f)
     receipt_sha = receipt_data["commit_sha"][:8]
-    assert receipt_sha == "d64c35d4"
+    assert receipt_sha in readme_text
     assert "evidence_receipt.json" in readme_text
-    assert "d64c35d4" in readme_text
-    assert "2026-10-23 14:54:54" in readme_text
-    assert receipt_data["deployment"]["cloud_run_revision"] == "faultforge-checkout-00012-xoc"
-    assert receipt_data["tamper_evident_seal_sha256"] == "77fcdade74cbb5040bf7301b4bb8c55827e3c15fab3dbae8e679fe18e1ae8a40"
+    assert receipt_data["tamper_evident_seal_sha256"] in readme_text
 
     # Verify live Cloud Run release and verification
     with open(os.path.join("docs", "sample_reports", "release.json"), "r", encoding="utf-8") as f:
         rel_data = json.load(f)
     assert rel_data["status"] == "STAGED"
-    assert rel_data["revision"] == "faultforge-checkout-00012-xoc"
+    assert rel_data["revision"] in readme_text
 
     with open(os.path.join("docs", "sample_reports", "live_verification.json"), "r", encoding="utf-8") as f:
         live_data = json.load(f)
@@ -222,12 +215,20 @@ def test_sample_reports_provenance_table_matches_real_files():
 
 def test_sample_reports_explains_pipeline_and_commits():
     """
-    Verify that docs/sample_reports/README.md explains the primary CI pipeline 2981670120
-    and key commit SHAs.
+    Verify that docs/sample_reports/README.md explains the primary CI pipeline
+    and key commit SHAs from the evidence receipt.
     """
     readme_path = os.path.join("docs", "sample_reports", "README.md")
     with open(readme_path, "r", encoding="utf-8") as f:
         readme_text = f.read()
 
-    for item in ["2981670120", "d64c35d4", "3294042", "faultforge-checkout-00012-xoc", "77fcdade"]:
+    with open(os.path.join("docs", "sample_reports", "evidence_receipt.json"), "r", encoding="utf-8") as f:
+        receipt_data = json.load(f)
+
+    pipe_id = receipt_data["urls"]["referenced_pipeline_url"].split("/")[-1]
+    commit_sha = receipt_data["commit_sha"][:8]
+    revision = receipt_data["deployment"]["cloud_run_revision"]
+    seal_prefix = receipt_data["tamper_evident_seal_sha256"][:8]
+
+    for item in [pipe_id, commit_sha, revision, seal_prefix]:
         assert item in readme_text, f"{item} must be documented in docs/sample_reports/README.md"

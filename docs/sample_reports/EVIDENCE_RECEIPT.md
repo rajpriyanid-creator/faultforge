@@ -1,11 +1,11 @@
 # FaultForge Evidence Receipt & Audit Record
 
-**Receipt ID:** `rcpt-4d7b25040977`  
-**Generated At:** `2026-10-23 14:54:54 UTC`  
-**Final Status:** **`CONTAINED_NEEDS_REVIEW`**  
+**Receipt ID:** `rcpt-730430900cca`  
+**Generated At:** `2026-10-23 16:10:06 UTC`  
+**Final Status:** **`RECOVERED_AND_VERIFIED`**  
 **Autonomy Level:** `SUPERVISED` (Supervised Gate)  
 **Approver:** `rajpriyanid`  
-**Tamper-Evident Seal (SHA-256):** `77fcdade74cbb5040bf7301b4bb8c55827e3c15fab3dbae8e679fe18e1ae8a40`
+**Tamper-Evident Seal (SHA-256):** `bb345ac430daf1b02c4cf2bfce7ed942591c7aa047656d14d191c327bc075d58`
 
 ---
 
@@ -13,19 +13,19 @@
 - **Injected Fault:** `latency_cascading_hang` (latency)
 - **Profile Hash:** `644a89784316`
 - **Identical Replay Confirmed:** `True`
-- **Candidate Source:** `reference-fix (not Duo-authored)`
+- **Candidate Source:** `commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token`
 - **Duo Run ID:** `9909079`
-- **Referenced Pipeline URL:** `https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2981670120`
-- **Referenced Job URL:** `https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17419950472`
-- **Incident Issue URL:** `https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/work_items/42`
-- **Duo Merge Request URL:** `not established`
+- **Referenced Pipeline URL:** `https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2981969651`
+- **Referenced Job URL:** `https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17422097723`
+- **Incident Issue URL:** `https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/issues/48`
+- **Duo Merge Request URL:** `https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/merge_requests/3`
 - **Duo Flow Run URL:** `https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/automate/agent-sessions/9909079`
 
 ## 2. Before & After Verified Metrics
 | Metric | Baseline (Unpatched) | Hardened (Candidate Patch) |
 |---|---|---|
-| **Average Latency** | 3454.97 ms | 124.24 ms |
-| **p95 Latency** | 3541.19 ms | 817.61 ms |
+| **Average Latency** | 3478.57 ms | 484.36 ms |
+| **p95 Latency** | 3749.62 ms | 806.83 ms |
 | **Graceful Fallback** | Missing (Hangs/Errors) | Active (`is_fallback`: true, `is_estimate`: true) |
 
 ## 3. Diagnosis & Culprit Discovery
@@ -35,9 +35,8 @@
 
 ## 4. Governance & Promotion Gate
 - **Risk Tier:** `MEDIUM`
-- **Promotion Status:** **`BLOCKED_PENDING_REVIEW`**
+- **Promotion Status:** **`BLOCKED_PENDING_APPROVAL`**
 - Human reviewer authorization is strictly required for live production traffic migration.
 
 ## 5. Items Not Established
-- GitLab Duo flow execution
-- Candidate authored by Duo
+- None. All empirical verification gates established.

@@ -2,8 +2,8 @@
   "stage": "verify",
   "job_name": "verify:exact_fault_replay_proof",
   "status": "SUCCESS",
-  "commit_sha": "d64c35d4771113092df8d33a70408a1045ae108e",
-  "pipeline_id": "2981670120",
+  "commit_sha": "34eb7ebd520feeb83706c3b853589c195cbe953f",
+  "pipeline_id": "2981969651",
   "approval_required": false,
   "artifacts_declared": [
     "reports/fault_run_hardened.json",
@@ -16,16 +16,16 @@
   "artifacts_details": [
     {
       "path": "reports/fault_run_hardened.json",
-      "size_bytes": 10781,
-      "sha256": "50563b2b8fcac57d5f2ece38ae71a70ea03eef7d92c15cb5527a6f9e5aa749f6"
+      "size_bytes": 10858,
+      "sha256": "70db0fc0b046af81789a94f8979bf39d36835aaf4c46bf465a0241f3124d8314"
     },
     {
       "path": "reports/replay_evaluation.json",
-      "size_bytes": 3479,
-      "sha256": "90199392467f0f7900c0a0b2451582098f256d3d7cd3bb9208661fcc37b19981"
+      "size_bytes": 3554,
+      "sha256": "e02f92ba433de5691c337aee680361e3975193c00b7381e7861d6050f6b09e50"
     }
   ],
-  "timestamp": 1792767008.7376652,
+  "timestamp": 1792771389.6182275,
   "duo_executed": false,
   "notes": ""
 }

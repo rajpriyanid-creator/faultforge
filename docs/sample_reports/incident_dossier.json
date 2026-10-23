@@ -1,8 +1,8 @@
 {
-  "incident_id": "inc-9bf7e10f",
+  "incident_id": "inc-d840d920",
   "project_path": "gitlab-ai-hackathon/transcend-october-2026/43424456/showcase",
-  "commit_sha": "d64c35d4771113092df8d33a70408a1045ae108e",
-  "test_run_id": "run-69aae6f0",
+  "commit_sha": "34eb7ebd520feeb83706c3b853589c195cbe953f",
+  "test_run_id": "run-4c3e310a",
   "fault": {
     "type": "latency",
     "target": "shipping-dependency",
@@ -16,23 +16,22 @@
     "total_probes": 5,
     "failed_probes": 0,
     "sla_breaches": 5,
-    "p95_ms": 3541.19,
-    "avg_ms": 3454.97
+    "p95_ms": 3749.62,
+    "avg_ms": 3478.57
   },
   "confirmed_facts": [
     "Injected Toxiproxy fault: latency (profile hash 644a89784316)",
     "Observed 5 SLA breaches exceeding 1500ms budget",
-    "Probe latency: avg 3454.97ms, p95 3541.19ms",
-    "AST confirmed outbound call lacks bounded timeout keyword argument in app/clients/shipping_client.py"
+    "Probe latency: avg 3478.57ms, p95 3749.62ms",
+    "AST confirmed outbound call lacks bounded timeout keyword argument in app/clients/shipping_client.py",
+    "Git bisect confirmed regressing commit 974035c6e45e7c177452df260a155b6508b828e9 (perf: reuse client, simplify error handling)"
   ],
-  "hypotheses": [
-    "Regression introduced by recent change removing timeout or dependency configuration"
-  ],
+  "hypotheses": [],
   "evidence": {
     "failed_test": "tests/chaos/test_resilience.py::test_shipping_dependency_chaos_resilience",
     "call_site": "app/clients/shipping_client.py:23",
     "log_excerpt": "HTTP 504 / SLA budget breach: Outbound carrier request exceeded latency threshold",
-    "culprit_commit": null
+    "culprit_commit": "974035c6e45e7c177452df260a155b6508b828e9"
   },
-  "pipeline_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2981670120"
+  "pipeline_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2981969651"
 }
