@@ -103,7 +103,7 @@ def plan_incident(
         issue_data["web_url"] = f"{gitlab_project_url}/-/work_items/{iid_str}"
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    with open(output_path, "w", encoding="utf-8") as f:
+    with open(output_path, "w", encoding="utf-8", newline="\n") as f:
         json.dump(issue_data, f, indent=2)
 
     print(f"[+] Incident plan artifact written to {output_path} (Issue: {issue_data.get('web_url')})")

@@ -7,7 +7,7 @@
       "stage": "plan",
       "job_name": "plan:incident_tracking",
       "status": "SUCCESS",
-      "commit_sha": "e5a9752ba63115d6744a7996f0565272b2804762",
+      "commit_sha": "372ef5f972355e657d3d55f9e9547be198c5a2e7",
       "pipeline_id": "local-run",
       "approval_required": false,
       "artifacts_declared": [
@@ -31,7 +31,7 @@
       "stage": "create",
       "job_name": "create:duo_remediation_mr",
       "status": "SUCCESS",
-      "commit_sha": "e5a9752ba63115d6744a7996f0565272b2804762",
+      "commit_sha": "372ef5f972355e657d3d55f9e9547be198c5a2e7",
       "pipeline_id": "local-run",
       "approval_required": false,
       "artifacts_declared": [
@@ -51,8 +51,8 @@
       "artifacts_details": [
         {
           "path": "reports/fault_run_baseline.json",
-          "size_bytes": 2076,
-          "sha256": "e8b566a389671400b2df05246ff4025599872bb69d05815d0f7b975c46118647"
+          "size_bytes": 1985,
+          "sha256": "74c7074cddaa0a299ab53f9939b27707e635dce888070039e81123413648934d"
         },
         {
           "path": "reports/incident_dossier.json",
@@ -61,8 +61,8 @@
         },
         {
           "path": "reports/diagnosis_report.json",
-          "size_bytes": 1045,
-          "sha256": "2c0a672c2ce7cc8c90c5253bff4b2d998784b70166e4d259573c820ebfadb610"
+          "size_bytes": 1018,
+          "sha256": "e3ec9c3ca08e02e0d32365d1dbb670242c163dd8d28180e5540e6889c059b544"
         },
         {
           "path": "reports/duo_run.json",
@@ -83,7 +83,7 @@
       "stage": "configure",
       "job_name": "configure:chaos_topology",
       "status": "SUCCESS",
-      "commit_sha": "e5a9752ba63115d6744a7996f0565272b2804762",
+      "commit_sha": "372ef5f972355e657d3d55f9e9547be198c5a2e7",
       "pipeline_id": "local-run",
       "approval_required": false,
       "artifacts_declared": [
@@ -107,7 +107,7 @@
       "stage": "verify",
       "job_name": "verify:exact_fault_replay_proof",
       "status": "SUCCESS",
-      "commit_sha": "e5a9752ba63115d6744a7996f0565272b2804762",
+      "commit_sha": "372ef5f972355e657d3d55f9e9547be198c5a2e7",
       "pipeline_id": "local-run",
       "approval_required": false,
       "artifacts_declared": [
@@ -121,13 +121,13 @@
       "artifacts_details": [
         {
           "path": "reports/fault_run_hardened.json",
-          "size_bytes": 11426,
-          "sha256": "047c58747c942e0f717757d34e81045cc3e6d2644a2469449824a626ac615dc4"
+          "size_bytes": 10913,
+          "sha256": "e36fb65833959ed0050770d666bd13ffe9f31c9e693784803ff72f36564cb39f"
         },
         {
           "path": "reports/replay_evaluation.json",
-          "size_bytes": 3696,
-          "sha256": "8cd053626347c01ccc0a35b0ab94fce7ed988fc73f04d7ec467f964902b7ac08"
+          "size_bytes": 3563,
+          "sha256": "0524bbbbf48e43f9af68f442f1170b369b07e19064caac3bd7219a7dfe93e244"
         }
       ],
       "timestamp": 1792690711.98,
@@ -138,7 +138,7 @@
       "stage": "secure",
       "job_name": "secure:sast_and_secret_scan",
       "status": "SUCCESS",
-      "commit_sha": "e5a9752ba63115d6744a7996f0565272b2804762",
+      "commit_sha": "372ef5f972355e657d3d55f9e9547be198c5a2e7",
       "pipeline_id": "local-run",
       "approval_required": false,
       "artifacts_declared": [
@@ -162,7 +162,7 @@
       "stage": "package",
       "job_name": "package:container_build",
       "status": "SUCCESS",
-      "commit_sha": "e5a9752ba63115d6744a7996f0565272b2804762",
+      "commit_sha": "372ef5f972355e657d3d55f9e9547be198c5a2e7",
       "pipeline_id": "local-run",
       "approval_required": false,
       "artifacts_declared": [
@@ -186,7 +186,7 @@
       "stage": "release",
       "job_name": "release:cloudrun_candidate_deploy",
       "status": "SKIPPED",
-      "commit_sha": "e5a9752ba63115d6744a7996f0565272b2804762",
+      "commit_sha": "372ef5f972355e657d3d55f9e9547be198c5a2e7",
       "pipeline_id": "local-run",
       "approval_required": false,
       "artifacts_declared": [],
@@ -200,7 +200,7 @@
       "stage": "monitor",
       "job_name": "monitor:telemetry_probes",
       "status": "SUCCESS",
-      "commit_sha": "e5a9752ba63115d6744a7996f0565272b2804762",
+      "commit_sha": "372ef5f972355e657d3d55f9e9547be198c5a2e7",
       "pipeline_id": "local-run",
       "approval_required": false,
       "artifacts_declared": [
@@ -224,7 +224,7 @@
       "stage": "govern",
       "job_name": "govern:audit_receipt_and_gate",
       "status": "SUCCESS",
-      "commit_sha": "e5a9752ba63115d6744a7996f0565272b2804762",
+      "commit_sha": "372ef5f972355e657d3d55f9e9547be198c5a2e7",
       "pipeline_id": "local-run",
       "approval_required": true,
       "artifacts_declared": [
@@ -236,8 +236,8 @@
       "artifacts_details": [
         {
           "path": "reports/evidence_receipt.json",
-          "size_bytes": 12218,
-          "sha256": "482320108615ef95a761376a64c0e2ca29860d6d2e2aa922eaed5a4186a83cfb"
+          "size_bytes": 11782,
+          "sha256": "93ce39aeafbf65a4edb12b5cb6e8732179a9fdcc97a95ea1a0f3e01239215a76"
         }
       ],
       "timestamp": 1792690815.53,

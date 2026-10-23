@@ -301,7 +301,7 @@ def generate_evidence_receipt(
     receipt_data["tamper_evident_seal_sha256"] = hashlib.sha256(receipt_bytes).hexdigest()
 
     os.makedirs(os.path.dirname(receipt_json_path), exist_ok=True)
-    with open(receipt_json_path, "w", encoding="utf-8") as f:
+    with open(receipt_json_path, "w", encoding="utf-8", newline="\n") as f:
         json.dump(receipt_data, f, indent=2)
 
     # Generate Markdown summary
@@ -353,7 +353,7 @@ def generate_evidence_receipt(
     else:
         md_content += "- None. All empirical verification gates established.\n"
 
-    with open(receipt_md_path, "w", encoding="utf-8") as f:
+    with open(receipt_md_path, "w", encoding="utf-8", newline="\n") as f:
         f.write(md_content)
 
     print(f"\n[+] Evidence Receipt generated: {receipt_json_path}")

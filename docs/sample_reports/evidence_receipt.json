@@ -1,9 +1,9 @@
 {
-  "receipt_id": "rcpt-f6cdccae325e",
-  "generated_at": 1792726716.569046,
+  "receipt_id": "rcpt-fcde72b26ebf",
+  "generated_at": 1792727041.6007059,
   "final_status": "CONTAINED_NEEDS_REVIEW",
   "project": "faultforge/checkout-service",
-  "commit_sha": "e5a9752ba63115d6744a7996f0565272b2804762",
+  "commit_sha": "372ef5f972355e657d3d55f9e9547be198c5a2e7",
   "git_verified": true,
   "autonomy_model": "SUPERVISED",
   "risk_classification": "MEDIUM",
@@ -421,18 +421,18 @@
   },
   "pipeline_artifacts": {
     "incident_dossier_sha256": "a264687ee0c7e0fe71aba9ac80c1039d9df474161e690c2402174fe9c6b77879",
-    "diagnosis_report_sha256": "2c0a672c2ce7cc8c90c5253bff4b2d998784b70166e4d259573c820ebfadb610",
+    "diagnosis_report_sha256": "e3ec9c3ca08e02e0d32365d1dbb670242c163dd8d28180e5540e6889c059b544",
     "mr_payload_sha256": "N/A",
-    "replay_evaluation_sha256": "8cd053626347c01ccc0a35b0ab94fce7ed988fc73f04d7ec467f964902b7ac08",
-    "risk_classification_sha256": "f13ca2240248144d291ccc6e9bb52c0bbe32cf8c9e7af695e51d642a8488ece9"
+    "replay_evaluation_sha256": "0524bbbbf48e43f9af68f442f1170b369b07e19064caac3bd7219a7dfe93e244",
+    "risk_classification_sha256": "339fdbc59654b18c5bfdc4b197f796b9b0cfa2c67f7901a66951073412ede2f2"
   },
   "not_established": [
-    "Dossier commit SHA (b063a91b) differs from current HEAD (e5a9752b).",
+    "Dossier commit SHA (b063a91b) differs from current HEAD (372ef5f9).",
     "Cloud Run revision deployment unconfirmed from release stage."
   ],
   "governance": {
     "requires_human_approval_to_promote": true,
     "promotion_gate": "BLOCKED_PENDING_REVIEW"
   },
-  "tamper_evident_seal_sha256": "e4ceb7fe00e315c8ba62f64562638f41d0cd39f64b212d123f4c4f7d24dfc471"
+  "tamper_evident_seal_sha256": "05dfdca7d72b1fb9e9dd36f9a652d3a24c683437837bce74bb7786d6dc68b156"
 }
