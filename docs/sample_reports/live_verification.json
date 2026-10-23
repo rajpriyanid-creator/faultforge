@@ -1,25 +1,43 @@
 {
-  "timestamp": 1792504457.3452315,
+  "timestamp": 1792767218.2722292,
   "service_name": "faultforge-checkout",
   "region": "us-central1",
-  "production_url": "https://faultforge-checkout-136942862703.us-central1.run.app",
+  "production_url": "https://faultforge-checkout-tiottsrikq-uc.a.run.app",
   "health": {
     "status_code": 200,
     "body": {
       "status": "healthy",
       "service": "faultforge-checkout",
       "revision": "faultforge-checkout-00002-kpl",
-      "uptime_seconds": 2315.3,
+      "uptime_seconds": 39.41,
       "environment": "production"
     },
     "verified": true
   },
   "traffic_split": {
-    "verified": false,
-    "status": "UNVERIFIED_NO_GCP_AUTH",
-    "traffic": [],
-    "candidate_percent": null,
-    "production_percent": null,
-    "error": "gcloud invocation failed or uninstalled: [WinError 2] The system cannot find the file specified"
+    "verified": true,
+    "status": "VERIFIED",
+    "traffic": [
+      {
+        "percent": 81,
+        "revisionName": "faultforge-checkout-00002-kpl"
+      },
+      {
+        "percent": 9,
+        "revisionName": "faultforge-checkout-00010-baz"
+      },
+      {
+        "percent": 10,
+        "revisionName": "faultforge-checkout-00012-xoc",
+        "tag": "candidate",
+        "url": "https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app"
+      }
+    ],
+    "candidate_percent": 10,
+    "production_percent": 90,
+    "candidate_tag": "candidate",
+    "candidate_url": "https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app",
+    "candidate_revision": "faultforge-checkout-00012-xoc",
+    "production_revision": "faultforge-checkout-00010-baz"
   }
 }

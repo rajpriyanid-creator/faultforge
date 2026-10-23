@@ -1,14 +1,31 @@
 {
   "stage": "release",
   "job_name": "release:cloudrun_candidate_deploy",
-  "status": "SKIPPED",
-  "commit_sha": "372ef5f972355e657d3d55f9e9547be198c5a2e7",
-  "pipeline_id": "local-run",
+  "status": "SUCCESS",
+  "commit_sha": "d64c35d4771113092df8d33a70408a1045ae108e",
+  "pipeline_id": "2981670120",
   "approval_required": false,
-  "artifacts_declared": [],
-  "artifacts_verified_on_disk": [],
-  "artifacts_details": [],
-  "timestamp": 1792691043.0021691,
+  "artifacts_declared": [
+    "reports/release.json",
+    "reports/live_verification.json"
+  ],
+  "artifacts_verified_on_disk": [
+    "reports/release.json",
+    "reports/live_verification.json"
+  ],
+  "artifacts_details": [
+    {
+      "path": "reports/release.json",
+      "size_bytes": 207,
+      "sha256": "c39e80897645cde3eb4cf7f5b0ece56158ad918f515cb6696dc27d679b35beaf"
+    },
+    {
+      "path": "reports/live_verification.json",
+      "size_bytes": 1241,
+      "sha256": "39f2f9af6ea70c5555da58f07aae128d519d61fb2a66b1c18832c386bf61c942"
+    }
+  ],
+  "timestamp": 1792767224.6062965,
   "duo_executed": false,
-  "notes": "Cloud Run deployment skipped (no live GCP credentials)"
+  "notes": ""
 }

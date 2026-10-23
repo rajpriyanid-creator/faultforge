@@ -35,7 +35,7 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-#### Step 2: Run Full Pytest Suite (76+ Tests, Unit & Integration)
+#### Step 2: Run Full Pytest Suite (132 Passed, 1 Skipped, Unit & Integration)
 ```bash
 pytest tests/unit tests/integration tests/test_*.py -v
 ```

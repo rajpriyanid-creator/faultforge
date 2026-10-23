@@ -6,43 +6,27 @@ These sample reports document the complete empirical evidence lifecycle of Fault
 
 ## 1. Commit SHA & Multi-Stage Provenance Architecture
 
-Auditors will observe different commit SHAs and generation timestamps across these sample reports. This multi-commit structure is an intentional reflection of the real-world incident lifecycle rather than an inconsistency:
+All artifacts in this directory were generated during the execution of **GitLab CI Pipeline [#2981670120](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2981670120)** on the `main` branch, or reflect reference pipelines:
 
-1. **Baseline Incident Reproduction (`b063a91b` on `main`):**
-   - The unpatched production codebase where the SLA breach occurred. `app/clients/shipping_client.py` contains the regression (no timeout, no fallback).
-   - Used to generate `incident_dossier.json`, `issue.json` (Incident #42), and `fault_run_baseline.json` (2026-10-22 17:38:19 UTC).
+1. **Active CI Production Pipeline ([#2981670120](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2981670120) on `main`):**
+   - Commit SHA: [`d64c35d4771113092df8d33a70408a1045ae108e`](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/commit/d64c35d4771113092df8d33a70408a1045ae108e)
+   - Pipeline Execution Window: `2026-10-23T14:47:30Z` to `2026-10-23T14:55:01Z`
+   - Automated Jobs Completed: 13 / 13 passed (100% green); human promotion gate held at `when: manual` per Supervised Autonomy policy.
+   - Cloud Run Deployment: Candidate revision `faultforge-checkout-00012-xoc` deployed to Google Cloud Run staging ([`https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app`](https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app)) with verified 10% canary traffic split.
 
-2. **Candidate Duo Remediation (`f8aa9d98` on `fix/resilience-shipping-timeout`):**
-   - Candidate resilience patch authored autonomously by the GitLab Duo service account (`FaultForge, Supervised, Resilience, Healer <service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com>`) via Duo Agent Platform Session [9909079](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/automate/agent-sessions/9909079).
-   - Submitted as Merge Request [!3](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/merge_requests/3) (unmerged).
-   - Evaluated under identical Toxiproxy fault profile `644a89784316` to generate `fault_run_hardened.json` (2026-10-22 17:39:25 UTC), `replay_evaluation.json`, and `duo_evidence.json`.
+2. **Evaluated Candidate Resilience Patch ([MR !3](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/merge_requests/3) on `fix/resilience-shipping-timeout`):**
+   - Commit SHA: [`329404236f9ef37ef66f3f624f1b64b1bda9b509`](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/commit/329404236f9ef37ef66f3f624f1b64b1bda9b509) (eval revision `a1702b00`)
+   - Evaluated under identical Toxiproxy fault profile `644a89784316` to generate `fault_run_hardened.json` and `replay_evaluation.json`.
 
-3. **Stage Ledger & Receipt Sealing (`372ef5f9` / `895299b` on `main`):**
-   - The commit on `main` where the local 9-stage ledger reconciliation was executed (2026-10-22 17:41:54–17:45:30 UTC) and the cryptographic evidence receipt was sealed (`evidence_receipt.json`, 2026-10-23 03:44:01 UTC).
-   - Because the baseline incident was captured on commit `b063a91b` while the receipt was generated on `372ef5f9`, the receipt generator detects this difference and explicitly flags it in `not_established`: `"Dossier commit SHA (b063a91b) differs from current HEAD (372ef5f9)."`.
-
-4. **Reference Production Deployment Pipeline (`2967640493` on `main`):**
+3. **Reference Production Deployment Pipeline ([#2967640493](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2967640493) on `main`):**
    - Pipeline ID: [2967640493](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2967640493)
-   - Commit SHA: `275c598ce2d128aa1107bc9b28c36c9572065ddb`
-   - Execution Window: `2026-10-20T13:12:30Z` to `2026-10-20T13:19:09Z` (UTC)
-   - Status: Success (verified Bandit AST security scan and Cloud Run candidate deploy stage record).
+   - Execution Window: `2026-10-20T13:12:30Z` to `2026-10-20T13:19:09Z`
+   - Initial deployment of reference revision `faultforge-checkout-00002-kpl`.
 
-5. **GitLab SaaS CI Pipeline Run (`2977803091` on `main`):**
+4. **Reference Test Pipeline ([#2977803091](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2977803091) on `main`):**
    - Pipeline ID: [2977803091](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2977803091)
-   - Commit SHA: `e5a9752ba63115d6744a7996f0565272b2804762`
-   - Execution Window: `2026-10-22T18:00:55Z` to `2026-10-22T18:08:00Z` (UTC)
-   - Built the multi-stage container image (`sha256:7cf1e09f...`) and executed audit job [17392416795](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17392416795).
-
-6. **Recent Verified CI Pipeline Runs:**
-   - **`main` Pipeline [2979551166](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2979551166):**
-     - Execution Window: `2026-10-23T04:39:13Z` to `2026-10-23T04:47:50Z` (UTC)
-     - Commit SHA: `26ff5ee93eda33bcf60a48078e79ba7feea34b5d`
-     - Final Status: **Success / Manual** (All 13 active CI jobs passed; manual promotion gate pending human sign-off).
-   - **MR !3 Pipeline [2979551844](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2979551844):**
-     - Execution Window: `2026-10-23T04:39:29Z` to `2026-10-23T04:45:36Z` (UTC)
-     - Commit SHA: `de50b642a8b98150495f36e4f3263ce0dafc4fe0`
-     - Final Status: **Success / Manual** (All 10 active CI jobs passed; manual promotion gate pending human sign-off).
-   - **Prior Verified Runs:** Pipeline [2979433516](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2979433516) (`main`, commit `9ed64d69`) and Pipeline [2979434153](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2979434153) (`!3`, commit `eafbb697`), both **Success / Manual**.
+   - Execution Window: `2026-10-22T18:00:55Z` to `2026-10-22T18:08:00Z`
+   - Reference container packaging run.
 
 ---
 
@@ -50,31 +34,31 @@ Auditors will observe different commit SHAs and generation timestamps across the
 
 | Artifact File | Generating Stage | Commit SHA | Source Pipeline / Execution Context | Generation Time (UTC) | Verification Status & Notes |
 |---|---|---|---|---|---|
-| `issue.json` | `plan` | `b063a91b` | Local run (pipeline not recorded) | 2026-10-22 16:46:39 | Incident Work Item [#42](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/work_items/42) tracking production SLA breach. |
-| `incident_dossier.json` | `plan` | `b063a91b` | Local run (pipeline not recorded) | 2026-10-22 17:44:02 | Structured incident dossier with sanitized telemetry and `git bisect` culprit identification. |
-| `duo_run.json` | `create` | N/A (Session) | GitLab Duo Agent Platform / CI Job 17391324956 | 2026-10-22 16:46:39 | Duo Flow [Session 9909079](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/automate/agent-sessions/9909079) execution record (`claude_sonnet_5_5_vertex`, status: `COMPLETED`). |
-| `duo_evidence.json` | `create` | `f8aa9d98` | Local run (pipeline not recorded; verified against MR !3) | 2026-10-22 17:41:54 | Detection record verifying Duo service account commit and MR [!3](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/merge_requests/3) metadata. |
-| `diagnosis_report.json` | `create` | `b063a91b` | Local run (pipeline not recorded) | 2026-10-22 17:41:54 | Static AST inspection pinpointing missing timeout at `app/clients/shipping_client.py`. |
-| `fault_config.json` | `configure` | N/A | Local run (pipeline not recorded) | 2026-10-22 17:44:02 | Network chaos topology & latency toxic configuration (canonical hash `644a89784316`). |
-| `fault_run_baseline.json` | `verify` | `b063a91b` | Local run (pipeline not recorded) | 2026-10-22 17:38:19 | 5 baseline probes under active fault: 100% SLA breaches (mean 4,212.32 ms, p95 4,349.98 ms). |
-| `fault_run_hardened.json` | `verify` | `f8aa9d98` | Local run (pipeline not recorded) | 2026-10-22 17:39:25 | 20 candidate probes under identical fault: 0% SLA breaches (mean 825.56 ms, p95 1,472.12 ms). |
-| `replay_evaluation.json` | `verify` | `b063a91b` vs `f8aa9d98` | Local run (pipeline not recorded) | 2026-10-22 17:42:06 | Replay proof confirming identical fault hash `644a89784316`, Phase A timeout, and Phase B breaker trip. |
-| `bandit_security_report.json` | `secure` | `275c598c` | Pipeline [2967640493](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2967640493) | 2026-10-20 13:15:58 | Static AST scan confirming zero high/medium security weaknesses or credential leaks. |
-| `image_digest.txt` | `package` | `e5a9752b` | Pipeline [2977803091](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2977803091) (`package:container_build`) | 2026-10-22 18:04:12 | Immutable distroless container image digest: `sha256:7cf1e09f5f4e78c8d0e00032e1236924950607cbc85a9f9cd8cdac37a965da79`. |
-| `release.json` | `release` | `275c598c` | Pipeline [2967640493](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2967640493) | 2026-10-20 13:17:54 | Deployment status: `SKIPPED_NO_GCP_CREDENTIALS` (unestablished in sample CI runner context). |
-| `monitor.json` | `monitor` | `372ef5f9` | Local run (pipeline not recorded) | 2026-10-22 17:44:53 | Telemetry probe validation confirming `/health`, `/ready`, and Prometheus `/metrics` availability. |
-| `risk_classification.json` | `govern` | `372ef5f9` | Local run (pipeline not recorded) | 2026-10-22 17:45:30 | Supervised Autonomy policy gate: classified as `MEDIUM` risk tier, requiring human outcome review. |
-| `stage_ledger.json` | All (1–9) | `372ef5f9` | Local run (pipeline not recorded) | 2026-10-22 17:45:30 | Aggregated 9-stage empirical ledger recording atomic status and SHA-256 artifact hashes. |
-| `stage_ledger_*.json` | Stages 1–9 | `372ef5f9` | Local run (pipeline not recorded) | 2026-10-22 17:41:54–17:45:30 | Individual per-stage ledger fragments recorded atomically during pipeline execution. |
-| `evidence_receipt.json` | `govern` | `372ef5f9` | Local run (sealed locally 2026-10-23 03:44 UTC; not an artifact of job 17392416795) | 2026-10-23 03:44:01 | Tamper-evident cryptographic receipt signed with SHA-256 seal; records 2 `not_established` items. |
-| `EVIDENCE_RECEIPT.md` | `govern` | `372ef5f9` | Local run (sealed locally 2026-10-23 03:44 UTC; not an artifact of job 17392416795) | 2026-10-23 03:44:01 | Human-readable rendering of the locally sealed evidence receipt. |
-| `live_verification.json` | `observe` | N/A | Local run (pipeline not recorded; verify_live.py probe against Cloud Run deployment) | 2026-10-20 13:54:17 | Probe of live Cloud Run production deployment (`faultforge-checkout-00002-kpl`), confirming HTTP 200. |
+| `issue.json` | `plan` | `d64c35d4` | Pipeline [2981670120](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2981670120) (`plan:incident_tracking`, Job 17419950457) | 2026-10-23 14:47:48 | Incident Work Item [#42](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/work_items/42) tracking production SLA breach. |
+| `incident_dossier.json` | `create` | `d64c35d4` | Pipeline [2981670120](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2981670120) (`create:duo_remediation_mr`, Job 17419950461) | 2026-10-23 14:48:49 | Structured incident dossier with sanitized telemetry and `git bisect` culprit identification (`974035c`). |
+| `duo_run.json` | `create` | `d64c35d4` | Pipeline [2981670120](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2981670120) (`create:duo_remediation_mr`, Job 17419950461) | 2026-10-23 14:48:49 | Duo Flow [Session 9909079](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/automate/agent-sessions/9909079) execution record (`status: COMPLETED`). |
+| `duo_evidence.json` | `create` | `d64c35d4` | Pipeline [2981670120](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2981670120) (`create:duo_remediation_mr`, Job 17419950461) | 2026-10-23 14:48:49 | Detection record verifying Duo service account commit and MR [!3](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/merge_requests/3) metadata. |
+| `diagnosis_report.json` | `create` | `d64c35d4` | Pipeline [2981670120](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2981670120) (`create:duo_remediation_mr`, Job 17419950461) | 2026-10-23 14:48:49 | Static AST inspection pinpointing missing timeout at `app/clients/shipping_client.py`. |
+| `fault_config.json` | `configure` | `d64c35d4` | Pipeline [2981670120](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2981670120) (`configure:chaos_topology`, Job 17419950462) | 2026-10-23 14:49:21 | Network chaos topology & latency toxic configuration (canonical hash `644a89784316`). |
+| `fault_run_baseline.json` | `verify` | `d64c35d4` | Pipeline [2981670120](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2981670120) (`verify:exact_fault_replay_proof`, Job 17419950464) | 2026-10-23 14:48:48 | 5 baseline probes under active fault: 100% SLA breaches (mean 3454.97 ms, p95 3541.19 ms). |
+| `fault_run_hardened.json` | `verify` | `a1702b00` | Pipeline [2981670120](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2981670120) (`verify:exact_fault_replay_proof`, Job 17419950464) | 2026-10-23 14:50:08 | 20 candidate probes under identical fault: 0% SLA breaches (mean 124.24 ms, p95 817.61 ms). |
+| `replay_evaluation.json` | `verify` | `d64c35d4` vs `a1702b00` | Pipeline [2981670120](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2981670120) (`verify:exact_fault_replay_proof`, Job 17419950464) | 2026-10-23 14:50:08 | Replay proof confirming identical fault hash `644a89784316`, Phase A timeout, and Phase B breaker trip. |
+| `bandit_security_report.json` | `secure` | `d64c35d4` | Pipeline [2981670120](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2981670120) (`secure:sast_and_secret_scan`, Job 17419950467) | 2026-10-23 14:50:40 | Static AST security audit confirming zero high/medium security weaknesses or credential leaks. |
+| `image_digest.txt` | `package` | `d64c35d4` | Pipeline [2981670120](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2981670120) (`package:container_build`, Job 17419950468) | 2026-10-23 14:52:19 | Immutable distroless container image digest built and pushed to Google Artifact Registry. |
+| `release.json` | `release` | `d64c35d4` | Pipeline [2981670120](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2981670120) (`release:cloudrun_candidate_deploy`, Job 17419950470) | 2026-10-23 14:53:44 | Deployment status: `STAGED`, revision `faultforge-checkout-00012-xoc` deployed to Cloud Run with 10% canary split. |
+| `live_verification.json` | `release` | `d64c35d4` | Pipeline [2981670120](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2981670120) (`release:cloudrun_candidate_deploy`, Job 17419950470) | 2026-10-23 14:53:38 | Live Cloud Run candidate probe confirming HTTP 200 on `/health` and 10% canary traffic split verified. |
+| `monitor.json` | `monitor` | `d64c35d4` | Pipeline [2981670120](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2981670120) (`monitor:telemetry_probes`, Job 17419950471) | 2026-10-23 14:54:14 | Telemetry probe validation confirming `/health`, `/ready`, and Prometheus `/metrics` availability. |
+| `risk_classification.json` | `govern` | `d64c35d4` | Pipeline [2981670120](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2981670120) (`govern:audit_receipt_and_gate`, Job 17419950472) | 2026-10-23 14:54:54 | Supervised Autonomy policy gate: classified as `MEDIUM` risk tier, requiring human outcome review. |
+| `stage_ledger.json` | All (1–9) | `d64c35d4` | Pipeline [2981670120](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2981670120) (`govern:audit_receipt_and_gate`, Job 17419950472) | 2026-10-23 14:54:54 | Aggregated 9-stage empirical ledger recording atomic status and SHA-256 artifact hashes. |
+| `stage_ledger_*.json` | Stages 1–9 | `d64c35d4` | Pipeline [2981670120](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2981670120) (Jobs 17419950457–17419950472) | 2026-10-23 14:47:49–14:54:54 | Individual per-stage ledger fragments recorded atomically during pipeline execution. |
+| `evidence_receipt.json` | `govern` | `d64c35d4` | Pipeline [2981670120](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2981670120) (`govern:audit_receipt_and_gate`, Job 17419950472) | 2026-10-23 14:54:54 | Tamper-evident cryptographic receipt sealed in CI with SHA-256 `77fcdade74cbb5040bf7301b4bb8c55827e3c15fab3dbae8e679fe18e1ae8a40`. |
+| `EVIDENCE_RECEIPT.md` | `govern` | `d64c35d4` | Pipeline [2981670120](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2981670120) (`govern:audit_receipt_and_gate`, Job 17419950472) | 2026-10-23 14:54:54 | Human-readable rendering of the sealed evidence receipt from CI Job 17419950472. |
 
 ---
 
 ## 3. Audit Verification Rules
 
-- All artifacts in this directory are static snapshots reflecting verified runs and are tracked in git for offline verification.
+- All artifacts in this directory are static snapshots reflecting verified CI runs and are tracked in git for offline verification.
 - In active CI/CD pipeline executions, new receipts and ledgers are generated dynamically into `reports/` and retained as CI job artifacts.
 - To audit the claims in these reports against the codebase and documentation, run:
   ```bash

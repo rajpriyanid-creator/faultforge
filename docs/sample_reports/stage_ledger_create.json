@@ -2,8 +2,8 @@
   "stage": "create",
   "job_name": "create:duo_remediation_mr",
   "status": "SUCCESS",
-  "commit_sha": "372ef5f972355e657d3d55f9e9547be198c5a2e7",
-  "pipeline_id": "local-run",
+  "commit_sha": "d64c35d4771113092df8d33a70408a1045ae108e",
+  "pipeline_id": "2981670120",
   "approval_required": false,
   "artifacts_declared": [
     "reports/fault_run_baseline.json",
@@ -22,31 +22,31 @@
   "artifacts_details": [
     {
       "path": "reports/fault_run_baseline.json",
-      "size_bytes": 1985,
-      "sha256": "74c7074cddaa0a299ab53f9939b27707e635dce888070039e81123413648934d"
+      "size_bytes": 1983,
+      "sha256": "c883a39dcf784670c791dc20d3b71a2d8bee88543b6af7d2cb4f8a9ad8d6aaf8"
     },
     {
       "path": "reports/incident_dossier.json",
-      "size_bytes": 1594,
-      "sha256": "a264687ee0c7e0fe71aba9ac80c1039d9df474161e690c2402174fe9c6b77879"
+      "size_bytes": 1440,
+      "sha256": "af395558c55defae3a9ed3074e9cc659bbbad08109842ed031f52c6f3a5f402d"
     },
     {
       "path": "reports/diagnosis_report.json",
-      "size_bytes": 1018,
-      "sha256": "e3ec9c3ca08e02e0d32365d1dbb670242c163dd8d28180e5540e6889c059b544"
+      "size_bytes": 1105,
+      "sha256": "3230f50c6830976cdeb8e6ec0f971ea3a153fc731766245d75ae3c8f9b2c9e3e"
     },
     {
       "path": "reports/duo_run.json",
-      "size_bytes": 474,
-      "sha256": "3e02c909466d6e6b3c9b66bab215938bf0f5775b28805416f7b19c209b73ac0f"
+      "size_bytes": 409,
+      "sha256": "0c0d38fed3e2de50c217dc340fde6c721434b4ebc1af50d1d8769748c6c9e2d3"
     },
     {
       "path": "reports/duo_evidence.json",
-      "size_bytes": 814,
-      "sha256": "6e9dffdd76a484b40de9dad7ea8cfc48b2a95efe920ee8b7d0a7e712bd398087"
+      "size_bytes": 185,
+      "sha256": "90c9fc6e41e60cf26d30f7679319724f9058c755ffc2cf59abd15414ea1c1996"
     }
   ],
-  "timestamp": 1792690914.6170237,
+  "timestamp": 1792766929.6593726,
   "duo_executed": true,
   "notes": ""
 }

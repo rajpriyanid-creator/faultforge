@@ -2,13 +2,11 @@
   "run_id": "9909079",
   "trigger_mechanism": "AGENT_PLATFORM_SESSION",
   "flow_id": "faultforge_resilience_flow",
-  "project_id": "43424456",
+  "project_id": "87709185",
   "issue_iid": 42,
   "status": "COMPLETED",
   "executed": true,
   "web_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/automate/agent-sessions/9909079",
-  "ci_job_id": "17391324956",
-  "model": "claude_sonnet_5_5_vertex",
-  "triggered_at": 1792687599.0,
+  "triggered_at": 1792766929.132644,
   "inputs_hash": "644a89784316"
 }

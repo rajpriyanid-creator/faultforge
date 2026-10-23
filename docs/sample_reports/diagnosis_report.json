@@ -1,7 +1,7 @@
 {
-  "diagnosis_id": "diag-91b4fe5a",
-  "status": "SUSPECTED_WEAKNESS",
-  "confidence": "MEDIUM",
+  "diagnosis_id": "diag-577a527a",
+  "status": "CONFIRMED_REGRESSION",
+  "confidence": "HIGH",
   "target_component": "app/clients/shipping_client.py",
   "ast_findings": [
     {
@@ -16,9 +16,12 @@
     }
   ],
   "bisect_result": {
-    "bisect_executed": false,
-    "status": "SUSPECTED_WEAKNESS",
-    "reason": "Git bisect did not isolate a boundary: Command '['git', 'bisect', 'good', '4d3424432d4b8c7fd046eb59b2a341a4d66843d6']' returned non-zero exit status 1."
+    "bisect_executed": true,
+    "status": "CONFIRMED_REGRESSION",
+    "culprit_sha": "974035c6e45e7c177452df260a155b6508b828e9",
+    "culprit_author": "FaultForge Agent",
+    "culprit_subject": "perf: reuse client, simplify error handling",
+    "bisect_summary": "974035c6 - perf: reuse client, simplify error handling"
   },
   "recommendation": [
     "Enforce strict 0.8s bounded timeout on httpx.AsyncClient",

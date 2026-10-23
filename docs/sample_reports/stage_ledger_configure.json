@@ -2,8 +2,8 @@
   "stage": "configure",
   "job_name": "configure:chaos_topology",
   "status": "SUCCESS",
-  "commit_sha": "372ef5f972355e657d3d55f9e9547be198c5a2e7",
-  "pipeline_id": "local-run",
+  "commit_sha": "d64c35d4771113092df8d33a70408a1045ae108e",
+  "pipeline_id": "2981670120",
   "approval_required": false,
   "artifacts_declared": [
     "reports/fault_config.json"
@@ -18,7 +18,7 @@
       "sha256": "b56a1883c24aaf742b5cebe55ec10b35e34d2c7e8f1f3e6760d6bafff4c34364"
     }
   ],
-  "timestamp": 1792691042.3121305,
+  "timestamp": 1792766961.2381372,
   "duo_executed": false,
   "notes": ""
 }

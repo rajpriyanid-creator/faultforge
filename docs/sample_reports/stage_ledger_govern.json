@@ -2,8 +2,8 @@
   "stage": "govern",
   "job_name": "govern:audit_receipt_and_gate",
   "status": "SUCCESS",
-  "commit_sha": "372ef5f972355e657d3d55f9e9547be198c5a2e7",
-  "pipeline_id": "local-run",
+  "commit_sha": "d64c35d4771113092df8d33a70408a1045ae108e",
+  "pipeline_id": "2981670120",
   "approval_required": true,
   "artifacts_declared": [
     "reports/evidence_receipt.json"
@@ -14,11 +14,11 @@
   "artifacts_details": [
     {
       "path": "reports/evidence_receipt.json",
-      "size_bytes": 11804,
-      "sha256": "1a2686e5728301b987cb4e1aa8eb2d487a3386ff78483217690ba2ccf82f4095"
+      "size_bytes": 11607,
+      "sha256": "77ec5a803f98a79f1b2521a6a8bd70df595f52a6ce53ba84a60893e74673dbdd"
     }
   ],
-  "timestamp": 1792691130.3978357,
+  "timestamp": 1792767294.7285302,
   "duo_executed": false,
   "notes": ""
 }

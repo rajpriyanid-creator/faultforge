@@ -2,8 +2,8 @@
   "stage": "package",
   "job_name": "package:container_build",
   "status": "SUCCESS",
-  "commit_sha": "372ef5f972355e657d3d55f9e9547be198c5a2e7",
-  "pipeline_id": "local-run",
+  "commit_sha": "d64c35d4771113092df8d33a70408a1045ae108e",
+  "pipeline_id": "2981670120",
   "approval_required": false,
   "artifacts_declared": [
     "reports/image_digest.txt"
@@ -15,10 +15,10 @@
     {
       "path": "reports/image_digest.txt",
       "size_bytes": 153,
-      "sha256": "ac1f0fb4eecae547ea0e45aa0457e0e79106ed28088eae529a89a811d8eaa262"
+      "sha256": "6f72b5ee59dae6bacff4ab1bed1fa538dd89499c484325ef39b20f2d81b48fb4"
     }
   ],
-  "timestamp": 1792691042.7640636,
+  "timestamp": 1792767139.3949285,
   "duo_executed": false,
   "notes": ""
 }

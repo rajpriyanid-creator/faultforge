@@ -414,10 +414,17 @@ def audit_sample_reports_provenance(sample_dir: str = "docs/sample_reports") -> 
         source_context = cells[3]
         time_str = cells[4]
 
-        # Check if row attributes to a pipeline whose window does not contain the timestamp
+        # Check if row attributes to a pipeline
         pipe_refs = re.findall(r"\b(29\d{8})\b", source_context)
-        for pid in pipe_refs:
-            if pid in pipeline_windows:
+        if pipe_refs:
+            for pid in pipe_refs:
+                if pid not in pipeline_windows:
+                    violations.append(
+                        f"docs/sample_reports/README.md table row '{file_name}' references pipeline {pid} "
+                        f"which has no declared execution window in the README"
+                    )
+                    continue
+
                 start_dt, end_dt, s_str, e_str = pipeline_windows[pid]
                 time_match = re.search(r"([0-9]{4}-[0-9]{2}-[0-9]{2}[T\s][0-9]{2}:[0-9]{2}:[0-9]{2})", time_str)
                 if time_match:
@@ -432,6 +439,17 @@ def audit_sample_reports_provenance(sample_dir: str = "docs/sample_reports") -> 
                             )
                     except Exception as e:
                         violations.append(f"Failed parsing timestamp '{time_str}' in row for '{file_name}': {e}")
+                else:
+                    violations.append(
+                        f"docs/sample_reports/README.md table row '{file_name}' references pipeline {pid} "
+                        f"but has no valid generation timestamp in column 5 ('{time_str}')"
+                    )
+        else:
+            if "local run" not in source_context.lower() and "platform session" not in source_context.lower():
+                violations.append(
+                    f"docs/sample_reports/README.md table row '{file_name}' does not name a pipeline "
+                    f"and does not disclose 'Local run (pipeline not recorded)'"
+                )
 
         # Check evidence_receipt.json specific attribution rule
         if file_name == "evidence_receipt.json":

@@ -1,6 +1,7 @@
 {
   "provider": "cloudrun",
-  "status": "SKIPPED_NO_GCP_CREDENTIALS",
-  "reason": "GCP_PROJECT or GCP_SA_KEY not configured in CI/CD variables",
-  "timestamp": 1792502274.5330944
+  "status": "STAGED",
+  "url": "https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app",
+  "revision": "faultforge-checkout-00012-xoc",
+  "timestamp": 1792767224.571173
 }

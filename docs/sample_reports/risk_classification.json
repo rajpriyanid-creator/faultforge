@@ -1,9 +1,14 @@
 {
   "tier": "MEDIUM",
   "autonomy_level": "SUPERVISED",
-  "lines_changed": 0,
-  "files_changed": [],
+  "lines_changed": 20,
+  "files_changed": [
+    ".gitlab-ci.yml",
+    "scripts/check_readme_claims.py"
+  ],
   "reasons": [
+    "Changed file '.gitlab-ci.yml' is outside allowed low-risk paths: ['app/clients/', 'app/resilience/', 'tests/']",
+    "Changed file 'scripts/check_readme_claims.py' is outside allowed low-risk paths: ['app/clients/', 'app/resilience/', 'tests/']",
     "Merge request does not include or update regression tests under tests/.",
     "Autonomy Dial: SUPERVISED mode active (autonomous staging/replay; human sign-off for live promotion)."
   ],
