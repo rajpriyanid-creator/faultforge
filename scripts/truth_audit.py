@@ -8,6 +8,7 @@ import json
 import hashlib
 import subprocess
 from typing import List, Tuple, Optional
+from datetime import datetime, timezone
 
 def audit_forbidden_patterns() -> List[str]:
     violations = []
@@ -326,6 +327,50 @@ def audit_report_consistency(final_mode: bool = False) -> List[str]:
 
     return violations
 
+def audit_sample_reports_provenance(sample_dir: str = "docs/sample_reports") -> List[str]:
+    violations = []
+    if not os.path.exists(sample_dir):
+        return violations
+
+    readme_path = os.path.join(sample_dir, "README.md")
+    if not os.path.exists(readme_path):
+        return violations
+
+    with open(readme_path, "r", encoding="utf-8") as f:
+        readme_content = f.read()
+
+    # Detect if a blanket pipeline execution window is claimed for sample artifacts
+    window_match = re.search(
+        r"Pipeline Execution Window:\s*[`\"]?([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z?)[`\"]?\s*to\s*[`\"]?([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z?)[`\"]?",
+        readme_content,
+        re.IGNORECASE
+    )
+    if window_match:
+        start_str, end_str = window_match.group(1), window_match.group(2)
+        try:
+            start_iso = start_str if start_str.endswith("Z") else start_str + "Z"
+            end_iso = end_str if end_str.endswith("Z") else end_str + "Z"
+            start_dt = datetime.fromisoformat(start_iso.replace("Z", "+00:00"))
+            end_dt = datetime.fromisoformat(end_iso.replace("Z", "+00:00"))
+
+            for fname in ["fault_run_baseline.json", "fault_run_hardened.json"]:
+                fpath = os.path.join(sample_dir, fname)
+                if os.path.exists(fpath):
+                    with open(fpath, "r", encoding="utf-8") as fp:
+                        fdata = json.load(fp)
+                    ts = fdata.get("timestamp")
+                    if isinstance(ts, (int, float)):
+                        fdt = datetime.fromtimestamp(ts, tz=timezone.utc)
+                        if not (start_dt <= fdt <= end_dt):
+                            violations.append(
+                                f"docs/sample_reports/README.md claims pipeline window {start_str} to {end_str}, "
+                                f"which does not contain {fname} timestamp {fdt.strftime('%Y-%m-%dT%H:%M:%SZ')}"
+                            )
+        except Exception as e:
+            violations.append(f"Failed parsing claimed pipeline window in sample README: {e}")
+
+    return violations
+
 def audit_docs_claims() -> List[str]:
     violations = []
     baseline_path = "reports/fault_run_baseline.json"
@@ -456,6 +501,7 @@ def main():
     violations.extend(audit_gitlab_ci_todos(final_mode=final_audit))
     violations.extend(audit_chaos_mocks())
     violations.extend(audit_report_consistency(final_mode=final_audit))
+    violations.extend(audit_sample_reports_provenance())
     violations.extend(audit_docs_claims())
 
     if violations:
