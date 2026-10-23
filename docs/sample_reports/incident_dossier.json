@@ -1,7 +1,9 @@
 {
-  "incident_id": "inc-16110286",
+  "incident_id": "inc-42",
   "project_path": "faultforge/checkout-service",
   "commit_sha": "b063a91b95e8b9e7e8f6492a8cbb3c1211f1bd81",
+  "pipeline_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2977803091",
+  "job_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17392416795",
   "test_run_id": "run-68b4429c",
   "fault": {
     "type": "latency",

@@ -2,7 +2,7 @@
   "stage": "secure",
   "job_name": "secure:sast_and_secret_scan",
   "status": "SUCCESS",
-  "commit_sha": "b063a91b95e8b9e7e8f6492a8cbb3c1211f1bd81",
+  "commit_sha": "e5a9752ba63115d6744a7996f0565272b2804762",
   "pipeline_id": "local-run",
   "approval_required": false,
   "artifacts_declared": [

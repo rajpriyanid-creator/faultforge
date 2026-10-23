@@ -75,3 +75,40 @@ def test_audit_report_consistency_detects_missing_verified_artifact(tmp_path, mo
 
     violations = audit_report_consistency(final_mode=False)
     assert any("verified artifact missing on disk: reports/release.json" in v for v in violations)
+
+def test_audit_docs_claims_detects_stale_numbers(tmp_path, monkeypatch):
+    from scripts.truth_audit import audit_docs_claims
+    monkeypatch.chdir(tmp_path)
+
+    # Create dummy README with stale metric 3446.08 ms
+    (tmp_path / "README.md").write_text("Observed baseline latency 3446.08 ms under 1500ms SLA budget with culprit 974035c and 9 Stages", encoding="utf-8")
+    violations = audit_docs_claims()
+    assert any("Stale metric detected" in v and "3446" in v for v in violations)
+
+def test_audit_docs_claims_detects_mismatched_replay_metrics(tmp_path, monkeypatch):
+    from scripts.truth_audit import audit_docs_claims
+    monkeypatch.chdir(tmp_path)
+
+    docs_dir = tmp_path / "docs"
+    docs_dir.mkdir(parents=True, exist_ok=True)
+    sample_dir = docs_dir / "sample_reports"
+    sample_dir.mkdir(parents=True, exist_ok=True)
+
+    # Create replay_evaluation.json with specific baseline_avg_ms
+    (sample_dir / "replay_evaluation.json").write_text(json.dumps({
+        "raw_metrics": {
+            "baseline_avg_ms": 4212.32,
+            "hardened_avg_ms": 825.56,
+            "hardened_p95_ms": 1472.12
+        }
+    }), encoding="utf-8")
+
+    # README with mismatched number (e.g. 5000.00ms instead of 4212.32)
+    (tmp_path / "README.md").write_text("SLA budget 1500ms, 9 Stages, culprit 974035c, mean 5000.00ms", encoding="utf-8")
+    violations = audit_docs_claims()
+    assert any("Baseline mean 4212.32ms from replay_evaluation.json missing in README" in v for v in violations)
+
+def test_audit_docs_claims_clean_on_repo():
+    from scripts.truth_audit import audit_docs_claims
+    violations = audit_docs_claims()
+    assert len(violations) == 0, f"Expected clean audit on repo, got: {violations}"

@@ -12,5 +12,5 @@
   "changed_files": [
     "app/clients/shipping_client.py"
   ],
-  "candidate_source": "duo-authored (MR !3)"
+  "candidate_source": "commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token"
 }

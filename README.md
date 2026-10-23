@@ -29,11 +29,11 @@ Most CI pipelines only verify that unit tests pass in isolation. Because unit te
 **FaultForge** connects deterministic chaos engineering, AI-assisted diagnosis via **GitLab Duo Agent Platform**, automated resilience healing, and empirical proof into a closed-loop platform engineering workflow:
 
 1. **Inject Controlled Chaos:** Inject a deterministic network delay (3500ms ± 250ms jitter) into an isolated downstream shipping dependency via Toxiproxy.
-2. **Detect & Collect Evidence:** Record SLA budget breaches (>1500ms budget, observed baseline avg 3446.08ms, p95 3653.06ms, 5/5 breaches), capture sanitized logs, and compile a structured Incident Dossier.
+2. **Detect & Collect Evidence:** Record SLA budget breaches (>1500ms budget, observed baseline avg 4212.32ms, p95 4349.98ms, 5/5 breaches), capture sanitized logs, and compile a structured Incident Dossier.
 3. **Deterministic Diagnosis & Bisect:** Execute AST call-site inspection and automated `git bisect` to pinpoint the exact regressing commit (`974035c6e45e7c177452df260a155b6508b828e9`) where timeouts and circuit breakers were stripped.
-4. **GitLab Duo Agent Platform Remediation:** Trigger a custom GitLab Duo flow (`flows/faultforge-flow.yaml`) whose Diagnostician, Resilience Healer, and Chaos Hardener synthesize a minimal scoped fix: a bounded 0.8s timeout, circuit breaker (3 failures, 10s cooldown), and deterministic fallback rate.
-5. **Replay Identical Fault:** Re-execute the **identical Toxiproxy fault profile** (`644a89784316`) against the candidate release across 10 consecutive probe iterations.
-6. **Empirical Proof:** Confirm zero SLA budget breaches, >60% latency reduction, and observable fallback responses (`is_fallback: true`, `is_estimate: true`).
+4. **GitLab Duo Agent Platform Remediation:** Trigger a custom GitLab Duo flow (`flows/faultforge-flow.yaml`) whose Diagnostician, Resilience Healer, and Chaos Hardener synthesize a minimal scoped fix (commit authored by the Duo service account via session 9909079; MR opened under the maintainer's token): a bounded 0.8s timeout, circuit breaker (3 failures, 10s cooldown), and deterministic fallback rate.
+5. **Replay Identical Fault:** Re-execute the **identical Toxiproxy fault profile** (`644a89784316`) against the candidate release across 20 probe iterations (10 Phase A timeout-only + 10 Phase B breaker short-circuit).
+6. **Empirical Proof:** Confirm zero SLA budget breaches (0/20 breaches), -80.4% mean latency reduction (4212.32ms down to 825.56ms, -68.4% P50), and observable fallback responses (`is_fallback: true`, `is_estimate: true`).
 7. **Supervised Autonomy Gate:** Enforce risk-based governance, deploy candidate container to Google Cloud Run staging (0% live traffic with `--tag candidate` when GCP credentials are configured; records `SKIPPED_NO_GCP_CREDENTIALS` otherwise), and require human review before live production promotion, with automated instant rollback.
 
 > **The Differentiator:** It is not "AI says it fixed the app." **It is the before/after empirical proof under the exact same controlled failure condition.**
@@ -100,8 +100,8 @@ FaultForge implements testable programmatic routing based on diff scope, touched
 ```mermaid
 flowchart TD
     subgraph Swimlane1["1. Chaos Engine (Toxiproxy)"]
-        C1["Inject 3,500ms Delay<br/>(Hash: 644a89784316)"] --> C2["Prove Baseline Breach<br/>(3,742ms > 1,500ms SLA)"]
-        C2 --> C3["Exact Fault Replay<br/>(10 Consecutive Probes)"]
+        C1["Inject 3,500ms Delay<br/>(Hash: 644a89784316)"] --> C2["Prove Baseline Breach<br/>(4,212ms > 1,500ms SLA)"]
+        C2 --> C3["Exact Fault Replay<br/>(20 Probes: Phase A & B)"]
     end
 
     subgraph Swimlane2["2. GitLab Duo Agent Platform"]
@@ -167,7 +167,7 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8090
 ```bash
 # Step 1: Demonstrate Baseline Vulnerability Under Chaos (5 probes under 3500ms delay)
 python scripts/run_fault.py --label baseline --output reports/fault_run_baseline.json
-# Empirical Result: 5/5 probes breach SLA budget (>1500ms budget, avg 3446ms, p95 3653ms). Status: FAIL.
+# Empirical Result: 5/5 probes breach SLA budget (>1500ms budget, avg 4212.32ms, p95 4349.98ms). Status: FAIL.
 
 # Step 2: Ingest Evidence & Bisect Culprit Commit
 python scripts/collect_evidence.py
@@ -177,10 +177,10 @@ python scripts/diagnose_and_bisect.py
 # Step 3: Record reference Duo Flow trigger (records a reference trigger NOT_EXECUTED_REFERENCE_ONLY; run the flow in the GitLab UI per docs/duo-run-guide.md for a real execution)
 python scripts/trigger_duo_flow.py --mode manual
 
-# Step 4: Replay Exact Same Fault Against Candidate (10 consecutive probes under hash 644a89784316)
+# Step 4: Replay Exact Same Fault Against Candidate (20 probes under hash 644a89784316: 10 Phase A timeout + 10 Phase B breaker)
 python scripts/run_fault.py --label candidate --output reports/fault_run_candidate.json
 python scripts/evaluate_replay.py --baseline reports/fault_run_baseline.json --candidate reports/fault_run_candidate.json
-# Expected Outcome: SLA breaches drop from 5 to 0. Average latency drops to <850ms (>60% reduction). Status: RECOVERED_AND_VERIFIED.
+# Expected Outcome: SLA breaches drop from 5 to 0 (0/20 breaches). Average latency drops from 4212.32ms to 825.56ms (-80.4% mean reduction, -68.4% P50). Status: RECOVERED_AND_VERIFIED.
 
 # Step 5: Verify Governance & Cloud Run Staging Promotion Gate
 python scripts/generate_receipt.py
@@ -226,7 +226,7 @@ If evaluating the Supervised Human Gate and instant rollback without Google Clou
 | **Min / Max Latency** | 3986.93 ms / 4349.98 ms | 5.23 ms / 1472.12 ms | -66.2% Max reduction | **Measured** |
 | **Sample Variance / Std Dev** | 19500.70 ms² (±139.64 ms) | 471322.45 ms² (±686.53 ms) | Bimodal candidate (timeout path vs open-breaker short-circuit) | **Measured** |
 | **Circuit Breaker State** | N/A (cascading thread starvation) | Phase A (CLOSED (reset each probe)) & Phase B (OPEN (8 of 20 short-circuited)) | Downstream protected | **Measured** |
-| **Fallback Observability** | None (returned 200 after ~3.5 s, breaching the 1,500 ms SLA) | `is_fallback: true`, `is_estimate: true` | Zero dropped checkouts (local fallback estimate) | **Measured** |
+| **Fallback Observability** | None (returned 200 after ~4.2 s, breaching the 1,500 ms SLA) | `is_fallback: true`, `is_estimate: true` | Zero dropped checkouts (local fallback estimate) | **Measured** |
 | **Incident MTTR (Mean Time to Recovery)** | ~45 minutes (industry manual response) | < 90 seconds (autonomous agent flow) | Design target, not measured | **Design target, not measured** |
 
 ---

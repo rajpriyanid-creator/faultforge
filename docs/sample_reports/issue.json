@@ -1,15 +1,16 @@
 {
-  "incident_id": "inc-afee631e",
-  "title": "Incident inc-afee631e: Checkout SLA budget breach under downstream delay",
+  "incident_id": "inc-42",
+  "issue_iid": 42,
+  "title": "Incident inc-42: Shipping dependency SLA budget breach",
   "severity": "high",
-  "commit_sha": "275c598ce2d128aa1107bc9b28c36c9572065ddb",
-  "pipeline_url": "N/A",
-  "created_at": 1792690881.7587059,
+  "commit_sha": "b063a91b95e8b9e7e8f6492a8cbb3c1211f1bd81",
+  "pipeline_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2977803091",
+  "created_at": 1792687599.0,
   "status": "OPEN",
   "labels": [
     "incident",
     "chaos-breach",
     "faultforge"
   ],
-  "web_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/issues/29"
+  "web_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/work_items/42"
 }

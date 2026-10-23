@@ -2,7 +2,7 @@
   "stage": "create",
   "job_name": "create:duo_remediation_mr",
   "status": "SUCCESS",
-  "commit_sha": "b063a91b95e8b9e7e8f6492a8cbb3c1211f1bd81",
+  "commit_sha": "e5a9752ba63115d6744a7996f0565272b2804762",
   "pipeline_id": "local-run",
   "approval_required": false,
   "artifacts_declared": [
@@ -27,8 +27,8 @@
     },
     {
       "path": "reports/incident_dossier.json",
-      "size_bytes": 1396,
-      "sha256": "2cfde1004e24d252f611973b88962b7865d5a63de1833da8a70f07dc9a59f5c1"
+      "size_bytes": 1594,
+      "sha256": "a264687ee0c7e0fe71aba9ac80c1039d9df474161e690c2402174fe9c6b77879"
     },
     {
       "path": "reports/diagnosis_report.json",
@@ -42,8 +42,8 @@
     },
     {
       "path": "reports/duo_evidence.json",
-      "size_bytes": 735,
-      "sha256": "6b2fef142fa02e811b803b1754a84e0494578af85fe97e59cc4397160e98be8a"
+      "size_bytes": 814,
+      "sha256": "6e9dffdd76a484b40de9dad7ea8cfc48b2a95efe920ee8b7d0a7e712bd398087"
     }
   ],
   "timestamp": 1792690914.6170237,

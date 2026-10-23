@@ -47,14 +47,14 @@ FaultForge closes the loop between chaos engineering, AI-assisted diagnosis, and
 
 ### Evidence Receipt Status & Verified Duo Execution
 The final signed cryptographic Evidence Receipt records status `CONTAINED_NEEDS_REVIEW`.
-- **GitLab Duo Flow Execution:** **ESTABLISHED & VERIFIED** live on GitLab SaaS ([Session 9909079](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/automate/agent-sessions/9909079), [MR !3](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/merge_requests/3), Commit `f8aa9d98`, `candidate_source: duo-authored (MR !3)`).
+- **GitLab Duo Flow Execution:** **ESTABLISHED & VERIFIED** live on GitLab SaaS ([Session 9909079](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/automate/agent-sessions/9909079), [MR !3](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/merge_requests/3), Commit `f8aa9d98`, `candidate_source: commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token`).
 - **Candidate Cloud Run Deployment in Public CI:** Stage `release` is recorded as `SKIPPED_NO_GCP_CREDENTIALS` on GitLab SaaS runners to keep GCP Service Account keys out of public repositories.
 - **Live Canary Traffic Split Verification:** Probed endpoint confirms production revision `faultforge-checkout-00002-kpl` is healthy (HTTP 200), while traffic split validation was unverified (`UNVERIFIED_NO_GCP_AUTH`).
 
 FaultForge proves that honest status reporting beats impressive simulated green checkmarks.
 
 ### Duo Execution & Provenance Tracking
-GitLab Duo custom flow execution on GitLab SaaS runners is tracked with complete provenance. When the flow runs, `duo_run.json` confirms `executed: true` with session URL, and `duo_evidence.json` confirms `candidate_source: duo-authored (MR !3)`. In offline local evaluation without tokens, the pipeline falls back cleanly and reports `reference-fix (not Duo-authored)`.
+GitLab Duo custom flow execution on GitLab SaaS runners is tracked with complete provenance. When the flow runs, `duo_run.json` confirms `executed: true` with session URL, and `duo_evidence.json` confirms `candidate_source: commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token`. In offline local evaluation without tokens, the pipeline falls back cleanly and reports `reference-fix (not Duo-authored)`.
 
 ### Limitations & Honest Boundaries
 - Evaluated on a focused FastAPI checkout microservice with an external shipping carrier dependency.
