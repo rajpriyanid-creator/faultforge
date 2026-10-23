@@ -161,25 +161,45 @@ def query_duo_evidence(
                     evidence["title"] = title
                     evidence["created_at"] = mr.get("created_at")
                     print(f"[+] Found Duo-related Merge Request !{mr.get('iid')}: {mr.get('web_url')} (Branch: {source_branch})")
+
+                    # Check MR commits to extract Duo service account commit author
+                    try:
+                        commits_url = f"{api_url}/projects/{project_id}/merge_requests/{mr.get('iid')}/commits"
+                        r_comm = requests.get(commits_url, headers=headers, timeout=(3.0, 10.0))
+                        if r_comm.status_code == 200:
+                            for c in r_comm.json():
+                                c_author = str(c.get("author_name") or "")
+                                c_email = str(c.get("author_email") or "")
+                                if "service_account" in c_email.lower() or "healer" in c_author.lower():
+                                    evidence["commit_author"] = c_author
+                                    evidence["commit_author_email"] = c_email
+                                    break
+                    except Exception as e:
+                        print(f"[!] Warning querying MR commits: {e}")
+
                     break
         else:
             print(f"[!] Warning: GitLab MR query returned HTTP {r.status_code}")
     except Exception as exc:
         print(f"[!] Error querying GitLab MR API: {exc}")
 
-    # 2. Query Flow Runs if supported
-    try:
-        runs_endpoint = f"{api_url}/projects/{project_id}/duo_agent_platform/flows/faultforge_resilience_flow/runs"
-        r_runs = requests.get(runs_endpoint, headers=headers, timeout=(3.0, 10.0))
-        if r_runs.status_code == 200:
-            runs = r_runs.json()
-            if isinstance(runs, list) and len(runs) > 0:
-                latest_run = runs[0]
-                evidence["run_url"] = latest_run.get("web_url")
-                evidence["run_id"] = latest_run.get("id")
-                evidence["found"] = True
-    except Exception:
-        pass
+    # 2. Query Flow Runs if supported, or read FF_FLOW_RUN_URL
+    flow_env = os.getenv("FF_FLOW_RUN_URL")
+    if flow_env and "automate/agent-sessions" in flow_env:
+        evidence["run_url"] = flow_env
+        evidence["run_id"] = flow_env.rstrip("/").split("/")[-1]
+    else:
+        try:
+            runs_endpoint = f"{api_url}/projects/{project_id}/duo_agent_platform/flows/faultforge_resilience_flow/runs"
+            r_runs = requests.get(runs_endpoint, headers=headers, timeout=(3.0, 10.0))
+            if r_runs.status_code == 200:
+                runs = r_runs.json()
+                if isinstance(runs, list) and len(runs) > 0:
+                    latest_run = runs[0]
+                    evidence["run_url"] = latest_run.get("web_url")
+                    evidence["run_id"] = latest_run.get("id")
+        except Exception:
+            pass
 
     evidence["candidate_source"] = determine_candidate_source(evidence)
     os.makedirs(os.path.dirname(output_path), exist_ok=True)

@@ -163,3 +163,23 @@ def test_audit_cloud_run_claims_clean_on_repo():
     from scripts.truth_audit import audit_cloud_run_claims
     violations = audit_cloud_run_claims()
     assert len(violations) == 0, f"Expected clean cloud run claims on repo, got: {violations}"
+
+def test_audit_report_consistency_fails_when_duo_run_true_and_receipt_false(tmp_path, monkeypatch):
+    import hashlib
+    from scripts.truth_audit import audit_report_consistency
+    monkeypatch.chdir(tmp_path)
+    reports_dir = tmp_path / "reports"
+    reports_dir.mkdir(parents=True, exist_ok=True)
+
+    (reports_dir / "duo_run.json").write_text(json.dumps({"executed": True}), encoding="utf-8")
+    receipt_data = {
+        "final_status": "CONTAINED_NEEDS_REVIEW",
+        "duo_execution": {"executed": False}
+    }
+    receipt_bytes = json.dumps(receipt_data, sort_keys=True).encode("utf-8")
+    receipt_data["tamper_evident_seal_sha256"] = hashlib.sha256(receipt_bytes).hexdigest()
+    (reports_dir / "evidence_receipt.json").write_text(json.dumps(receipt_data), encoding="utf-8")
+
+    violations = audit_report_consistency()
+    assert any("duo_run.json records executed: true, but evidence_receipt.json records duo_execution.executed: false" in v for v in violations)
+

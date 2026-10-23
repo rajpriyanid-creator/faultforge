@@ -256,6 +256,19 @@ def audit_report_consistency(final_mode: bool = False) -> List[str]:
             duo_exec = receipt.get("duo_execution", {})
             if duo_exec.get("executed") is False and receipt.get("final_status") == "RECOVERED_AND_VERIFIED":
                 violations.append("Evidence receipt claims RECOVERED_AND_VERIFIED despite unexecuted Duo flow (executed: false)")
+
+            # Enforce consistency between duo_run.json and evidence_receipt.json
+            duo_run_file = os.path.join(reports_dir, "duo_run.json")
+            if not os.path.exists(duo_run_file):
+                duo_run_file = os.path.join(sample_dir, "duo_run.json")
+            if os.path.exists(duo_run_file):
+                try:
+                    with open(duo_run_file, "r", encoding="utf-8") as drf:
+                        duo_run_data = json.load(drf)
+                    if duo_run_data.get("executed") is True and duo_exec.get("executed") is False:
+                        violations.append("duo_run.json records executed: true, but evidence_receipt.json records duo_execution.executed: false")
+                except Exception:
+                    pass
         except Exception as exc:
             violations.append(f"Could not parse evidence_receipt.json: {exc}")
 
