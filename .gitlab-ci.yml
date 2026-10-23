@@ -317,11 +317,20 @@ release:cloudrun_candidate_deploy:
           --tag candidate \
           --set-env-vars ENVIRONMENT=staging
         
-        CANDIDATE_URL=$(gcloud run services describe "$SERVICE_NAME" --region "$GCP_REGION" --format="value(status.traffic[?tag=='candidate'].url)")
-        REVISION_NAME=$(gcloud run services describe "$SERVICE_NAME" --region "$GCP_REGION" --format="value(status.traffic[?tag=='candidate'].revisionName)")
+        gcloud run services describe "$SERVICE_NAME" --region "$GCP_REGION" --format=json > /tmp/svc_desc.json
+        CANDIDATE_URL=$(python3 -c "import json; d=json.load(open('/tmp/svc_desc.json')).get('status',{}); t=d.get('traffic',[]); print(next((x.get('url','') for x in t if x.get('tag')=='candidate'), ''))")
+        REVISION_NAME=$(python3 -c "import json; d=json.load(open('/tmp/svc_desc.json')).get('status',{}); t=d.get('traffic',[]); print(next((x.get('revisionName','') for x in t if x.get('tag')=='candidate'), d.get('latestReadyRevisionName', d.get('latestCreatedRevisionName',''))))")
         
+        if [ -z "$CANDIDATE_URL" ] && [ -n "$REVISION_NAME" ]; then
+          BASE_URL=$(python3 -c "import json; print(json.load(open('/tmp/svc_desc.json')).get('status',{}).get('url',''))")
+          if [ -n "$BASE_URL" ]; then
+            CANDIDATE_URL=$(echo "$BASE_URL" | sed 's|https://|https://candidate---|')
+          fi
+        fi
+
         if [ -z "$CANDIDATE_URL" ] || [ -z "$REVISION_NAME" ]; then
           echo "[-] Error: CANDIDATE_URL or REVISION_NAME is empty after gcloud run services describe. Failing deploy."
+          cat /tmp/svc_desc.json
           exit 1
         fi
         
