@@ -159,6 +159,13 @@ def diagnose(
     dossier_path: str = "reports/incident_dossier.json",
     output_path: str = "reports/diagnosis_report.json"
 ) -> Dict[str, Any]:
+    # Query dependency graph via Orbit Client (with honest fallback to AST + Git)
+    try:
+        from app.clients.orbit_client import orbit_client
+        graph_result = orbit_client.query_graph(target_component="app/clients/shipping_client.py")
+    except Exception as exc:
+        graph_result = {"resolution_path": "fallback_ast_git", "error": str(exc)}
+
     ast_result = inspect_code_ast()
     bisect_result = run_git_bisect_analysis()
 
@@ -177,6 +184,8 @@ def diagnose(
         "status": diagnosis_status,
         "confidence": confidence,
         "target_component": "app/clients/shipping_client.py",
+        "graph_resolution_path": graph_result.get("resolution_path", "fallback_ast_git"),
+        "graph_analysis": graph_result,
         "ast_findings": ast_result["findings"],
         "bisect_result": bisect_result,
         "recommendation": [

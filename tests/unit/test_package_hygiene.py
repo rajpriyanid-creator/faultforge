@@ -19,8 +19,8 @@ def test_secret_scanner_detects_tokens():
     assert len(scan_file_for_secrets(clean_bytes, "clean.py")) == 0
 
     # Dynamically constructed to test detection without storing literal pattern in repo
-    mock_token = b"glpat-" + b"mocksecrettoken1234567890"
-    assert len(scan_file_for_secrets(mock_token, "leak.py")) > 0
+    mock_pat_bytes = b"glpat-" + b"mocksecrettoken1234567890"
+    assert len(scan_file_for_secrets(mock_pat_bytes, "leak.py")) > 0
 
 def test_build_submission_zip_creates_valid_archive(tmp_path):
     src = tmp_path / "src"

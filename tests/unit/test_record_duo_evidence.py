@@ -53,7 +53,7 @@ def test_determine_candidate_source_not_found():
 
 def test_record_duo_evidence_no_credentials(tmp_path):
     output_file = str(tmp_path / "duo_evidence.json")
-    evidence = query_duo_evidence(token=None, project_id=None, output_path=output_file)
+    evidence = query_duo_evidence(auth_token_str=None, project_id=None, output_path=output_file)
     assert os.path.exists(output_file)
     assert evidence["found"] is False
     assert "Missing" in evidence["reason"]
@@ -63,7 +63,7 @@ def test_record_duo_evidence_from_ci_env(tmp_path, monkeypatch):
     monkeypatch.setenv("CI_MERGE_REQUEST_IID", "3")
     monkeypatch.setenv("CI_COMMIT_REF_NAME", "fix/resilience-shipping-timeout")
     output_file = str(tmp_path / "duo_evidence.json")
-    evidence = query_duo_evidence(token=None, project_id=None, from_ci_env=True, output_path=output_file)
+    evidence = query_duo_evidence(auth_token_str=None, project_id=None, from_ci_env=True, output_path=output_file)
     assert evidence["found"] is True
     assert evidence["mr_iid"] == 3
     assert evidence["candidate_source"] == "commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token"
@@ -71,7 +71,7 @@ def test_record_duo_evidence_from_ci_env(tmp_path, monkeypatch):
 def test_record_duo_evidence_require_flag_fails_when_missing(tmp_path):
     output_file = str(tmp_path / "duo_evidence.json")
     with pytest.raises(SystemExit):
-        query_duo_evidence(token=None, project_id=None, require=True, output_path=output_file)
+        query_duo_evidence(auth_token_str=None, project_id=None, require=True, output_path=output_file)
 
 def test_record_duo_evidence_parses_matching_mr(tmp_path, monkeypatch):
     output_file = str(tmp_path / "duo_evidence.json")
@@ -101,7 +101,7 @@ def test_record_duo_evidence_parses_matching_mr(tmp_path, monkeypatch):
     monkeypatch.setattr("requests.get", mock_get)
 
     evidence = query_duo_evidence(
-        token="test-token",
+        auth_token_str="test-token",
         project_id="12345",
         output_path=output_file,
         bot_user="ai-faultforge_resilience_flow"

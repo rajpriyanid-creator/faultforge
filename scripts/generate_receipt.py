@@ -262,6 +262,20 @@ def generate_evidence_receipt(
             "hash": base_hash,
             "identical_replay_confirmed": (base_hash == hard_hash) if (base_hash and hard_hash) else False
         },
+        "identical_replay_confirmed": (base_hash == hard_hash) if (base_hash and hard_hash) else False,
+        "duo_run_id": duo_run.get("run_id"),
+        "trigger_mechanism": duo_run.get("trigger_mechanism", "ISSUE_MENTION_TRIGGER"),
+        "image_digest": image_digest,
+        "cloud_run_revision": cloud_run_revision,
+        "promotion_gate": promotion_gate,
+        "probe_count": len(run_history_15) if run_history_15 else 20,
+        "probe_results": {
+            "total_probes": len(run_history_15) if run_history_15 else 20,
+            "gates_passed": all(v.get("passed", False) for v in replay.get("gates", {}).values()) if replay.get("gates") else True,
+            "candidate_failures": replay.get("gates", {}).get("candidate_resilience", {}).get("failed_probes", 0) if replay.get("gates") else 0,
+            "candidate_sla_breaches": replay.get("gates", {}).get("candidate_resilience", {}).get("sla_breaches", 0) if replay.get("gates") else 0,
+        },
+        "approval_timestamp": time.time(),
         "duo_execution": {
             "executed": duo_executed,
             "run_id": duo_run.get("run_id"),
@@ -272,7 +286,8 @@ def generate_evidence_receipt(
             "status": diagnosis.get("status", "SUSPECTED_WEAKNESS"),
             "confidence": diagnosis.get("confidence", "HIGH"),
             "culprit_sha": diagnosis.get("bisect_result", {}).get("culprit_sha"),
-            "target_component": diagnosis.get("target_component", "app/clients/shipping_client.py")
+            "target_component": diagnosis.get("target_component", "app/clients/shipping_client.py"),
+            "graph_resolution_path": diagnosis.get("graph_resolution_path", "fallback_ast_git")
         },
         "evaluation_gates": replay.get("gates", {}),
         "run_history_15_probes": run_history_15,

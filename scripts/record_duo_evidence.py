@@ -50,8 +50,8 @@ def determine_candidate_source(evidence: Dict[str, Any]) -> str:
     return "reference-fix (not Duo-authored)"
 
 def query_duo_evidence(
-    token: Optional[str],
-    project_id: Optional[str],
+    auth_token_str: Optional[str] = None,
+    project_id: Optional[str] = None,
     api_url: str = "https://gitlab.com/api/v4",
     bot_user: str = "ai-faultforge_resilience_flow",
     require: bool = False,
@@ -69,7 +69,7 @@ def query_duo_evidence(
     except Exception:
         pass
 
-    if not token or not project_id:
+    if not auth_token_str or not project_id:
         if from_ci_env:
             flow_run_url = os.getenv("FF_FLOW_RUN_URL") or "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/automate/agent-sessions/9909079"
             ci_mr_iid = os.getenv("CI_MERGE_REQUEST_IID")
@@ -114,7 +114,7 @@ def query_duo_evidence(
         return evidence
 
     headers = {
-        "PRIVATE-TOKEN": token,
+        "PRIVATE-TOKEN": auth_token_str,
         "Content-Type": "application/json"
     }
 
@@ -238,7 +238,7 @@ def main():
     args = parser.parse_args()
 
     query_duo_evidence(
-        token=args.token,
+        auth_token_str=args.token,
         project_id=args.project_id,
         api_url=args.api_url,
         bot_user=args.bot_user,

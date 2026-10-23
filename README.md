@@ -23,7 +23,46 @@
 
 ---
 
+## 🎥 Demo Video (Under 3 Minutes)
+
+> [!WARNING]
+> **P0 STOP-GUARD FOR SUBMISSION:** A sub-3 minute walkthrough video is a mandatory requirement for the GitLab Transcend Hackathon.
+> - **Video URL:** `[HUMAN ACTION REQUIRED — Record and paste YouTube URL here prior to submission]`
+> - **Production Script & Storyboard:** [`docs/demo-script.md`](docs/demo-script.md) (timed to 2 minutes 50 seconds covering the closed-loop break → heal → prove → approve → rollback lifecycle).
+
+---
+
+## ⏱️ How to Verify in 60 Seconds (Live Gate Probes)
+
+Evaluators and judges can run these 5 curl commands to verify live production health, cryptographic evidence, and 9-stage ledger parity in under 60 seconds:
+
+```bash
+# 1. Health & Revision Probe (Production Revision 00002-kpl)
+curl -sf https://faultforge-checkout-136942862703.us-central1.run.app/health
+# Expected: {"status":"healthy","service":"checkout-service","revision":"faultforge-checkout-00002-kpl",...}
+
+# 2. Cryptographic Evidence Receipt (Sealed with SHA-256)
+curl -sf https://faultforge-checkout-136942862703.us-central1.run.app/api/v1/evidence
+# Expected: {"final_status":"RECOVERED_AND_VERIFIED","fault_profile":{"hash":"644a89784316",...},"identical_replay_confirmed":true,"duo_execution":{"status":"CONFIRMED",...},...}
+
+# 3. 9-Stage Cryptographic Lifecycle Ledger
+curl -sf https://faultforge-checkout-136942862703.us-central1.run.app/api/v1/ledger
+# Expected: {"project":"faultforge/checkout-service","stages":{"plan":...,"create":...,"configure":...,"verify":...,"secure":...,"package":...,"release":...,"monitor":...,"govern":...}} (all 9 stages)
+
+# 4. Live Prometheus-Style Resilience Telemetry
+curl -sf https://faultforge-checkout-136942862703.us-central1.run.app/metrics
+# Expected: {"service":"checkout-service","circuit_breaker":{"state":"CLOSED",...},"resilience_metrics":{"total_requests":...,"p95_latency_ms":...}}
+
+# 5. Public CI/CD Pipeline Verification (Unauthenticated HTTP 200)
+curl -sI https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2982183259
+# Expected: HTTP/2 200 (13/13 passing jobs publicly visible without GitLab login)
+```
+
+---
+
 ## 1. Executive Summary
+
+Most chaos tools break things and stop. FaultForge breaks it, heals it, and proves the fix under the same fault.
 
 Most CI pipelines only verify that unit tests pass in isolation. Because unit tests routinely mock external HTTP dependencies, services fail catastrophically in production when a third-party dependency suffers high latency, connection resets, or cascading thread starvation. AI coding assistants can suggest code changes, but **cannot prove the fix actually withstands real network-level degradation**.
 
@@ -101,7 +140,7 @@ FaultForge implements testable programmatic routing based on diff scope, touched
 ```mermaid
 flowchart TD
     subgraph Swimlane1["1. Chaos Engine (Toxiproxy)"]
-        C1["Inject 3,500ms Delay<br/>(Hash: 644a89784316)"] --> C2["Prove Baseline Breach<br/>(4,212ms > 1,500ms SLA)"]
+        C1["Inject 3,500ms Delay<br/>(Hash: 644a89784316)"] --> C2["Prove Baseline Breach<br/>(3,558.46ms > 1,500ms SLA)"]
         C2 --> C3["Exact Fault Replay<br/>(20 Probes: Phase A & B)"]
     end
 
@@ -280,8 +319,33 @@ In strict compliance with the **Never Fabricate Evidence** and **Claim Only What
 ## 10. Future Orbit Enhancement & Observability Architecture
 
 GitLab's **Orbit** agent platform tool provides next-generation autonomous incident investigation. Orbit is currently in private beta / behind a feature flag for hackathon namespaces:
-- **Future Orbit Integration:** FaultForge is architected to stream live OpenTelemetry spans and Toxiproxy fault events directly into Orbit agent sessions, allowing Orbit to autonomously correlate p95 latency spikes with downstream network topologies.
-- **Battle-Tested Platform Fallback:** Because Orbit is not yet globally enabled, FaultForge implements an enterprise-ready fallback path using the GitLab Issues, Notes, Merge Requests, and REST Flows APIs (`scripts/trigger_duo_flow.py`). This guarantees zero dependency on feature-flagged platform capabilities while remaining forward-compatible.
+- **Future Orbit Integration:** FaultForge is architected with a runnable client stub ([`app/clients/orbit_client.py`](app/clients/orbit_client.py)) that streams telemetry and queries semantic dependency blast radius directly via Orbit Model Context Protocol (MCP) when enabled (`ENABLE_ORBIT_MCP=true`).
+- **Honest Platform Fallback:** Because Orbit is not yet globally enabled, `OrbitClient` executes an automated fallback path: deterministic AST call-site inspection + Git commit history (`resolution_path: "fallback_ast_git"`). The Diagnostician explicitly records the chosen resolution path in `reports/diagnosis_report.json` and the cryptographically sealed evidence receipt.
+
+```mermaid
+flowchart LR
+    subgraph Diagnostician["GitLab Duo Diagnostician Agent"]
+        Q["query_graph(target_component)"]
+    end
+
+    subgraph Router["app/clients/orbit_client.py"]
+        F{"ENABLE_ORBIT_MCP?<br/>(Feature Flag)"}
+    end
+
+    subgraph OrbitPath["Orbit MCP Mode (When Enabled)"]
+        O1["GitLab Duo Orbit MCP Server"] --> O2["Semantic Topology & Blast Radius"]
+    end
+
+    subgraph FallbackPath["Deterministic Local Fallback Mode (Default)"]
+        A1["AST Call-Site Inspection"] --> A2["Git Bisect Culprit (974035c)"]
+    end
+
+    Q --> F
+    F -->|true| O1
+    F -->|false / error| A1
+    O2 --> R["Evidence Receipt<br/>(graph_resolution_path: orbit_mcp)"]
+    A2 --> S["Evidence Receipt<br/>(graph_resolution_path: fallback_ast_git)"]
+```
 
 ---
 

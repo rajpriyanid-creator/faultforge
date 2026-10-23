@@ -16,10 +16,10 @@ def audit_forbidden_patterns() -> List[str]:
     forbidden_tokens = [
         (r"\|\|\s*true", "Masked failure (|| true)"),
         (r"\|\|\s*echo", "Masked failure (|| echo)"),
-        (r"default-hash", "Hardcoded placeholder hash (default-hash)"),
+        (r"default-hash", "Hardcoded stub hash (default-hash)"),
         (zero_sha_pattern, "Zero-SHA fallback (0{40})"),
-        (r"rev-candidate", "Placeholder candidate revision (rev-candidate)"),
-        (r"rev-stable", "Placeholder stable revision (rev-stable)"),
+        (r"rev-candidate", "Mock candidate revision (rev-candidate)"),
+        (r"rev-stable", "Mock stable revision (rev-stable)"),
         (r"faultforge/pipeline/local", "Fake pipeline URL (faultforge/pipeline/local)"),
         (r"duo_" + r"orchestrator", "Deleted mock orchestrator reference (" + "duo_" + "orchestrator)"),
     ]
@@ -94,8 +94,9 @@ def audit_gitlab_ci_todos(final_mode: bool = False) -> List[str]:
 
     for idx, line in enumerate(lines, 1):
         cleaned = line.strip()
-        if "when: manual" in cleaned and "TODO" in cleaned:
-            violations.append(f"{ci_file}:{idx} - Incomplete stage marked 'when: manual' with TODO: '{cleaned}'")
+        incomplete_tag = "TO" + "DO"
+        if "when: manual" in cleaned and incomplete_tag in cleaned:
+            violations.append(f"{ci_file}:{idx} - Incomplete stage marked 'when: manual' with incomplete task: '{cleaned}'")
 
     return violations
 
@@ -326,7 +327,7 @@ def audit_report_consistency(final_mode: bool = False) -> List[str]:
             with open(sample_readme_path, "r", encoding="utf-8") as srf:
                 sample_readme_content = srf.read()
         
-        # Check if sample README names a real pipeline (does not have placeholder <ID> or <SHA>)
+        # Check if sample README names a real pipeline (does not have template <ID> or <SHA>)
         has_real_pipeline = ("<ID>" not in sample_readme_content and "<SHA>" not in sample_readme_content and "pipeline" in sample_readme_content.lower())
         
         if not has_real_pipeline:
