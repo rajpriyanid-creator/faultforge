@@ -30,6 +30,9 @@ def test_plan_incident_resolves_from_api_mock(tmp_path, monkeypatch):
     monkeypatch.delenv("CI_INCIDENT_ISSUE_URL", raising=False)
     monkeypatch.delenv("FF_INCIDENT_ISSUE_IID", raising=False)
     monkeypatch.delenv("CI_INCIDENT_ISSUE_IID", raising=False)
+    monkeypatch.delenv("FF_GITLAB_TOKEN", raising=False)
+    monkeypatch.delenv("GITLAB_TOKEN", raising=False)
+    monkeypatch.delenv("CI_PROJECT_ID", raising=False)
 
     class MockResponse:
         status_code = 200
@@ -45,6 +48,33 @@ def test_plan_incident_resolves_from_api_mock(tmp_path, monkeypatch):
 
     import requests
     monkeypatch.setattr(requests, "get", mock_get)
+
+    data = plan_incident(dossier_path=str(tmp_path / "nonexistent.json"), output_path=out_file)
+    assert data["issue_iid"] == 42
+    assert data["web_url"] == "https://gitlab.com/test/project/-/work_items/42"
+
+def test_plan_incident_creates_issue_mock(tmp_path, monkeypatch):
+    out_file = str(tmp_path / "issue.json")
+    monkeypatch.delenv("FF_INCIDENT_ISSUE_URL", raising=False)
+    monkeypatch.delenv("CI_INCIDENT_ISSUE_URL", raising=False)
+    monkeypatch.delenv("FF_INCIDENT_ISSUE_IID", raising=False)
+    monkeypatch.delenv("CI_INCIDENT_ISSUE_IID", raising=False)
+    monkeypatch.setenv("FF_GITLAB_TOKEN", "mock-token")
+    monkeypatch.setenv("CI_PROJECT_ID", "12345")
+
+    class MockPostResponse:
+        status_code = 201
+        def json(self):
+            return {
+                "iid": 42,
+                "web_url": "https://gitlab.com/test/project/-/work_items/42"
+            }
+
+    def mock_post(url, *args, **kwargs):
+        return MockPostResponse()
+
+    import requests
+    monkeypatch.setattr(requests, "post", mock_post)
 
     data = plan_incident(dossier_path=str(tmp_path / "nonexistent.json"), output_path=out_file)
     assert data["issue_iid"] == 42
