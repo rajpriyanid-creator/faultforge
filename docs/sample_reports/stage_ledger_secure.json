@@ -2,8 +2,8 @@
   "stage": "secure",
   "job_name": "secure:sast_and_secret_scan",
   "status": "SUCCESS",
-  "commit_sha": "34eb7ebd520feeb83706c3b853589c195cbe953f",
-  "pipeline_id": "2981969651",
+  "commit_sha": "156c9a7729e631b14cedbaef600800ae73e87e23",
+  "pipeline_id": "2982183259",
   "approval_required": false,
   "artifacts_declared": [
     "reports/bandit_security_report.json"
@@ -15,10 +15,10 @@
     {
       "path": "reports/bandit_security_report.json",
       "size_bytes": 3333,
-      "sha256": "eba8e42f5454f8c7abd9957de17720f5c521a06887d8529aa0fadf28260d9686"
+      "sha256": "a34d75c2cf4676ca3207af0455397149f79047f843035383d18664f33c53986a"
     }
   ],
-  "timestamp": 1792771417.470194,
+  "timestamp": 1792774343.2717283,
   "duo_executed": false,
   "notes": ""
 }

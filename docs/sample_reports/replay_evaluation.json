@@ -5,12 +5,12 @@
   "gates": {
     "valid_git_shas": {
       "passed": true,
-      "baseline_sha": "34eb7ebd520feeb83706c3b853589c195cbe953f",
+      "baseline_sha": "156c9a7729e631b14cedbaef600800ae73e87e23",
       "hardened_sha": "d3720143e15c85f519a7624859541d1ce997f1a0"
     },
     "distinct_revisions": {
       "passed": true,
-      "baseline_sha": "34eb7ebd",
+      "baseline_sha": "156c9a77",
       "hardened_sha": "d3720143"
     },
     "identical_profile_hash": {
@@ -26,7 +26,7 @@
     "proxy_in_request_path": {
       "passed": true,
       "fault_delay_ms": 3500,
-      "candidate_min_ms": 2.38
+      "candidate_min_ms": 2.27
     },
     "identical_payload_hash": {
       "passed": true,
@@ -67,8 +67,8 @@
       "breaker_state": "CLOSED (reset each probe)",
       "total_probes": 10,
       "sla_breaches": 0,
-      "p95_ms": 806.83,
-      "avg_ms": 805.54
+      "p95_ms": 806.79,
+      "avg_ms": 805.55
     },
     "candidate_breaker_short_circuit": {
       "passed": true,
@@ -76,14 +76,14 @@
       "breaker_state": "OPEN (N of 10 short-circuited)",
       "total_probes": 10,
       "short_circuited_probes": 8,
-      "p95_ms": 806.34,
-      "avg_ms": 163.19
+      "p95_ms": 805.36,
+      "avg_ms": 162.99
     },
     "latency_budget": {
       "passed": true,
       "budget_ms": 1500,
-      "candidate_p95_ms": 806.83,
-      "candidate_max_ms": 806.83
+      "candidate_p95_ms": 806.79,
+      "candidate_max_ms": 806.79
     },
     "fallback_marked_estimated": {
       "passed": true,
@@ -96,39 +96,39 @@
     }
   },
   "raw_metrics": {
-    "baseline_avg_ms": 3478.57,
-    "baseline_p50_ms": 3414.22,
-    "baseline_p95_ms": 3749.62,
-    "baseline_max_ms": 3749.62,
-    "hardened_avg_ms": 484.36,
-    "hardened_p50_ms": 805.08,
-    "hardened_p95_ms": 806.83,
-    "hardened_max_ms": 806.83
+    "baseline_avg_ms": 3558.46,
+    "baseline_p50_ms": 3540.65,
+    "baseline_p95_ms": 3738.16,
+    "baseline_max_ms": 3738.16,
+    "hardened_avg_ms": 484.27,
+    "hardened_p50_ms": 804.86,
+    "hardened_p95_ms": 806.79,
+    "hardened_max_ms": 806.79
   },
   "latency_reduction": {
     "mean_basis": {
       "metric": "mean_candidate_vs_mean_baseline",
-      "baseline_ms": 3478.57,
-      "candidate_ms": 484.36,
-      "percent": 86.1
+      "baseline_ms": 3558.46,
+      "candidate_ms": 484.27,
+      "percent": 86.4
     },
     "p50_basis": {
       "metric": "p50_candidate_vs_p50_baseline",
-      "baseline_ms": 3414.22,
-      "candidate_ms": 805.08,
-      "percent": 76.4
+      "baseline_ms": 3540.65,
+      "candidate_ms": 804.86,
+      "percent": 77.3
     },
     "p95_basis": {
       "metric": "p95_candidate_vs_p95_baseline",
-      "baseline_ms": 3749.62,
-      "candidate_ms": 806.83,
-      "percent": 78.5
+      "baseline_ms": 3738.16,
+      "candidate_ms": 806.79,
+      "percent": 78.4
     },
     "max_basis": {
       "metric": "max_candidate_vs_max_baseline",
-      "baseline_ms": 3749.62,
-      "candidate_ms": 806.83,
-      "percent": 78.5
+      "baseline_ms": 3738.16,
+      "candidate_ms": 806.79,
+      "percent": 78.4
     }
   }
 }

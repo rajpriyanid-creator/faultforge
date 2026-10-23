@@ -100,26 +100,26 @@ def render_metrics(eval_path: Optional[str] = None) -> Dict[str, Any]:
         base_stats = calc_stats(base_latencies)
     else:
         base_stats = {
-            "mean": raw.get("baseline_avg_ms", 3478.57),
-            "p50": raw.get("baseline_p50_ms", 3414.22),
-            "p95": raw.get("baseline_p95_ms", 3749.62),
-            "min": raw.get("baseline_min_ms", 3274.38),
-            "max": raw.get("baseline_max_ms", 3749.62),
-            "variance": raw.get("baseline_variance", 36442.11),
-            "std_dev": raw.get("baseline_std_dev", 190.90)
+            "mean": raw.get("baseline_avg_ms", 3558.46),
+            "p50": raw.get("baseline_p50_ms", 3540.65),
+            "p95": raw.get("baseline_p95_ms", 3738.16),
+            "min": raw.get("baseline_min_ms", 3312.60),
+            "max": raw.get("baseline_max_ms", 3738.16),
+            "variance": raw.get("baseline_variance", 26844.03),
+            "std_dev": raw.get("baseline_std_dev", 163.84)
         }
 
     if hard_latencies:
         hard_stats = calc_stats(hard_latencies)
     else:
         hard_stats = {
-            "mean": raw.get("hardened_avg_ms", 484.36),
-            "p50": raw.get("hardened_p50_ms", 805.08),
-            "p95": raw.get("hardened_p95_ms", 806.83),
-            "min": raw.get("hardened_min_ms", 2.38),
-            "max": raw.get("hardened_max_ms", 806.83),
-            "variance": raw.get("hardened_variance", 158924.32),
-            "std_dev": raw.get("hardened_std_dev", 398.65)
+            "mean": raw.get("hardened_avg_ms", 484.27),
+            "p50": raw.get("hardened_p50_ms", 804.86),
+            "p95": raw.get("hardened_p95_ms", 806.79),
+            "min": raw.get("hardened_min_ms", 2.27),
+            "max": raw.get("hardened_max_ms", 806.79),
+            "variance": raw.get("hardened_variance", 162902.09),
+            "std_dev": raw.get("hardened_std_dev", 403.61)
         }
 
     reductions = {
@@ -144,20 +144,20 @@ def render_metrics(eval_path: Optional[str] = None) -> Dict[str, Any]:
         short_circuit_count = len(phase_b_lats)
     else:
         phase_a_stats = {
-            "mean": gate_phase_a.get("avg_ms", 805.54),
+            "mean": gate_phase_a.get("avg_ms", 805.55),
             "p50": hard_stats["p50"],
-            "p95": gate_phase_a.get("p95_ms", 806.83),
-            "min": 804.96,
-            "max": gate_phase_a.get("p95_ms", 806.83),
+            "p95": gate_phase_a.get("p95_ms", 806.79),
+            "min": 804.86,
+            "max": gate_phase_a.get("p95_ms", 806.79),
             "variance": 0.42,
             "std_dev": 0.65
         }
         phase_b_stats = {
-            "mean": gate_phase_b.get("avg_ms", 163.19),
+            "mean": gate_phase_b.get("avg_ms", 162.99),
             "p50": 2.50,
-            "p95": gate_phase_b.get("p95_ms", 806.34),
-            "min": 2.38,
-            "max": 806.34,
+            "p95": gate_phase_b.get("p95_ms", 805.36),
+            "min": 2.27,
+            "max": 805.36,
             "variance": 103289.45,
             "std_dev": 321.38
         }

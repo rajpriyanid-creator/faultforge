@@ -47,7 +47,7 @@ flowchart LR
 3. **Chaos Hardener Component:**
    - Authors or updates the deterministic regression test in `tests/chaos/test_resilience.py`.
    - Executes the exact-fault replay under the identical Toxiproxy canonical hash (`644a89784316`).
-   - Verifies candidate passes all replay probes (20 probes: 10 Phase A + 10 Phase B, at least 10 consecutive passes required), achieves 0 SLA breaches, and reduces latency by >60% (-86.1% mean reduction, -76.4% P50).
+   - Verifies candidate passes all replay probes (20 probes: 10 Phase A + 10 Phase B, at least 10 consecutive passes required), achieves 0 SLA breaches, and reduces latency by >60% (-86.4% mean reduction, -77.3% P50).
    - Creates a Merge Request targeting `main` with detailed before/after telemetry and logs.
    - Triggers Google Cloud Run candidate deployment to staging and compiles the cryptographic Evidence Receipt (`reports/evidence_receipt.json`).
 

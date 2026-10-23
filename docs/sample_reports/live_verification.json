@@ -1,5 +1,5 @@
 {
-  "timestamp": 1792771729.4205186,
+  "timestamp": 1792774521.8979776,
   "service_name": "faultforge-checkout",
   "region": "us-central1",
   "production_url": "https://faultforge-checkout-tiottsrikq-uc.a.run.app",
@@ -14,36 +14,12 @@
     "status": "VERIFIED",
     "traffic": [
       {
-        "percent": 49,
+        "percent": 90,
         "revisionName": "faultforge-checkout-00002-kpl"
       },
       {
-        "percent": 6,
-        "revisionName": "faultforge-checkout-00010-baz"
-      },
-      {
-        "percent": 5,
-        "revisionName": "faultforge-checkout-00012-xoc"
-      },
-      {
-        "percent": 6,
-        "revisionName": "faultforge-checkout-00014-vey"
-      },
-      {
-        "percent": 7,
-        "revisionName": "faultforge-checkout-00016-sav"
-      },
-      {
-        "percent": 8,
-        "revisionName": "faultforge-checkout-00018-tox"
-      },
-      {
-        "percent": 9,
-        "revisionName": "faultforge-checkout-00020-woy"
-      },
-      {
         "percent": 10,
-        "revisionName": "faultforge-checkout-00022-dej",
+        "revisionName": "faultforge-checkout-00026-sam",
         "tag": "candidate",
         "url": "https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app"
       }
@@ -52,7 +28,7 @@
     "production_percent": 90,
     "candidate_tag": "candidate",
     "candidate_url": "https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app",
-    "candidate_revision": "faultforge-checkout-00022-dej",
-    "production_revision": "faultforge-checkout-00020-woy"
+    "candidate_revision": "faultforge-checkout-00026-sam",
+    "production_revision": "faultforge-checkout-00002-kpl"
   }
 }

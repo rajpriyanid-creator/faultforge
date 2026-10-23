@@ -2,15 +2,15 @@
   "incident_id": "inc-42",
   "title": "Incident inc-42: Shipping dependency SLA budget breach",
   "severity": "high",
-  "commit_sha": "34eb7ebd520feeb83706c3b853589c195cbe953f",
-  "pipeline_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2981969651",
-  "created_at": 1792771243.4571438,
+  "commit_sha": "156c9a7729e631b14cedbaef600800ae73e87e23",
+  "pipeline_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2982183259",
+  "created_at": 1792774170.7328477,
   "status": "OPEN",
   "labels": [
     "incident",
     "chaos-breach",
     "faultforge"
   ],
-  "issue_iid": 48,
-  "web_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/issues/48"
+  "issue_iid": 50,
+  "web_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/issues/50"
 }

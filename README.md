@@ -30,12 +30,12 @@ Most CI pipelines only verify that unit tests pass in isolation. Because unit te
 **FaultForge** connects deterministic chaos engineering, AI-assisted diagnosis via **GitLab Duo Agent Platform**, automated resilience healing, and empirical proof into a closed-loop platform engineering workflow:
 
 1. **Inject Controlled Chaos:** Inject a deterministic network delay (3500ms ± 250ms jitter) into an isolated downstream shipping dependency via Toxiproxy.
-2. **Detect & Collect Evidence:** Record SLA budget breaches (>1500ms budget, observed baseline avg 3478.57ms, p95 3749.62ms, 5/5 breaches), capture sanitized logs, and compile a structured Incident Dossier.
+2. **Detect & Collect Evidence:** Record SLA budget breaches (>1500ms budget, observed baseline avg 3558.46ms, p95 3738.16ms, 5/5 breaches), capture sanitized logs, and compile a structured Incident Dossier.
 3. **Deterministic Diagnosis & Bisect:** Execute AST call-site inspection and automated `git bisect` to pinpoint the exact regressing commit (`974035c6e45e7c177452df260a155b6508b828e9`) where timeouts and circuit breakers were stripped.
 4. **GitLab Duo Agent Platform Remediation:** Trigger a custom GitLab Duo flow (`flows/faultforge-flow.yaml`) whose Diagnostician, Resilience Healer, and Chaos Hardener synthesize a minimal scoped fix: a bounded 0.8s timeout, circuit breaker (3 failures, 10s cooldown), and deterministic fallback rate. The candidate resilience fix is implemented in commit [`f8aa9d98`](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/commit/f8aa9d98b8617b51c15b5fa6ceda39eb43762730) on branch `fix/resilience-shipping-timeout` (authored by the Duo service account via session 9909079; opened as Merge Request [!3](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/merge_requests/3), unmerged). Note that `main` retains the unpatched regression version of `app/clients/shipping_client.py`.
 5. **Replay Identical Fault:** Re-execute the **identical Toxiproxy fault profile** (`644a89784316`) against the candidate release across 20 probe iterations (10 Phase A timeout-only + 10 Phase B breaker short-circuit).
-6. **Empirical Proof:** Confirm zero SLA budget breaches (0/20 breaches), -86.1% mean latency reduction (3478.57ms down to 484.36ms, candidate p50 805.08ms, p95 806.83ms), and observable fallback responses (`is_fallback: true`, `is_estimate: true`).
-7. **Supervised Autonomy Gate:** Enforce risk-based governance, deploy candidate container to Google Cloud Run staging with 10% canary routing (revision `faultforge-checkout-00022-dej`), and require human review before live production promotion, with automated instant rollback.
+6. **Empirical Proof:** Confirm zero SLA budget breaches (0/20 breaches), -86.4% mean latency reduction (3558.46ms down to 484.27ms, candidate p50 804.86ms, p95 806.79ms), and observable fallback responses (`is_fallback: true`, `is_estimate: true`).
+7. **Supervised Autonomy Gate:** Enforce risk-based governance, deploy candidate container to Google Cloud Run staging with 10% canary routing (revision `faultforge-checkout-00026-sam`), and require human review before live production promotion, with automated instant rollback.
 
 > **The Differentiator:** It is not "AI says it fixed the app." **It is the before/after empirical proof under the exact same controlled failure condition.**
 
@@ -173,7 +173,7 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8090
 ```bash
 # Step 1: Demonstrate Baseline Vulnerability Under Chaos (5 probes under 3500ms delay)
 python scripts/run_fault.py --label baseline --output reports/fault_run_baseline.json
-# Empirical Result: 5/5 probes breach SLA budget (>1500ms budget, avg 3478.57ms, p95 3749.62ms). Status: FAIL.
+# Empirical Result: 5/5 probes breach SLA budget (>1500ms budget, avg 3558.46ms, p95 3738.16ms). Status: FAIL.
 
 # Step 2: Ingest Evidence & Bisect Culprit Commit
 python scripts/collect_evidence.py
@@ -188,7 +188,7 @@ python scripts/trigger_duo_flow.py --mode manual
 # To run candidate probes against the patched code, checkout the candidate branch: git checkout fix/resilience-shipping-timeout
 python scripts/run_fault.py --label candidate --output reports/fault_run_candidate.json
 python scripts/evaluate_replay.py --baseline reports/fault_run_baseline.json --candidate reports/fault_run_candidate.json
-# Expected Outcome: SLA breaches drop from 5 to 0 (0/20 breaches). Average latency drops from 3478.57ms to 484.36ms (-86.1% mean reduction, candidate p50 805.08ms, p95 806.83ms). Status: RECOVERED_AND_VERIFIED.
+# Expected Outcome: SLA breaches drop from 5 to 0 (0/20 breaches). Average latency drops from 3558.46ms to 484.27ms (-86.4% mean reduction, candidate p50 804.86ms, p95 806.79ms). Status: RECOVERED_AND_VERIFIED.
 
 # Step 5: Verify Governance & Cloud Run Staging Promotion Gate
 python scripts/generate_receipt.py
@@ -222,19 +222,19 @@ If evaluating the Supervised Human Gate and instant rollback without Google Clou
 ## 6. Empirical Resilience Metrics & Recovery Dashboard
 
 > ### 🟢 Headline: 0/20 SLA Breaches: Degraded but Available (Deterministic Estimated Fallback Quotes)
-> **Deterministic Fallback Semantics:** All 20 candidate probes under active fault return `is_fallback: true` and `is_estimate: true`. The 805.08 ms P50 latency and -76.4% reduction measure returning deterministic local fallback rate quotes (`$7.50 + $1.25 * weight_kg`) during complete carrier outage, rather than waiting ~3.5 s for degraded carrier responses and breaching the 1,500 ms SLA.
+> **Deterministic Fallback Semantics:** All 20 candidate probes under active fault return `is_fallback: true` and `is_estimate: true`. The 804.86 ms P50 latency and -77.3% reduction measure returning deterministic local fallback rate quotes (`$7.50 + $1.25 * weight_kg`) during complete carrier outage, rather than waiting ~3.6 s for degraded carrier responses and breaching the 1,500 ms SLA.
 
 | Metric | Unpatched Baseline Under Fault | Hardened Candidate Under Identical Fault | Delta / Improvement | Measurement Type |
 |---|---|---|---|---|
 | **Fault Profile Canonical Hash** | `644a89784316` (3,500ms delay ± 250ms) | `644a89784316` (3,500ms delay ± 250ms) | Exact match (100% deterministic) | **Measured** |
 | **SLA Budget Breaches** | 5 / 5 breaches (>1,500ms budget) | 0 / 20 breaches (0%) | 100% reduction: Degraded but Available | **Measured** |
-| **Mean Request Latency** | 3478.57 ms | 484.36 ms | -86.1% mean reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
-| **Median Latency (P50)** | 3414.22 ms | 805.08 ms | -76.4% median reduction (candidate p50 805.08ms, p95 806.83ms) | **Measured** |
-| **Tail Latency (P95)** | 3749.62 ms | 806.83 ms | -78.5% P95 reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
-| **Min / Max Latency** | 3274.38 ms / 3749.62 ms | 2.38 ms / 806.83 ms | -78.5% Max reduction | **Measured** |
-| **Sample Variance / Std Dev** | 19500.70 ms² (±139.64 ms) | 471322.45 ms² (±686.53 ms) | Bimodal candidate (timeout path vs open-breaker short-circuit) | **Measured** |
+| **Mean Request Latency** | 3558.46 ms | 484.27 ms | -86.4% mean reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
+| **Median Latency (P50)** | 3540.65 ms | 804.86 ms | -77.3% median reduction (candidate p50 804.86ms, p95 806.79ms) | **Measured** |
+| **Tail Latency (P95)** | 3738.16 ms | 806.79 ms | -78.4% P95 reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
+| **Min / Max Latency** | 3312.60 ms / 3738.16 ms | 2.27 ms / 806.79 ms | -78.4% Max reduction | **Measured** |
+| **Sample Variance / Std Dev** | 26844.03 ms² (±163.84 ms) | 162902.09 ms² (±403.61 ms) | Bimodal candidate (timeout path vs open-breaker short-circuit) | **Measured** |
 | **Circuit Breaker State** | N/A (cascading thread starvation) | Phase A (CLOSED (reset each probe)) & Phase B (OPEN (8 of 20 short-circuited)) | Downstream protected | **Measured** |
-| **Fallback Observability** | None (returned 200 after ~3.5 s, breaching the 1,500 ms SLA) | `is_fallback: true`, `is_estimate: true` | Zero dropped checkouts (local fallback estimate) | **Measured** |
+| **Fallback Observability** | None (returned 200 after ~3.6 s, breaching the 1,500 ms SLA) | `is_fallback: true`, `is_estimate: true` | Zero dropped checkouts (local fallback estimate) | **Measured** |
 | **Incident MTTR (Mean Time to Recovery)** | ~45 minutes (industry manual response) | < 90 seconds (autonomous agent flow) | Design target, not measured | **Design target, not measured** |
 
 ---
@@ -258,7 +258,7 @@ In strict compliance with the **Never Fabricate Evidence** and **Claim Only What
 - **Primary Category:** **Best Supervised Agent ($4,000)**. Full multi-step automation for investigation, bisecting, code patching, replay verification, and staging deployment, with an explicit risk-gated human promotion gate for live production traffic.
 - **Secondary Category:** **Most Stages Covered ($5,000)**. All 9 GitLab lifecycle stages actively verified with real machine-readable artifacts.
 - **Additional Category:** **Most Creative ($4,000)**. Novel "Break It, Heal It" closed-loop system pairing chaos testing with exact-fault replay verification.
-- **Google Cloud Deployment Target:** Verified Google Cloud Run Deployment. Candidate revision `faultforge-checkout-00022-dej` deployed to Cloud Run in `us-central1` with 10% canary traffic split (verified HTTP 200 via `reports/live_verification.json`). Production URL: [`https://faultforge-checkout-136942862703.us-central1.run.app`](https://faultforge-checkout-136942862703.us-central1.run.app), Candidate URL: [`https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app`](https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app). Full Knative service YAML in [`infra/cloudrun/service.yaml`](infra/cloudrun/service.yaml), deployment scripts in [`infra/cloudrun/deploy.sh`](infra/cloudrun/deploy.sh), and automated candidate routing / instant traffic rollback in [`scripts/cloudrun_traffic.py`](scripts/cloudrun_traffic.py).
+- **Google Cloud Deployment Target:** Verified Google Cloud Run Deployment. Candidate revision `faultforge-checkout-00026-sam` deployed to Cloud Run in `us-central1` with 10% canary traffic split (verified HTTP 200 via `reports/live_verification.json`). Production URL: [`https://faultforge-checkout-136942862703.us-central1.run.app`](https://faultforge-checkout-136942862703.us-central1.run.app), Candidate URL: [`https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app`](https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app). Full Knative service YAML in [`infra/cloudrun/service.yaml`](infra/cloudrun/service.yaml), deployment scripts in [`infra/cloudrun/deploy.sh`](infra/cloudrun/deploy.sh), and automated candidate routing / instant traffic rollback in [`scripts/cloudrun_traffic.py`](scripts/cloudrun_traffic.py).
 
 ### Authorship and Autonomy
 - **AI Agent Authorship:** In accordance with the Transcend Hackathon theme (*"Life After Code"*), most commits, test generations, and evidence harvesting scripts in this repository were synthesized by an autonomous DevSecOps coding agent working under supervision.

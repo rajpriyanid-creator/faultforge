@@ -97,16 +97,16 @@ def test_audit_docs_claims_detects_mismatched_replay_metrics(tmp_path, monkeypat
     # Create replay_evaluation.json with specific baseline_avg_ms
     (sample_dir / "replay_evaluation.json").write_text(json.dumps({
         "raw_metrics": {
-            "baseline_avg_ms": 3478.57,
-            "hardened_avg_ms": 484.36,
-            "hardened_p95_ms": 806.83
+            "baseline_avg_ms": 3558.46,
+            "hardened_avg_ms": 484.27,
+            "hardened_p95_ms": 806.79
         }
     }), encoding="utf-8")
 
-    # README with mismatched number (e.g. 5000.00ms instead of 3478.57)
+    # README with mismatched number (e.g. 5000.00ms instead of 3558.46)
     (tmp_path / "README.md").write_text("SLA budget 1500ms, 9 Stages, culprit 974035c, mean 5000.00ms", encoding="utf-8")
     violations = audit_docs_claims()
-    assert any("Baseline mean 3478.57ms from replay_evaluation.json missing in README" in v for v in violations)
+    assert any("Baseline mean 3558.46ms from replay_evaluation.json missing in README" in v for v in violations)
 
 def test_audit_docs_claims_clean_on_repo():
     from scripts.truth_audit import audit_docs_claims

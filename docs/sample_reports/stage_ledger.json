@@ -1,14 +1,14 @@
 {
   "project": "faultforge/checkout-service",
   "ledger_version": "1.1.0",
-  "last_updated": 1792771806.2659202,
+  "last_updated": 1792774599.320839,
   "stages": {
     "plan": {
       "stage": "plan",
       "job_name": "plan:incident_tracking",
       "status": "SUCCESS",
-      "commit_sha": "34eb7ebd520feeb83706c3b853589c195cbe953f",
-      "pipeline_id": "2981969651",
+      "commit_sha": "156c9a7729e631b14cedbaef600800ae73e87e23",
+      "pipeline_id": "2982183259",
       "approval_required": false,
       "artifacts_declared": [
         "reports/issue.json"
@@ -20,10 +20,10 @@
         {
           "path": "reports/issue.json",
           "size_bytes": 559,
-          "sha256": "295a5ce0d0dac3226f56b9a1fdbd6c688ff3f221825a0ebc5118875b592aa920"
+          "sha256": "7ee32a68bd62a7e9f27eacd08fa991d27a14fd661b768448a9dc93b69ee1d106"
         }
       ],
-      "timestamp": 1792771244.4775898,
+      "timestamp": 1792774171.814825,
       "duo_executed": false,
       "notes": ""
     },
@@ -31,8 +31,8 @@
       "stage": "create",
       "job_name": "create:duo_remediation_mr",
       "status": "SUCCESS",
-      "commit_sha": "34eb7ebd520feeb83706c3b853589c195cbe953f",
-      "pipeline_id": "2981969651",
+      "commit_sha": "156c9a7729e631b14cedbaef600800ae73e87e23",
+      "pipeline_id": "2982183259",
       "approval_required": false,
       "artifacts_declared": [
         "reports/fault_run_baseline.json",
@@ -51,23 +51,23 @@
       "artifacts_details": [
         {
           "path": "reports/fault_run_baseline.json",
-          "size_bytes": 1982,
-          "sha256": "3a0111a2913e44aa4c76e405e97ab1bcbc8af23b0dba93f60610b8d7071bbf16"
+          "size_bytes": 1983,
+          "sha256": "fc0e6ca630fdd3be8f639bc570a704aeb09e3f1114c0d2ff35a4a768436ff515"
         },
         {
           "path": "reports/incident_dossier.json",
           "size_bytes": 1518,
-          "sha256": "e1493a7def6c94d51c8a8941eb626e40ac24d8c83780bdf811dc88c66d2fff5b"
+          "sha256": "4b48dfd26da51092a49842ff31b7506c75aca2c7c3fbdebe62b1d87aae727fdd"
         },
         {
           "path": "reports/diagnosis_report.json",
           "size_bytes": 1105,
-          "sha256": "7f6eee0d22221ec28eefca1178d6fef4cb8aa5da5340fb457dc4f7017452b2b3"
+          "sha256": "0b3b553e41d3003b95af012f2c0907623d0b84e173b886ed8ed5cabcb39861ba"
         },
         {
           "path": "reports/duo_run.json",
-          "size_bytes": 410,
-          "sha256": "17646c1fdc36662737464260590067b506355a766d96744e8fd85e11260fe05a"
+          "size_bytes": 408,
+          "sha256": "5effbc7898253fb2630f4e21862b77b49b83fa21fa1cad952df3e64fb35059c8"
         },
         {
           "path": "reports/duo_evidence.json",
@@ -75,7 +75,7 @@
           "sha256": "0b5958e9d40d92fdac098b2e52f46098057926d77e7514b9e6d4ea0e6bb6ccd9"
         }
       ],
-      "timestamp": 1792771306.0635335,
+      "timestamp": 1792774232.9653323,
       "duo_executed": true,
       "notes": ""
     },
@@ -83,8 +83,8 @@
       "stage": "configure",
       "job_name": "configure:chaos_topology",
       "status": "SUCCESS",
-      "commit_sha": "34eb7ebd520feeb83706c3b853589c195cbe953f",
-      "pipeline_id": "2981969651",
+      "commit_sha": "156c9a7729e631b14cedbaef600800ae73e87e23",
+      "pipeline_id": "2982183259",
       "approval_required": false,
       "artifacts_declared": [
         "reports/fault_config.json"
@@ -99,7 +99,7 @@
           "sha256": "b56a1883c24aaf742b5cebe55ec10b35e34d2c7e8f1f3e6760d6bafff4c34364"
         }
       ],
-      "timestamp": 1792771334.6884885,
+      "timestamp": 1792774262.3949976,
       "duo_executed": false,
       "notes": ""
     },
@@ -107,8 +107,8 @@
       "stage": "verify",
       "job_name": "verify:exact_fault_replay_proof",
       "status": "SUCCESS",
-      "commit_sha": "34eb7ebd520feeb83706c3b853589c195cbe953f",
-      "pipeline_id": "2981969651",
+      "commit_sha": "156c9a7729e631b14cedbaef600800ae73e87e23",
+      "pipeline_id": "2982183259",
       "approval_required": false,
       "artifacts_declared": [
         "reports/fault_run_hardened.json",
@@ -121,16 +121,16 @@
       "artifacts_details": [
         {
           "path": "reports/fault_run_hardened.json",
-          "size_bytes": 10858,
-          "sha256": "70db0fc0b046af81789a94f8979bf39d36835aaf4c46bf465a0241f3124d8314"
+          "size_bytes": 10854,
+          "sha256": "617a676eadabfb834bf4aa63f7433db80b766a3b800af04f506bbe4563919604"
         },
         {
           "path": "reports/replay_evaluation.json",
           "size_bytes": 3554,
-          "sha256": "e02f92ba433de5691c337aee680361e3975193c00b7381e7861d6050f6b09e50"
+          "sha256": "7339fa1d8a897f61ac8ea15abb043370a462cfc82ff0e328893bd73cc6525683"
         }
       ],
-      "timestamp": 1792771389.6182275,
+      "timestamp": 1792774315.5111516,
       "duo_executed": false,
       "notes": ""
     },
@@ -138,8 +138,8 @@
       "stage": "secure",
       "job_name": "secure:sast_and_secret_scan",
       "status": "SUCCESS",
-      "commit_sha": "34eb7ebd520feeb83706c3b853589c195cbe953f",
-      "pipeline_id": "2981969651",
+      "commit_sha": "156c9a7729e631b14cedbaef600800ae73e87e23",
+      "pipeline_id": "2982183259",
       "approval_required": false,
       "artifacts_declared": [
         "reports/bandit_security_report.json"
@@ -151,10 +151,10 @@
         {
           "path": "reports/bandit_security_report.json",
           "size_bytes": 3333,
-          "sha256": "eba8e42f5454f8c7abd9957de17720f5c521a06887d8529aa0fadf28260d9686"
+          "sha256": "a34d75c2cf4676ca3207af0455397149f79047f843035383d18664f33c53986a"
         }
       ],
-      "timestamp": 1792771417.470194,
+      "timestamp": 1792774343.2717283,
       "duo_executed": false,
       "notes": ""
     },
@@ -162,8 +162,8 @@
       "stage": "package",
       "job_name": "package:container_build",
       "status": "SUCCESS",
-      "commit_sha": "34eb7ebd520feeb83706c3b853589c195cbe953f",
-      "pipeline_id": "2981969651",
+      "commit_sha": "156c9a7729e631b14cedbaef600800ae73e87e23",
+      "pipeline_id": "2982183259",
       "approval_required": false,
       "artifacts_declared": [
         "reports/image_digest.txt"
@@ -175,10 +175,10 @@
         {
           "path": "reports/image_digest.txt",
           "size_bytes": 153,
-          "sha256": "50a84135691e3277808c0cc764d8b44cec341cae968bca5c74a46a66901e5f66"
+          "sha256": "638fdebd622e6a2efe5df33398f8c89a4684b54d17c0638fea9a1e3a31cfb9d7"
         }
       ],
-      "timestamp": 1792771645.3816724,
+      "timestamp": 1792774433.1808007,
       "duo_executed": false,
       "notes": ""
     },
@@ -186,8 +186,8 @@
       "stage": "release",
       "job_name": "release:cloudrun_candidate_deploy",
       "status": "SUCCESS",
-      "commit_sha": "34eb7ebd520feeb83706c3b853589c195cbe953f",
-      "pipeline_id": "2981969651",
+      "commit_sha": "156c9a7729e631b14cedbaef600800ae73e87e23",
+      "pipeline_id": "2982183259",
       "approval_required": false,
       "artifacts_declared": [
         "reports/release.json",
@@ -201,15 +201,15 @@
         {
           "path": "reports/release.json",
           "size_bytes": 207,
-          "sha256": "202405d2f71d09156ecf48358b24a13c6acec578b3475d037e694a389377d408"
+          "sha256": "e218815943666846107986eea82d596de8a2255d36f6ecddb5d13e9142cb0e05"
         },
         {
           "path": "reports/live_verification.json",
-          "size_bytes": 1577,
-          "sha256": "0694b46b785b20fbd9a2bd78567a6142c2ebbd9528939f21845cf0d8d8ae8c25"
+          "size_bytes": 1007,
+          "sha256": "f6d38a3383e195d8c19cb15b573e836d3ac469fb84c1872908539552ea442bfe"
         }
       ],
-      "timestamp": 1792771735.953113,
+      "timestamp": 1792774528.592809,
       "duo_executed": false,
       "notes": ""
     },
@@ -217,8 +217,8 @@
       "stage": "monitor",
       "job_name": "monitor:telemetry_probes",
       "status": "SUCCESS",
-      "commit_sha": "34eb7ebd520feeb83706c3b853589c195cbe953f",
-      "pipeline_id": "2981969651",
+      "commit_sha": "156c9a7729e631b14cedbaef600800ae73e87e23",
+      "pipeline_id": "2982183259",
       "approval_required": false,
       "artifacts_declared": [
         "reports/monitor.json"
@@ -230,10 +230,10 @@
         {
           "path": "reports/monitor.json",
           "size_bytes": 306,
-          "sha256": "e5394deca4778c81d14e57af6a839460cc48fc279ee6eaf26c43316e2405f527"
+          "sha256": "aa92bb5af7b9a85ee29c35f18b8428968af6d406740001c72eed20c6b6f67f8b"
         }
       ],
-      "timestamp": 1792771765.8655777,
+      "timestamp": 1792774559.6825383,
       "duo_executed": false,
       "notes": ""
     },
@@ -241,8 +241,8 @@
       "stage": "govern",
       "job_name": "govern:audit_receipt_and_gate",
       "status": "SUCCESS",
-      "commit_sha": "34eb7ebd520feeb83706c3b853589c195cbe953f",
-      "pipeline_id": "2981969651",
+      "commit_sha": "156c9a7729e631b14cedbaef600800ae73e87e23",
+      "pipeline_id": "2982183259",
       "approval_required": true,
       "artifacts_declared": [
         "reports/evidence_receipt.json"
@@ -253,11 +253,11 @@
       "artifacts_details": [
         {
           "path": "reports/evidence_receipt.json",
-          "size_bytes": 11724,
-          "sha256": "d8c2a9d4e6e003c03b1ff2c9479ce058a41af70443e4313a24fb3f27c974ad87"
+          "size_bytes": 11723,
+          "sha256": "5d0de2b1264f5e2d4ea2f5dde18b38a57915a22a29d46cc1413f3a83dbcc01f4"
         }
       ],
-      "timestamp": 1792771806.2659185,
+      "timestamp": 1792774599.320823,
       "duo_executed": false,
       "notes": ""
     }

@@ -1,18 +1,18 @@
 {
-  "receipt_id": "rcpt-730430900cca",
-  "generated_at": 1792771806.2204165,
+  "receipt_id": "rcpt-cba9d4e16c19",
+  "generated_at": 1792774599.2741175,
   "final_status": "RECOVERED_AND_VERIFIED",
   "project": "gitlab-ai-hackathon/transcend-october-2026/43424456/showcase",
-  "commit_sha": "34eb7ebd520feeb83706c3b853589c195cbe953f",
+  "commit_sha": "156c9a7729e631b14cedbaef600800ae73e87e23",
   "git_verified": true,
   "autonomy_model": "SUPERVISED",
   "risk_classification": "MEDIUM",
   "approver": "rajpriyanid",
   "candidate_source": "commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token",
   "urls": {
-    "referenced_pipeline_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2981969651",
-    "referenced_job_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17422097723",
-    "issue_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/issues/48",
+    "referenced_pipeline_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2982183259",
+    "referenced_job_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17423472015",
+    "issue_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/issues/50",
     "merge_request_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/merge_requests/3",
     "flow_run_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/automate/agent-sessions/9909079"
   },
@@ -37,12 +37,12 @@
   "evaluation_gates": {
     "valid_git_shas": {
       "passed": true,
-      "baseline_sha": "34eb7ebd520feeb83706c3b853589c195cbe953f",
+      "baseline_sha": "156c9a7729e631b14cedbaef600800ae73e87e23",
       "hardened_sha": "d3720143e15c85f519a7624859541d1ce997f1a0"
     },
     "distinct_revisions": {
       "passed": true,
-      "baseline_sha": "34eb7ebd",
+      "baseline_sha": "156c9a77",
       "hardened_sha": "d3720143"
     },
     "identical_profile_hash": {
@@ -58,7 +58,7 @@
     "proxy_in_request_path": {
       "passed": true,
       "fault_delay_ms": 3500,
-      "candidate_min_ms": 2.38
+      "candidate_min_ms": 2.27
     },
     "identical_payload_hash": {
       "passed": true,
@@ -99,8 +99,8 @@
       "breaker_state": "CLOSED (reset each probe)",
       "total_probes": 10,
       "sla_breaches": 0,
-      "p95_ms": 806.83,
-      "avg_ms": 805.54
+      "p95_ms": 806.79,
+      "avg_ms": 805.55
     },
     "candidate_breaker_short_circuit": {
       "passed": true,
@@ -108,14 +108,14 @@
       "breaker_state": "OPEN (N of 10 short-circuited)",
       "total_probes": 10,
       "short_circuited_probes": 8,
-      "p95_ms": 806.34,
-      "avg_ms": 163.19
+      "p95_ms": 805.36,
+      "avg_ms": 162.99
     },
     "latency_budget": {
       "passed": true,
       "budget_ms": 1500,
-      "candidate_p95_ms": 806.83,
-      "candidate_max_ms": 806.83
+      "candidate_p95_ms": 806.79,
+      "candidate_max_ms": 806.79
     },
     "fallback_marked_estimated": {
       "passed": true,
@@ -131,8 +131,8 @@
     {
       "label": "baseline",
       "probe_index": 1,
-      "order_id": "ORD-a446c89a",
-      "latency_ms": 3385.2,
+      "order_id": "ORD-7417f843",
+      "latency_ms": 3738.16,
       "status_code": 200,
       "is_fallback": false,
       "is_estimate": false,
@@ -141,8 +141,8 @@
     {
       "label": "baseline",
       "probe_index": 2,
-      "order_id": "ORD-e1e8256b",
-      "latency_ms": 3414.22,
+      "order_id": "ORD-491c9a23",
+      "latency_ms": 3673.91,
       "status_code": 200,
       "is_fallback": false,
       "is_estimate": false,
@@ -151,8 +151,8 @@
     {
       "label": "baseline",
       "probe_index": 3,
-      "order_id": "ORD-8b43a7fc",
-      "latency_ms": 3569.44,
+      "order_id": "ORD-d5c29a4e",
+      "latency_ms": 3312.6,
       "status_code": 200,
       "is_fallback": false,
       "is_estimate": false,
@@ -161,8 +161,8 @@
     {
       "label": "baseline",
       "probe_index": 4,
-      "order_id": "ORD-7511df5a",
-      "latency_ms": 3749.62,
+      "order_id": "ORD-51ceca6c",
+      "latency_ms": 3526.98,
       "status_code": 200,
       "is_fallback": false,
       "is_estimate": false,
@@ -171,8 +171,8 @@
     {
       "label": "baseline",
       "probe_index": 5,
-      "order_id": "ORD-007bd5d6",
-      "latency_ms": 3274.38,
+      "order_id": "ORD-b031ba3b",
+      "latency_ms": 3540.65,
       "status_code": 200,
       "is_fallback": false,
       "is_estimate": false,
@@ -181,8 +181,8 @@
     {
       "label": "candidate",
       "probe_index": 1,
-      "order_id": "ORD-a46ca828",
-      "latency_ms": 806.83,
+      "order_id": "ORD-5c690b51",
+      "latency_ms": 806.79,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -191,8 +191,8 @@
     {
       "label": "candidate",
       "probe_index": 2,
-      "order_id": "ORD-0030bdda",
-      "latency_ms": 805.24,
+      "order_id": "ORD-f9e09240",
+      "latency_ms": 806.45,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -201,8 +201,8 @@
     {
       "label": "candidate",
       "probe_index": 3,
-      "order_id": "ORD-588c0ae0",
-      "latency_ms": 805.53,
+      "order_id": "ORD-8c7d22af",
+      "latency_ms": 805.19,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -211,8 +211,8 @@
     {
       "label": "candidate",
       "probe_index": 4,
-      "order_id": "ORD-aecad5e9",
-      "latency_ms": 805.69,
+      "order_id": "ORD-71bd4873",
+      "latency_ms": 805.54,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -221,8 +221,8 @@
     {
       "label": "candidate",
       "probe_index": 5,
-      "order_id": "ORD-0e5ee906",
-      "latency_ms": 805.8,
+      "order_id": "ORD-9b47cc9d",
+      "latency_ms": 805.99,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -231,8 +231,8 @@
     {
       "label": "candidate",
       "probe_index": 6,
-      "order_id": "ORD-e146a1c9",
-      "latency_ms": 805.01,
+      "order_id": "ORD-9557f7f4",
+      "latency_ms": 804.86,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -241,8 +241,8 @@
     {
       "label": "candidate",
       "probe_index": 7,
-      "order_id": "ORD-f4eb6e73",
-      "latency_ms": 805.86,
+      "order_id": "ORD-c753fb84",
+      "latency_ms": 805.2,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -251,8 +251,8 @@
     {
       "label": "candidate",
       "probe_index": 8,
-      "order_id": "ORD-d509c3f5",
-      "latency_ms": 805.08,
+      "order_id": "ORD-b4d11194",
+      "latency_ms": 804.92,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -261,8 +261,8 @@
     {
       "label": "candidate",
       "probe_index": 9,
-      "order_id": "ORD-5e9662aa",
-      "latency_ms": 804.96,
+      "order_id": "ORD-cdda004d",
+      "latency_ms": 805.81,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -271,8 +271,8 @@
     {
       "label": "candidate",
       "probe_index": 10,
-      "order_id": "ORD-4e6936d1",
-      "latency_ms": 805.36,
+      "order_id": "ORD-9b6412cf",
+      "latency_ms": 804.77,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -281,8 +281,8 @@
     {
       "label": "candidate",
       "probe_index": 11,
-      "order_id": "ORD-4eaa6d0d",
-      "latency_ms": 805.14,
+      "order_id": "ORD-9c3ae937",
+      "latency_ms": 804.81,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -291,8 +291,8 @@
     {
       "label": "candidate",
       "probe_index": 12,
-      "order_id": "ORD-7cd9fbe8",
-      "latency_ms": 806.34,
+      "order_id": "ORD-15268b8e",
+      "latency_ms": 805.36,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -301,8 +301,8 @@
     {
       "label": "candidate",
       "probe_index": 13,
-      "order_id": "ORD-7e315250",
-      "latency_ms": 2.99,
+      "order_id": "ORD-8f3b314f",
+      "latency_ms": 2.87,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -311,8 +311,8 @@
     {
       "label": "candidate",
       "probe_index": 14,
-      "order_id": "ORD-469b071e",
-      "latency_ms": 2.66,
+      "order_id": "ORD-41c7ef7c",
+      "latency_ms": 2.52,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -321,8 +321,8 @@
     {
       "label": "candidate",
       "probe_index": 15,
-      "order_id": "ORD-1326425c",
-      "latency_ms": 2.46,
+      "order_id": "ORD-0cf9d46a",
+      "latency_ms": 2.4,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -331,8 +331,8 @@
     {
       "label": "candidate",
       "probe_index": 16,
-      "order_id": "ORD-1c333034",
-      "latency_ms": 2.42,
+      "order_id": "ORD-de09b137",
+      "latency_ms": 2.37,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -341,8 +341,8 @@
     {
       "label": "candidate",
       "probe_index": 17,
-      "order_id": "ORD-28596d76",
-      "latency_ms": 2.41,
+      "order_id": "ORD-73e7cdd9",
+      "latency_ms": 2.31,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -351,8 +351,8 @@
     {
       "label": "candidate",
       "probe_index": 18,
-      "order_id": "ORD-468efd3b",
-      "latency_ms": 2.54,
+      "order_id": "ORD-a2bfa009",
+      "latency_ms": 2.43,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -361,8 +361,8 @@
     {
       "label": "candidate",
       "probe_index": 19,
-      "order_id": "ORD-423c9826",
-      "latency_ms": 2.38,
+      "order_id": "ORD-6295be79",
+      "latency_ms": 2.27,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -371,7 +371,7 @@
     {
       "label": "candidate",
       "probe_index": 20,
-      "order_id": "ORD-95cd9162",
+      "order_id": "ORD-df0954d4",
       "latency_ms": 2.57,
       "status_code": 200,
       "is_fallback": true,
@@ -380,56 +380,56 @@
     }
   ],
   "metrics_raw": {
-    "baseline_avg_ms": 3478.57,
-    "baseline_p50_ms": 3414.22,
-    "baseline_p95_ms": 3749.62,
-    "baseline_max_ms": 3749.62,
-    "hardened_avg_ms": 484.36,
-    "hardened_p50_ms": 805.08,
-    "hardened_p95_ms": 806.83,
-    "hardened_max_ms": 806.83
+    "baseline_avg_ms": 3558.46,
+    "baseline_p50_ms": 3540.65,
+    "baseline_p95_ms": 3738.16,
+    "baseline_max_ms": 3738.16,
+    "hardened_avg_ms": 484.27,
+    "hardened_p50_ms": 804.86,
+    "hardened_p95_ms": 806.79,
+    "hardened_max_ms": 806.79
   },
   "latency_reduction": {
     "mean_basis": {
       "metric": "mean_candidate_vs_mean_baseline",
-      "baseline_ms": 3478.57,
-      "candidate_ms": 484.36,
-      "percent": 86.1
+      "baseline_ms": 3558.46,
+      "candidate_ms": 484.27,
+      "percent": 86.4
     },
     "p50_basis": {
       "metric": "p50_candidate_vs_p50_baseline",
-      "baseline_ms": 3414.22,
-      "candidate_ms": 805.08,
-      "percent": 76.4
+      "baseline_ms": 3540.65,
+      "candidate_ms": 804.86,
+      "percent": 77.3
     },
     "p95_basis": {
       "metric": "p95_candidate_vs_p95_baseline",
-      "baseline_ms": 3749.62,
-      "candidate_ms": 806.83,
-      "percent": 78.5
+      "baseline_ms": 3738.16,
+      "candidate_ms": 806.79,
+      "percent": 78.4
     },
     "max_basis": {
       "metric": "max_candidate_vs_max_baseline",
-      "baseline_ms": 3749.62,
-      "candidate_ms": 806.83,
-      "percent": 78.5
+      "baseline_ms": 3738.16,
+      "candidate_ms": 806.79,
+      "percent": 78.4
     }
   },
   "deployment": {
-    "image_digest": "registry.gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase@sha256:94ed856651c7ef6b63d4b31b4ad17b3821af835c9c23586a7cdbb5c48892d781",
-    "cloud_run_revision": "faultforge-checkout-00022-dej"
+    "image_digest": "registry.gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase@sha256:c2d2bb63ce7d129a7dbdd40964e61dffa2c3214767ef0f2622fa3a8d1f9af9a4",
+    "cloud_run_revision": "faultforge-checkout-00026-sam"
   },
   "pipeline_artifacts": {
-    "incident_dossier_sha256": "e1493a7def6c94d51c8a8941eb626e40ac24d8c83780bdf811dc88c66d2fff5b",
-    "diagnosis_report_sha256": "7f6eee0d22221ec28eefca1178d6fef4cb8aa5da5340fb457dc4f7017452b2b3",
+    "incident_dossier_sha256": "4b48dfd26da51092a49842ff31b7506c75aca2c7c3fbdebe62b1d87aae727fdd",
+    "diagnosis_report_sha256": "0b3b553e41d3003b95af012f2c0907623d0b84e173b886ed8ed5cabcb39861ba",
     "mr_payload_sha256": "N/A",
-    "replay_evaluation_sha256": "e02f92ba433de5691c337aee680361e3975193c00b7381e7861d6050f6b09e50",
-    "risk_classification_sha256": "b0c040559482090fdbac9803579a77712ae731192863412fd4d4d801f1d4e404"
+    "replay_evaluation_sha256": "7339fa1d8a897f61ac8ea15abb043370a462cfc82ff0e328893bd73cc6525683",
+    "risk_classification_sha256": "8e4bc953beb92f709f398e63d8b4519e36f2b0f499b2188f99a85bedd0a3e2ce"
   },
   "not_established": [],
   "governance": {
     "requires_human_approval_to_promote": true,
     "promotion_gate": "BLOCKED_PENDING_APPROVAL"
   },
-  "tamper_evident_seal_sha256": "bb345ac430daf1b02c4cf2bfce7ed942591c7aa047656d14d191c327bc075d58"
+  "tamper_evident_seal_sha256": "ba6dc384d87b27a9cb036098ca15c333feb9316e5de4998fddf95c35957ce83f"
 }
