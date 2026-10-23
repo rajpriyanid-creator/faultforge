@@ -1,18 +1,18 @@
 {
-  "receipt_id": "rcpt-9d6818a1b938",
-  "generated_at": 1792691093.0446053,
+  "receipt_id": "rcpt-f6cdccae325e",
+  "generated_at": 1792726716.569046,
   "final_status": "CONTAINED_NEEDS_REVIEW",
   "project": "faultforge/checkout-service",
-  "commit_sha": "b063a91b95e8b9e7e8f6492a8cbb3c1211f1bd81",
+  "commit_sha": "e5a9752ba63115d6744a7996f0565272b2804762",
   "git_verified": true,
   "autonomy_model": "SUPERVISED",
   "risk_classification": "MEDIUM",
   "approver": "SUPERVISED_OPERATOR",
-  "candidate_source": "duo-authored (MR !3)",
+  "candidate_source": "commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token",
   "urls": {
-    "pipeline_url": null,
-    "job_url": null,
-    "issue_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/issues/29",
+    "pipeline_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2977803091",
+    "job_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17392416795",
+    "issue_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/work_items/42",
     "merge_request_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/merge_requests/3",
     "flow_run_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/automate/agent-sessions/9909079"
   },
@@ -420,18 +420,19 @@
     "cloud_run_revision": null
   },
   "pipeline_artifacts": {
-    "incident_dossier_sha256": "2cfde1004e24d252f611973b88962b7865d5a63de1833da8a70f07dc9a59f5c1",
+    "incident_dossier_sha256": "a264687ee0c7e0fe71aba9ac80c1039d9df474161e690c2402174fe9c6b77879",
     "diagnosis_report_sha256": "2c0a672c2ce7cc8c90c5253bff4b2d998784b70166e4d259573c820ebfadb610",
     "mr_payload_sha256": "N/A",
-    "replay_evaluation_sha256": "3be13737cc99a222598147d9243dec6fe63fc9354ef2414ac88e5b04d81cd34e",
+    "replay_evaluation_sha256": "8cd053626347c01ccc0a35b0ab94fce7ed988fc73f04d7ec467f964902b7ac08",
     "risk_classification_sha256": "f13ca2240248144d291ccc6e9bb52c0bbe32cf8c9e7af695e51d642a8488ece9"
   },
   "not_established": [
+    "Dossier commit SHA (b063a91b) differs from current HEAD (e5a9752b).",
     "Cloud Run revision deployment unconfirmed from release stage."
   ],
   "governance": {
     "requires_human_approval_to_promote": true,
     "promotion_gate": "BLOCKED_PENDING_REVIEW"
   },
-  "tamper_evident_seal_sha256": "f38e2cf55b0b789ba4bba6ed3cb1476b16e7263af62ad0e7a5ee0c72028e586b"
+  "tamper_evident_seal_sha256": "e4ceb7fe00e315c8ba62f64562638f41d0cd39f64b212d123f4c4f7d24dfc471"
 }

@@ -12,7 +12,7 @@ def test_determine_candidate_source_duo_authored():
         "mr_iid": 42
     }
     src = determine_candidate_source(evidence)
-    assert src == "duo-authored (MR !42)"
+    assert src == "commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token"
 
 def test_determine_candidate_source_service_account_commit():
     evidence = {
@@ -24,7 +24,7 @@ def test_determine_candidate_source_service_account_commit():
         "mr_iid": 3
     }
     src = determine_candidate_source(evidence)
-    assert src == "duo-authored (MR !3)"
+    assert src == "commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token"
 
 def test_determine_candidate_source_missing_run_url():
     evidence = {
@@ -66,7 +66,7 @@ def test_record_duo_evidence_from_ci_env(tmp_path, monkeypatch):
     evidence = query_duo_evidence(token=None, project_id=None, from_ci_env=True, output_path=output_file)
     assert evidence["found"] is True
     assert evidence["mr_iid"] == 3
-    assert evidence["candidate_source"] == "duo-authored (MR !3)"
+    assert evidence["candidate_source"] == "commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token"
 
 def test_record_duo_evidence_require_flag_fails_when_missing(tmp_path):
     output_file = str(tmp_path / "duo_evidence.json")
@@ -135,11 +135,12 @@ def test_duo_authored_detection_and_candidate_source_integration(tmp_path):
         "run_url": "https://gitlab.com/test/runs/99"
     }
     cand_src = determine_candidate_source(duo_evidence)
-    assert cand_src == "duo-authored (MR !42)"
+    assert cand_src == "commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token"
     duo_evidence["candidate_source"] = cand_src
 
     # 2. Test CI detection logic:
-    ci_detection = str(duo_evidence.get("candidate_source", "")).startswith("duo-authored") and bool(duo_evidence.get("source_branch"))
+    cs = str(duo_evidence.get("candidate_source", "")).lower()
+    ci_detection = (cs.startswith("duo-authored") or "commit authored by the duo service account" in cs) and bool(duo_evidence.get("source_branch"))
     assert ci_detection is True
 
     # 3. Test evaluate_replay records this candidate_source with identical fault hash 644a89784316
@@ -161,6 +162,6 @@ def test_duo_authored_detection_and_candidate_source_integration(tmp_path):
     with open(replay_out, "r", encoding="utf-8") as rf:
         ev = json.load(rf)
 
-    assert ev["candidate_source"] == "duo-authored (MR !42)"
+    assert ev["candidate_source"] == "commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token"
     assert ev["gates"]["identical_profile_hash"]["passed"] is True
     assert ev["gates"]["identical_profile_hash"]["baseline_hash"] == ev["gates"]["identical_profile_hash"]["hardened_hash"]

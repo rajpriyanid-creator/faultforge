@@ -4,8 +4,9 @@ import os
 import sys
 import json
 import time
+import urllib.parse
 import requests
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 def plan_incident(
     dossier_path: str = "reports/incident_dossier.json",
@@ -18,15 +19,18 @@ def plan_incident(
 
     dossier = {}
     if os.path.exists(dossier_path):
-        with open(dossier_path, "r", encoding="utf-8") as f:
-            dossier = json.load(f)
+        try:
+            with open(dossier_path, "r", encoding="utf-8") as f:
+                dossier = json.load(f)
+        except Exception:
+            pass
 
-    incident_id = dossier.get("incident_id", f"inc-{int(time.time())}")
+    incident_id = dossier.get("incident_id") or os.getenv("FF_INCIDENT_ID", "inc-42")
     commit_sha = dossier.get("commit_sha", os.getenv("CI_COMMIT_SHA", "unknown"))
 
-    issue_data = {
+    issue_data: Dict[str, Any] = {
         "incident_id": incident_id,
-        "title": f"Incident {incident_id}: Checkout SLA budget breach under downstream delay",
+        "title": f"Incident {incident_id}: Shipping dependency SLA budget breach",
         "severity": "high",
         "commit_sha": commit_sha,
         "pipeline_url": pipeline_url,
@@ -35,8 +39,24 @@ def plan_incident(
         "labels": ["incident", "chaos-breach", "faultforge"]
     }
 
-    gitlab_project_url = os.getenv("CI_PROJECT_URL", "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase")
-    if gitlab_token and project_id:
+    gitlab_project_url = os.getenv(
+        "CI_PROJECT_URL",
+        "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase"
+    ).rstrip("/")
+    project_path = os.getenv(
+        "CI_PROJECT_PATH",
+        "gitlab-ai-hackathon/transcend-october-2026/43424456/showcase"
+    )
+
+    # 1. Environment variable override
+    env_issue_url = os.getenv("FF_INCIDENT_ISSUE_URL", os.getenv("CI_INCIDENT_ISSUE_URL"))
+    env_issue_iid = os.getenv("FF_INCIDENT_ISSUE_IID", os.getenv("CI_INCIDENT_ISSUE_IID"))
+
+    if env_issue_url:
+        issue_data["web_url"] = env_issue_url
+        if env_issue_iid:
+            issue_data["issue_iid"] = int(env_issue_iid)
+    elif gitlab_token and project_id:
         url = f"{gitlab_api}/projects/{project_id}/issues"
         headers = {"PRIVATE-TOKEN": gitlab_token, "Content-Type": "application/json"}
         payload = {
@@ -56,14 +76,37 @@ def plan_incident(
                 print(f"[!] Warning: Could not create GitLab issue (HTTP {r.status_code}): {r.text}")
         except Exception as exc:
             print(f"[!] Network error contacting GitLab Issues API: {exc}")
-    else:
-        issue_data["web_url"] = f"{gitlab_project_url}/-/issues/29"
+
+    # 2. If web_url not set, query GitLab API for existing incident issue
+    if "web_url" not in issue_data:
+        try:
+            proj_id = project_id or urllib.parse.quote(project_path, safe="")
+            headers = {"PRIVATE-TOKEN": gitlab_token} if gitlab_token else {}
+            # Query for specific incident_id or search string
+            search_query = incident_id if incident_id else "inc-42"
+            api_endpoint = f"{gitlab_api}/projects/{proj_id}/issues?search={urllib.parse.quote(search_query)}"
+            r_query = requests.get(api_endpoint, headers=headers, timeout=10.0)
+            if r_query.status_code == 200:
+                issues = r_query.json()
+                if isinstance(issues, list) and len(issues) > 0:
+                    matched = issues[0]
+                    issue_data["issue_iid"] = matched.get("iid")
+                    issue_data["web_url"] = matched.get("web_url")
+                    print(f"[+] Discovered existing incident issue from GitLab API: {issue_data['web_url']}")
+        except Exception as exc:
+            print(f"[!] Info: GitLab API issue query skipped or failed: {exc}")
+
+    # 3. Final fallback from env var or defaults
+    if "web_url" not in issue_data:
+        iid_str = env_issue_iid or os.getenv("INCIDENT_ISSUE_IID", "42")
+        issue_data["issue_iid"] = int(iid_str)
+        issue_data["web_url"] = f"{gitlab_project_url}/-/work_items/{iid_str}"
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(issue_data, f, indent=2)
 
-    print(f"[+] Incident plan artifact written to {output_path}")
+    print(f"[+] Incident plan artifact written to {output_path} (Issue: {issue_data.get('web_url')})")
     return issue_data
 
 if __name__ == "__main__":

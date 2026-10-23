@@ -35,16 +35,16 @@ Follow these exact steps if you have available GitLab Duo Agent Platform credits
 6. **Rerun the Pipeline on Main (or MR Pipeline):**
    - In GitLab: Navigate to **Build → Pipelines → Run Pipeline** on `main`.
    - Stage `create:duo_remediation_mr` records the real Duo run and MR evidence (recording `SUCCESS` if executed, `PARTIAL` if unexecuted).
-   - Stage `verify:exact_fault_replay_proof` enforces `scripts/check_forbidden_paths.py`, checks out the Duo candidate branch `app/`, replays the exact Toxiproxy fault (`644a89784316`), and records `candidate_source: "duo-authored (MR !<iid>)"`.
+   - Stage `verify:exact_fault_replay_proof` enforces `scripts/check_forbidden_paths.py`, checks out the Duo candidate branch `app/`, replays the exact Toxiproxy fault (`644a89784316`), and records `candidate_source: "commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token"`.
    - Stage `release:cloudrun_candidate_deploy` deploys the candidate revision with `--no-traffic --tag candidate`.
 7. **Collect the Evidence Links:**
-   - Pipeline URL, Incident Issue URL, Duo-authored MR URL, and Flow Run URL.
+   - Pipeline URL, Incident Issue URL, Duo Healer MR URL, and Flow Run URL.
 8. **Fallback Note (If Credits Are Depleted or Duo Unavailable):**
    - If Duo Agent Platform credits are unavailable, FaultForge maintains an honest and audited fallback to `reference-fix (not Duo-authored)` with status `NOT_EXECUTED_NO_CREDENTIALS`. All gates and audits pass without faking evidence.
 
 ---
 
-This guide provides step-by-step instructions to register and execute the **FaultForge Custom Flow** (`flows/faultforge-flow.yaml`) on GitLab, creating the official Duo-authored Merge Request for hackathon evaluation.
+This guide provides step-by-step instructions to register and execute the **FaultForge Custom Flow** (`flows/faultforge-flow.yaml`) on GitLab, creating the official Duo Healer Merge Request (commit authored by the Duo service account via session 9909079; MR opened under the maintainer's token) for hackathon evaluation.
 
 ---
 
@@ -81,13 +81,13 @@ To trigger the registered Duo Agent flow:
 
 ---
 
-## 3. Confirming the Duo-Authored Merge Request
+## 3. Confirming the Duo Healer Merge Request
 
 1. Go to **Code** → **Merge Requests**.
-2. Locate the MR opened by `ai-faultforge_resilience_flow` (branch: `fix/resilience-shipping-timeout` or similar).
+2. Locate the MR opened for the flow (branch: `fix/resilience-shipping-timeout` or similar).
 3. Inspect the MR description:
    - Contains root-cause summary, culprit commit reference (`974035c`), and test plan.
-4. Verify the author is the registered Duo service bot.
+4. Verify the commit author is the registered Duo Healer service account (`FaultForge, Supervised, Resilience, Healer`).
 
 ---
 
@@ -102,4 +102,4 @@ To trigger the registered Duo Agent flow:
    ```
    This populates `reports/duo_evidence.json` with the verified MR IID, author, and branch name.
 4. **CI Auto-Detection:**
-   The `verify:exact_fault_replay_proof` job will automatically detect `reports/duo_evidence.json` and test the Duo MR branch directly, certifying the run as Duo-authored in `evidence_receipt.json`.
+   The `verify:exact_fault_replay_proof` job will automatically detect `reports/duo_evidence.json` and test the Duo MR branch directly, certifying the run as commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token in `evidence_receipt.json`.

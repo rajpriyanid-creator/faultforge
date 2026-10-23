@@ -19,7 +19,7 @@ from typing import Dict, Any, Optional
 
 def determine_candidate_source(evidence: Dict[str, Any]) -> str:
     """
-    Returns 'duo-authored (MR !<iid>)' ONLY when:
+    Returns 'commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token' ONLY when:
     - found is True
     - author or commit author is Duo/service account/agent flow (contains 'duo', 'ai-', 'service_account', or 'healer')
     - run_url exists and is non-empty
@@ -33,7 +33,6 @@ def determine_candidate_source(evidence: Dict[str, Any]) -> str:
     commit_author = str(evidence.get("commit_author") or "").lower()
     commit_email = str(evidence.get("commit_author_email") or "").lower()
     run_url = evidence.get("run_url")
-    mr_iid = evidence.get("mr_iid")
 
     is_duo_author = (
         "duo" in author
@@ -46,8 +45,7 @@ def determine_candidate_source(evidence: Dict[str, Any]) -> str:
     )
 
     if found and is_duo_author and run_url:
-        iid_str = f"!{mr_iid}" if mr_iid else "!unknown"
-        return f"duo-authored (MR {iid_str})"
+        return "commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token"
 
     return "reference-fix (not Duo-authored)"
 

@@ -1,7 +1,7 @@
 {
   "evaluation_status": "RECOVERED_AND_VERIFIED",
   "verified": true,
-  "candidate_source": "duo-authored (MR !3)",
+  "candidate_source": "commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token",
   "gates": {
     "valid_git_shas": {
       "passed": true,

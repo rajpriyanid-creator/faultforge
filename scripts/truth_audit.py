@@ -365,11 +365,43 @@ def audit_docs_claims() -> List[str]:
     expected_budget = 1500
     expected_culprit = "974035c"
 
+    replay_path = "reports/replay_evaluation.json"
+    if not os.path.exists(replay_path):
+        replay_path = "docs/sample_reports/replay_evaluation.json"
+
+    replay_data = {}
+    if os.path.exists(replay_path):
+        try:
+            with open(replay_path, "r", encoding="utf-8") as rf:
+                replay_data = json.load(rf)
+        except Exception as e:
+            violations.append(f"Could not load {replay_path} for claims audit: {e}")
+
+    raw_metrics = replay_data.get("raw_metrics", {})
+    reductions = replay_data.get("latency_reduction", {})
+
+    stale_figures = [
+        (r"3446(?:\.08)?", "Stale reference baseline latency (3446/3446.08 ms)"),
+        (r"246(?:\.18)?\s*ms", "Stale reference hardened latency (246/246.18 ms)"),
+        (r"3653(?:\.06)?", "Stale reference p95 latency (3653/3653.06 ms)"),
+        (r"92\.9\s*%", "Stale reference mean latency reduction (92.9%)"),
+        (r"77\.6\s*%", "Stale reference p95 latency reduction (77.6%)"),
+        (r"99\.9\s*%", "Stale reference p50 latency reduction (99.9%)"),
+        (r"2\.88\s*ms", "Stale reference candidate p50 latency (2.88 ms)"),
+        (r"within\s+820\s*ms", "Stale reference candidate bound (within 820 ms)"),
+        (r"issues/29\b", "Stale incident issue URL (issues/29, expected work_items/42)"),
+    ]
+
     for doc in doc_files:
         if not os.path.exists(doc):
             continue
         with open(doc, "r", encoding="utf-8", errors="ignore") as f:
             content = f.read()
+
+        # Enforce zero stale figures
+        for pattern, desc in stale_figures:
+            if re.search(pattern, content):
+                violations.append(f"{doc} - Stale metric detected: {desc}")
 
         # Check track selection: Path A
         if "Path B — Bring Your Own" in content:
@@ -391,17 +423,17 @@ def audit_docs_claims() -> List[str]:
         if "974035" not in content and "culprit" in content.lower():
             violations.append(f"{doc} - Missing or mismatched culprit commit SHA reference (expected {expected_culprit})")
 
-        # Verify reference baseline latency claim (3742ms) against reference sample report
-        sample_baseline_path = "docs/sample_reports/fault_run_baseline.json"
-        if os.path.exists(sample_baseline_path):
-            try:
-                with open(sample_baseline_path, "r", encoding="utf-8") as sbf:
-                    s_data = json.load(sbf)
-                s_avg = s_data.get("metrics", {}).get("avg_ms")
-                if s_avg and "3742" in content and abs(float(s_avg) - 3742.46) > 1.0:
-                    violations.append(f"{doc} - Claimed reference avg latency 3742ms does not match sample report ({s_avg}ms)")
-            except Exception:
-                pass
+        # Verify exact numerical match with replay_evaluation.json when present
+        if raw_metrics and doc == "README.md":
+            expected_base_mean = str(raw_metrics.get("baseline_avg_ms"))
+            expected_hard_mean = str(raw_metrics.get("hardened_avg_ms"))
+            expected_hard_p95 = str(raw_metrics.get("hardened_p95_ms"))
+            if expected_base_mean and expected_base_mean not in content:
+                violations.append(f"{doc} - Baseline mean {expected_base_mean}ms from replay_evaluation.json missing in README")
+            if expected_hard_mean and expected_hard_mean not in content:
+                violations.append(f"{doc} - Hardened mean {expected_hard_mean}ms from replay_evaluation.json missing in README")
+            if expected_hard_p95 and expected_hard_p95 not in content:
+                violations.append(f"{doc} - Hardened P95 {expected_hard_p95}ms from replay_evaluation.json missing in README")
 
         # For live runtime baseline, verify that real_avg genuinely breached the SLA budget
         if baseline_data:

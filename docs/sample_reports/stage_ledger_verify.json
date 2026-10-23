@@ -2,7 +2,7 @@
   "stage": "verify",
   "job_name": "verify:exact_fault_replay_proof",
   "status": "SUCCESS",
-  "commit_sha": "b063a91b95e8b9e7e8f6492a8cbb3c1211f1bd81",
+  "commit_sha": "e5a9752ba63115d6744a7996f0565272b2804762",
   "pipeline_id": "local-run",
   "approval_required": false,
   "artifacts_declared": [
@@ -21,8 +21,8 @@
     },
     {
       "path": "reports/replay_evaluation.json",
-      "size_bytes": 3616,
-      "sha256": "3be13737cc99a222598147d9243dec6fe63fc9354ef2414ac88e5b04d81cd34e"
+      "size_bytes": 3696,
+      "sha256": "8cd053626347c01ccc0a35b0ab94fce7ed988fc73f04d7ec467f964902b7ac08"
     }
   ],
   "timestamp": 1792690926.9074051,
