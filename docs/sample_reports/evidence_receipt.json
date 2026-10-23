@@ -26,7 +26,13 @@
     "executed": true,
     "run_id": "9909079",
     "trigger_mechanism": "AGENT_PLATFORM_SESSION",
-    "status": "COMPLETED"
+    "status": "COMPLETED",
+    "app_tree_matches_duo_commit": false,
+    "fix_sha": "f8aa9d98b8617b51c15b5fa6ceda39eb43762730",
+    "head_sha": "d3720143e15c85f519a7624859541d1ce997f1a0",
+    "changed_files": [
+      "app/clients/shipping_client.py"
+    ]
   },
   "diagnosis_summary": {
     "status": "CONFIRMED_REGRESSION",
@@ -431,5 +437,10 @@
     "requires_human_approval_to_promote": true,
     "promotion_gate": "BLOCKED_PENDING_APPROVAL"
   },
-  "tamper_evident_seal_sha256": "ba6dc384d87b27a9cb036098ca15c333feb9316e5de4998fddf95c35957ce83f"
+  "candidate_built_from_commit": "156c9a7729e631b14cedbaef600800ae73e87e23",
+  "baseline_source": "tag:baseline-v0.1.0",
+  "orbit_path_exercised": false,
+  "orbit_path_available": "feature_flag_off",
+  "probe_count": 20,
+  "tamper_evident_seal_sha256": "00cc87fd160efe09f950d4bc3a134212ffae215abdc8105631ae9c49a848cda4"
 }

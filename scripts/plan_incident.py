@@ -66,14 +66,23 @@ def plan_incident(
             "issue_type": "incident"
         }
         try:
-            r = requests.post(url, headers=headers, json=payload, timeout=10.0)
-            if r.status_code in (200, 201):
-                res = r.json()
-                issue_data["issue_iid"] = res.get("iid")
-                issue_data["web_url"] = res.get("web_url")
-                print(f"[+] Incident Issue created: {issue_data['web_url']}")
+            # Idempotency check: reuse existing open tracking issue if one is already open
+            search_url = f"{url}?state=opened&labels=incident,chaos-breach&per_page=1"
+            search_res = requests.get(search_url, headers=headers, timeout=5.0)
+            if search_res.status_code == 200 and search_res.json():
+                existing = search_res.json()[0]
+                issue_data["issue_iid"] = existing.get("iid")
+                issue_data["web_url"] = existing.get("web_url")
+                print(f"[+] Reusing existing open tracking issue #{existing.get('iid')}: {existing.get('web_url')}")
             else:
-                print(f"[!] Warning: Could not create GitLab issue (HTTP {r.status_code}): {r.text}")
+                r = requests.post(url, headers=headers, json=payload, timeout=10.0)
+                if r.status_code in (200, 201):
+                    res = r.json()
+                    issue_data["issue_iid"] = res.get("iid")
+                    issue_data["web_url"] = res.get("web_url")
+                    print(f"[+] Incident Issue created: {issue_data['web_url']}")
+                else:
+                    print(f"[!] Warning: Could not create GitLab issue (HTTP {r.status_code}): {r.text}")
         except Exception as exc:
             print(f"[!] Network error contacting GitLab Issues API: {exc}")
 

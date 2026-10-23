@@ -34,29 +34,40 @@
 
 ## ⏱️ How to Verify in 60 Seconds (Live Gate Probes)
 
-Evaluators and judges can run these 5 curl commands to verify live production health, cryptographic evidence, and 9-stage ledger parity in under 60 seconds:
+Evaluators and judges can run these 5 curl commands to verify live candidate resilience, baseline safety, cryptographic evidence, and 9-stage ledger parity in under 60 seconds:
 
 ```bash
-# 1. Health & Revision Probe (Production Revision 00002-kpl)
+# 1. Candidate Resilience Probe (Patched with 0.8s Timeout & Circuit Breaker)
+curl -sf https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app/health
+# Expected: {"status":"healthy","service":"faultforge-checkout","environment":"staging",...}
+
+# 2. Production Health (Baseline Revision 00002-kpl, awaiting manual human promotion gate)
 curl -sf https://faultforge-checkout-136942862703.us-central1.run.app/health
-# Expected: {"status":"healthy","service":"faultforge-checkout","revision":"faultforge-checkout-00002-kpl",...}
+# Expected: {"status":"healthy","service":"faultforge-checkout","revision":"faultforge-checkout-00002-kpl","environment":"production",...}
 
-# 2. Cryptographic Evidence Receipt (Sealed with SHA-256)
-curl -sf https://faultforge-checkout-136942862703.us-central1.run.app/api/v1/evidence
-# Expected: {"final_status":"RECOVERED_AND_VERIFIED","fault_profile":{"hash":"644a89784316",...},"identical_replay_confirmed":true,"duo_execution":{"status":"CONFIRMED",...},...}
+# 3. Cryptographic Evidence Receipt (Sealed with SHA-256)
+curl -sf https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app/api/v1/evidence
+# Expected: {"final_status":"RECOVERED_AND_VERIFIED","fault_profile":{"hash":"644a89784316",...},"identical_replay_confirmed":true,...}
 
-# 3. 9-Stage Cryptographic Lifecycle Ledger
-curl -sf https://faultforge-checkout-136942862703.us-central1.run.app/api/v1/ledger
+# 4. 9-Stage Cryptographic Lifecycle Ledger
+curl -sf https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app/api/v1/ledger
 # Expected: {"project":"faultforge/checkout-service","ledger_version":"1.1.0","stages":{"plan":...,"create":...,"configure":...,"verify":...,"secure":...,"package":...,"release":...,"monitor":...,"govern":...}}
 
-# 4. Live Prometheus-Style Resilience Telemetry
-curl -sf https://faultforge-checkout-136942862703.us-central1.run.app/metrics
-# Expected: {"service":"faultforge-checkout","circuit_breaker":{"state":"CLOSED",...},"resilience_metrics":{"total_requests":...,"p95_latency_ms":...}}
-
 # 5. Public CI/CD Pipeline Verification (Unauthenticated HTTP 200)
-curl -sI https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2982183259
+curl -sI https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2982510370
 # Expected: HTTP/2 200 (13/13 passing jobs publicly visible without GitLab login)
 ```
+
+---
+
+### How Candidate Was Built & Evaluated (Commit Provenance)
+
+To ensure zero ambiguity between baseline regression, candidate fix, and cloud deployments:
+1. **Unpatched Baseline Pinned to Tag:** The regression baseline is pinned to tag `baseline-v0.1.0` (`4ec3a5ad`), preserving the unpatched shipping client without timeouts.
+2. **Duo-Authored Candidate Remediation:** In agent session `9909079`, the GitLab Duo service account authored commit `f8aa9d98` on branch `fix/resilience-shipping-timeout` and opened Merge Request `!3`, adding the bounded 0.8s timeout, circuit breaker, and fallback estimate. The resilience fix is merged into `main`.
+3. **Container Image Built from Patched Code:** In CI stage `package:container_build`, the Docker container is built directly from `main` (patched resilience code).
+4. **Cloud Run Candidate Deployment:** In CI stage `release:cloudrun_candidate_deploy`, the patched container is deployed to Google Cloud Run as candidate revision `faultforge-checkout-00032-cux` under the `candidate` URL and allocated 10% canary traffic.
+5. **Supervised Production Promotion Gate:** Live production traffic remains allocated to baseline revision `00002-kpl` until a human operator approves `govern:promote_to_production`. Evaluators wishing to verify resilience can hit the **Candidate URL** directly.
 
 ---
 
@@ -220,6 +231,9 @@ python scripts/truth_audit.py --final-audit
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8090
 # Open http://127.0.0.1:8090/dashboard in your browser
 ```
+
+> [!NOTE]
+> **Local Test Runtime & Skip Transparency:** The local test suite runs in ~58 seconds because it executes full static analysis, security checks, and packaging hygiene validations. The 1 skipped test is `tests/chaos/test_resilience.py:32` (an offline guard when local Toxiproxy container is not running; in CI, chaos replay is executed under real Toxiproxy as a service in `verify:exact_fault_replay_proof`).
 
 ### Step-by-Step Closed-Loop Walkthrough
 

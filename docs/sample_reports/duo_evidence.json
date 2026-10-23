@@ -10,5 +10,11 @@
   "commit_author": "FaultForge, Supervised, Resilience, Healer",
   "commit_author_email": "service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com",
   "run_id": "9909079",
-  "candidate_source": "commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token"
+  "candidate_source": "commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token",
+  "fix_sha": "f8aa9d98b8617b51c15b5fa6ceda39eb43762730",
+  "head_sha": "d3720143e15c85f519a7624859541d1ce997f1a0",
+  "app_tree_matches_duo_commit": false,
+  "changed_files": [
+    "app/clients/shipping_client.py"
+  ]
 }

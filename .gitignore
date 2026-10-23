@@ -21,3 +21,4 @@ reports/*
 !reports/.gitkeep
 !reports/README.md
 *.zip
+.gitleaks-report*

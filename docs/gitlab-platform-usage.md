@@ -33,7 +33,7 @@ In strict accordance with the hackathon's truthfulness rules, FaultForge reports
 - **Author Identity:** `FaultForge, Supervised, Resilience, Healer <service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com>`
 - **Candidate Replay Proof:** 0/20 SLA breaches (0%) under identical fault profile `644a89784316` (`candidate_source: commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token`)
 
-### Incident Work Item Provenance: Root Issue #42 vs. Pipeline Issue #48
+### Incident Work Item Provenance: Root Issue #42 vs. Pipeline Issue #50
 Evaluators inspecting evidence artifacts will note two incident issue references:
 - **Issue #42 (Root Remediation Issue):** The primary incident work item created during initial chaos discovery. The GitLab Duo Healer custom flow was triggered on Issue #42, synthesized the resilience patch, and opened Merge Request `!3`.
 - **Issue #50 (Pipeline Incident Tracking):** During automated GitLab CI pipeline executions on `main` (Pipeline `#2982183259`), the `plan:incident_tracking` job dynamically provisions a runtime incident work item (`#50`) to track the specific pipeline run and verify end-to-end incident automation without mutating historical issue records.

@@ -81,8 +81,8 @@ create:duo_remediation_mr:
   script:
     - apt-get update -qq && apt-get install -y -qq git
     - pip install -r requirements.txt
-    - git fetch origin main
-    - git checkout origin/main -- app/
+    - git fetch origin --tags
+    - git checkout baseline-v0.1.0 -- app/
     - python scripts/start_toxiproxy.py
     - python -m uvicorn stub.mock_shipping_api:app --host 127.0.0.1 --port 8081 &
     - python -m uvicorn app.main:app --host 127.0.0.1 --port 8090 &
@@ -224,6 +224,20 @@ secure:sast_and_secret_scan:
       - reports/bandit_security_report.json
       - reports/stage_ledger.json
       - reports/stage_ledger_*.json
+
+secure:gitleaks:
+  stage: secure
+  image:
+    name: zricethezav/gitleaks:latest
+    entrypoint: [""]
+  dependencies: []
+  script:
+    - mkdir -p reports
+    - gitleaks detect --source=. --config=.gitleaks.toml --redact --no-git --report-format=json --report-path=reports/gitleaks-report.json --exit-code 1
+  artifacts:
+    expire_in: 30 days
+    paths:
+      - reports/gitleaks-report.json
 
 # -------------------------------------------------------------
 # 6. PACKAGE STAGE: Multi-Stage Container Build & Registry Push

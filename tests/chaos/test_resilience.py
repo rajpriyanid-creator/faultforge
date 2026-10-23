@@ -26,7 +26,7 @@ def test_shipping_dependency_chaos_resilience():
     - PASSES on fixed code (recovers via fallback within 840ms)
     """
     # Positive assertion: proxy must be genuine Shopify Toxiproxy image, not a stub
-    assert "ghcr.io/shopify/toxiproxy" in os.environ.get("TOXIPROXY_IMAGE", "ghcr.io/shopify/toxiproxy:2.9.0")
+    assert os.environ.get("TOXIPROXY_IMAGE", "ghcr.io/shopify/toxiproxy:2.9.0") == "ghcr.io/shopify/toxiproxy:2.9.0"
 
     if not is_chaos_stack_ready():
         pytest.skip(

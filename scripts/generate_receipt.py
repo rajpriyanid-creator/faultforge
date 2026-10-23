@@ -249,6 +249,10 @@ def generate_evidence_receipt(
         "risk_classification": risk_data.get("tier", "MEDIUM"),
         "approver": approver,
         "candidate_source": candidate_source,
+        "candidate_built_from_commit": os.getenv("CI_COMMIT_SHA") or git_sha,
+        "baseline_source": "tag:baseline-v0.1.0",
+        "orbit_path_exercised": False,
+        "orbit_path_available": "feature_flag_off",
         "urls": {
             "referenced_pipeline_url": pipeline_url,
             "referenced_job_url": job_url,
