@@ -339,7 +339,33 @@ def audit_sample_reports_provenance(sample_dir: str = "docs/sample_reports") -> 
     with open(readme_path, "r", encoding="utf-8") as f:
         readme_content = f.read()
 
-    # Detect if a blanket pipeline execution window is claimed for sample artifacts
+    # 1. Discover declared pipeline execution windows
+    pipeline_windows = {}
+    current_pid = None
+    for line in readme_content.splitlines():
+        if line.strip().startswith("|"):
+            continue
+        pid_match = re.search(r"pipeline[^\d]*(\d{8,})", line, re.IGNORECASE)
+        if pid_match:
+            current_pid = pid_match.group(1)
+        win_match = re.search(
+            r"[`\"]?([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z?)[`\"]?\s*to\s*[`\"]?([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z?)[`\"]?",
+            line,
+            re.IGNORECASE
+        )
+        if win_match and current_pid:
+            s_str, e_str = win_match.group(1), win_match.group(2)
+            try:
+                s_iso = s_str if s_str.endswith("Z") else s_str + "Z"
+                e_iso = e_str if e_str.endswith("Z") else e_str + "Z"
+                start_dt = datetime.fromisoformat(s_iso.replace("Z", "+00:00"))
+                end_dt = datetime.fromisoformat(e_iso.replace("Z", "+00:00"))
+                pipeline_windows[current_pid] = (start_dt, end_dt, s_str, e_str)
+                current_pid = None
+            except Exception:
+                pass
+
+    # 2. Blanket pipeline window check across fault run files
     window_match = re.search(
         r"Pipeline Execution Window:\s*[`\"]?([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z?)[`\"]?\s*to\s*[`\"]?([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z?)[`\"]?",
         readme_content,
@@ -368,6 +394,52 @@ def audit_sample_reports_provenance(sample_dir: str = "docs/sample_reports") -> 
                             )
         except Exception as e:
             violations.append(f"Failed parsing claimed pipeline window in sample README: {e}")
+
+    # 3. Parse and validate every table row in Section 2
+    in_table = False
+    for line in readme_content.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("|"):
+            continue
+        cells = [c.strip() for c in stripped.split("|")[1:-1]]
+        if len(cells) < 5:
+            continue
+        if cells[0].startswith("---") or cells[0].lower() in ["artifact file", "file"]:
+            in_table = True
+            continue
+        if not in_table:
+            continue
+
+        file_name = re.sub(r"[`*]", "", cells[0]).strip()
+        source_context = cells[3]
+        time_str = cells[4]
+
+        # Check if row attributes to a pipeline whose window does not contain the timestamp
+        pipe_refs = re.findall(r"\b(29\d{8})\b", source_context)
+        for pid in pipe_refs:
+            if pid in pipeline_windows:
+                start_dt, end_dt, s_str, e_str = pipeline_windows[pid]
+                time_match = re.search(r"([0-9]{4}-[0-9]{2}-[0-9]{2}[T\s][0-9]{2}:[0-9]{2}:[0-9]{2})", time_str)
+                if time_match:
+                    try:
+                        row_ts_str = time_match.group(1).replace(" ", "T") + "Z"
+                        row_dt = datetime.fromisoformat(row_ts_str.replace("Z", "+00:00"))
+                        if not (start_dt <= row_dt <= end_dt):
+                            violations.append(
+                                f"docs/sample_reports/README.md table row '{file_name}' attributes generation to "
+                                f"pipeline {pid} (window {s_str} to {e_str}), but generation time {time_str} "
+                                f"falls outside this window"
+                            )
+                    except Exception as e:
+                        violations.append(f"Failed parsing timestamp '{time_str}' in row for '{file_name}': {e}")
+
+        # Check evidence_receipt.json specific attribution rule
+        if file_name == "evidence_receipt.json":
+            if "job 17392416795" in source_context.lower() and "not an artifact" not in source_context.lower():
+                violations.append(
+                    "docs/sample_reports/README.md attributes evidence_receipt.json to job 17392416795, "
+                    "but it was sealed locally on 2026-10-23 03:44 UTC"
+                )
 
     return violations
 
