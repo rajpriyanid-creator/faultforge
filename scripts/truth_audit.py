@@ -410,20 +410,33 @@ def audit_docs_claims() -> List[str]:
     expected_budget = 1500
     expected_culprit = "974035c"
 
-    replay_path = "reports/replay_evaluation.json"
-    if not os.path.exists(replay_path):
-        replay_path = "docs/sample_reports/replay_evaluation.json"
+    # Canonical sample reports contain the documented replay evaluation referenced by README.md
+    sample_replay_path = "docs/sample_reports/replay_evaluation.json"
+    if not os.path.exists(sample_replay_path) and os.path.exists("reports/replay_evaluation.json"):
+        sample_replay_path = "reports/replay_evaluation.json"
 
     replay_data = {}
-    if os.path.exists(replay_path):
+    if os.path.exists(sample_replay_path):
         try:
-            with open(replay_path, "r", encoding="utf-8") as rf:
+            with open(sample_replay_path, "r", encoding="utf-8") as rf:
                 replay_data = json.load(rf)
         except Exception as e:
-            violations.append(f"Could not load {replay_path} for claims audit: {e}")
+            violations.append(f"Could not load {sample_replay_path} for claims audit: {e}")
 
     raw_metrics = replay_data.get("raw_metrics", {})
     reductions = replay_data.get("latency_reduction", {})
+
+    # For live candidate replay run (when executed in CI), verify resilience gate passed
+    live_replay_path = "reports/replay_evaluation.json"
+    if os.path.exists(live_replay_path) and live_replay_path != sample_replay_path:
+        try:
+            with open(live_replay_path, "r", encoding="utf-8") as lrf:
+                live_data = json.load(lrf)
+            live_gates = live_data.get("gates", {})
+            if not live_gates.get("candidate_resilience", {}).get("passed", False):
+                violations.append("Runtime candidate replay failed resilience gate")
+        except Exception as e:
+            violations.append(f"Could not load {live_replay_path}: {e}")
 
     stale_figures = [
         (r"3446(?:\.08)?", "Stale reference baseline latency (3446/3446.08 ms)"),
