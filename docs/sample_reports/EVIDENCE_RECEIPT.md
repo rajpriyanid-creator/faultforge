@@ -5,7 +5,7 @@
 **Final Status:** **`RECOVERED_AND_VERIFIED`**  
 **Autonomy Level:** `SUPERVISED` (Supervised Gate)  
 **Approver:** `rajpriyanid`  
-**Tamper-Evident Seal (SHA-256):** `5b141937791b7a5bf9d31aa27e4618df5678d4c9268ee22909f16c900135218c`
+**Tamper-Evident Seal (SHA-256):** `b70cd298320d50ca4a84531e706aaae1e990bb4546d1e4aeb2b13d15d1aeb3bf`
 
 ---
 

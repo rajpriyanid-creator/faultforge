@@ -75,8 +75,8 @@
         },
         {
           "path": "reports/duo_evidence.json",
-          "size_bytes": 2452,
-          "sha256": "94519b4c07d5ea69952b1c36e9417d75a78f07b8122b51feda656b68d4d96418"
+          "size_bytes": 3532,
+          "sha256": "c0f0915de767534264ea42a7432e545e611e74ed8c3cb0a29888e1b2df8f792a"
         }
       ],
       "timestamp": 1792782397.696244,
@@ -271,8 +271,8 @@
       "artifacts_details": [
         {
           "path": "reports/evidence_receipt.json",
-          "size_bytes": 13844,
-          "sha256": "b72a71fe45728118f2483bf05ff47bb8b05f49a12beff0b9298d48dca4de5108"
+          "size_bytes": 14729,
+          "sha256": "27766d4a147107bc1c8f929e7ece0651a8113697ac6935419c6b5d862cc4de0f"
         }
       ],
       "timestamp": 1792782751.9504948,

@@ -23,19 +23,21 @@
   "commits_after_duo": [
     {
       "commit": "d372014",
-      "author": "FaultForge, Supervised, Resilience, Healer",
+      "author": "FaultForge, Supervised, Resilience, Healer <service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com>",
       "message": "fix(resilience): bound shipping call to 0.8s with circuit breaker and fallback estimate"
     },
     {
       "commit": "3294042",
-      "author": "FaultForge Agent",
+      "author": "FaultForge Agent <agent@faultforge.internal>",
       "message": "Merge branch 'main' into fix/resilience-shipping-timeout"
     },
     {
       "commit": "79348f4",
-      "author": "FaultForge, Supervised, Resilience, Healer",
+      "author": "FaultForge, Supervised, Resilience, Healer <service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com>",
       "message": "fix(resilience): bound shipping call to 0.8s with circuit breaker and graceful fallback"
     }
   ],
-  "explanation": "Duo synthesized the initial resilience implementation in f8aa9d98 and d372014 authored by the service account. The orchestration agent merged main, updated app/dashboard.html, and refined shipping_client.py error handling, producing evaluated candidate commit 79348f47 (diff: 2 files changed, 34 insertions(+), 21 deletions(-): app/clients/shipping_client.py and app/dashboard.html). Because app/dashboard.html and error handling were updated after f8aa9d98, app_tree_matches_duo_commit is false."
+  "explanation": "According to Git and GitLab author metadata, the resilience commits f8aa9d98, d372014, and evaluated candidate commit 79348f4 were all authored by the GitLab Duo service account (FaultForge, Supervised, Resilience, Healer <service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com>) on branch fix/resilience-shipping-timeout. The branch merge commit 3294042 was authored by FaultForge Agent <agent@faultforge.internal> to synchronize main into the branch (bringing in app/dashboard.html). The candidate diff between f8aa9d98 and evaluated candidate 79348f4 spans app/clients/shipping_client.py and app/dashboard.html (2 files changed, 34 insertions(+), 21 deletions(-)). Comparing evaluated candidate 79348f4 against main branch pipeline commit e150fad confirms app_tree_matches_evaluated_candidate is false (5 files changed, 180 insertions(+), 37 deletions(-)), reflecting post-merge main branch features such as orbit_client.py.",
+  "app_tree_matches_evaluated_candidate": false,
+  "app_tree_evaluated_candidate_diff_stat": "app/clients/__init__.py        |   3 +-\n app/clients/orbit_client.py    | 127 +++++++++++++++++++++++++++++++++++++++++\n app/clients/shipping_client.py |  48 ++++++----------\n app/dashboard.html             |  12 ++--\n app/main.py                    |  27 +++++++++\n 5 files changed, 180 insertions(+), 37 deletions(-)"
 }

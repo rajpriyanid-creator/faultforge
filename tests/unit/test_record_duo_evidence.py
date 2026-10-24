@@ -165,3 +165,26 @@ def test_duo_authored_detection_and_candidate_source_integration(tmp_path):
     assert ev["candidate_source"] == "commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token"
     assert ev["gates"]["identical_profile_hash"]["passed"] is True
     assert ev["gates"]["identical_profile_hash"]["baseline_hash"] == ev["gates"]["identical_profile_hash"]["hardened_hash"]
+
+def test_duo_evidence_candidate_tree_match_fields(tmp_path):
+    from scripts.generate_receipt import generate_evidence_receipt
+    reports_dir = tmp_path / "reports"
+    reports_dir.mkdir(parents=True, exist_ok=True)
+    duo_file = reports_dir / "duo_evidence.json"
+    duo_file.write_text(json.dumps({
+        "found": True,
+        "mr_iid": 3,
+        "fix_sha": "f8aa9d98b8617b51c15b5fa6ceda39eb43762730",
+        "head_sha": "79348f47042849465c737be2493b135a21f37e06",
+        "evaluated_sha": "79348f47042849465c737be2493b135a21f37e06",
+        "app_tree_matches_evaluated_candidate": False,
+        "app_tree_evaluated_candidate_diff_stat": "5 files changed, 180 insertions(+), 37 deletions(-)",
+        "explanation": "Author-accurate explanation"
+    }), encoding="utf-8")
+    receipt_json = str(reports_dir / "evidence_receipt.json")
+    receipt_md = str(reports_dir / "EVIDENCE_RECEIPT.md")
+    receipt = generate_evidence_receipt(str(reports_dir), receipt_json, receipt_md)
+    duo_exec = receipt.get("duo_execution", {})
+    assert duo_exec.get("app_tree_matches_evaluated_candidate") is False
+    assert "180 insertions" in duo_exec.get("app_tree_evaluated_candidate_diff_stat", "")
+

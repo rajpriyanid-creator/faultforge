@@ -47,17 +47,27 @@ In the CI stage `verify:exact_fault_replay_proof`:
 5. It executes 20 probes under the identical Toxiproxy latency profile `644a89784316`.
 Consequently, the candidate commit SHA evaluated and recorded in `fault_run_hardened.json` (`79348f47042849465c737be2493b135a21f37e06`) represents the candidate branch head evaluated by the pipeline, while the initial Duo synthesis commit is `f8aa9d98`.
 
-### Code Provenance: What Duo Wrote vs. What the Orchestration Agent Changed
-In `reports/duo_evidence.json` and the sealed receipt, `app_tree_matches_duo_commit` is recorded as `false`:
-- **What Duo Wrote (`f8aa9d98` and `d372014`):** Synthesized by the GitLab Duo service account (`FaultForge, Supervised, Resilience, Healer <service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com>`) in session 9909079 on branch `fix/resilience-shipping-timeout`. Duo implemented the core resilience logic in `app/clients/shipping_client.py`: a strict 0.8s timeout, circuit breaker load shedding (3 failures, 10s cooldown), and deterministic fallback rate calculation.
-- **What the Orchestration Agent Changed Afterward (`79348f47`):** The orchestration agent merged `main` to keep CI and telemetry synchronized, updated telemetry links in `app/dashboard.html`, and refined `shipping_client.py` error handling (standardizing on direct `httpx.Timeout(0.8)` with HTTPStatusError/TransportError fallback handling).
-- **Exact Diff (`git diff --stat f8aa9d98 79348f47 -- app/ app/dashboard.html`):**
+### Code Provenance: Author Breakdown and Candidate Tree Provenance
+In `reports/duo_evidence.json` and the sealed receipt:
+- **Duo-Authored Commits (`f8aa9d98`, `d372014`, and `79348f4`):** According to Git and GitLab author metadata, all three resilience commits were authored by the GitLab Duo service account (`FaultForge, Supervised, Resilience, Healer <service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com>`) in session 9909079 on branch `fix/resilience-shipping-timeout`. Duo authored the core resilience bounded timeout, circuit breaker load shedding, and deterministic fallback calculation in `app/clients/shipping_client.py`.
+- **Orchestration Agent Commit (`3294042`):** Authored by `FaultForge Agent <agent@faultforge.internal>` to merge `main` into `fix/resilience-shipping-timeout`, synchronizing CI configuration and bringing in `app/dashboard.html` updates from `main`.
+- **Evaluated Candidate Head (`79348f47`):** Authored by the Duo service account and evaluated as the candidate commit during exact-fault replay proof in pipeline #2982633493. The diff between initial Duo commit `f8aa9d98` and evaluated `79348f4` is:
   ```
   app/clients/shipping_client.py | 48 ++++++++++++++++++++++++++----------------
   app/dashboard.html             |  7 +++---
   2 files changed, 34 insertions(+), 21 deletions(-)
   ```
-  Because `app/dashboard.html` and error handling were updated after `f8aa9d98`, `app_tree_matches_duo_commit` is accurately recorded as `false`.
+  Because `app/dashboard.html` and refinements exist beyond `f8aa9d98`, `app_tree_matches_duo_commit` is accurately recorded as `false`.
+- **Evaluated Candidate vs. Main Pipeline Tree (`app_tree_matches_evaluated_candidate`):** Running `git diff --quiet 79348f47 e150fad -- app/` confirms `app_tree_matches_evaluated_candidate: false` with the exact diff stat:
+  ```
+  app/clients/__init__.py        |   3 +-
+  app/clients/orbit_client.py    | 127 +++++++++++++++++++++++++++++++++++++++++
+  app/clients/shipping_client.py |  48 ++++++----------
+  app/dashboard.html             |  12 ++--
+  app/main.py                    |  27 +++++++++
+  5 files changed, 180 insertions(+), 37 deletions(-)
+  ```
+  This reflects post-merge main branch features such as `orbit_client.py`.
 
 ### Verified Deployment Status:
 1. **Cloud Run Candidate Deployment:** `VERIFIED (SUCCESS)`  
