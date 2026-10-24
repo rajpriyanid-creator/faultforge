@@ -12,12 +12,14 @@
   "run_id": "9909079",
   "candidate_source": "commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token",
   "fix_sha": "f8aa9d98b8617b51c15b5fa6ceda39eb43762730",
-  "head_sha": "d3720143e15c85f519a7624859541d1ce997f1a0",
+  "head_sha": "79348f47042849465c737be2493b135a21f37e06",
+  "evaluated_sha": "79348f47042849465c737be2493b135a21f37e06",
   "app_tree_matches_duo_commit": false,
   "changed_files": [
-    "app/clients/shipping_client.py"
+    "app/clients/shipping_client.py",
+    "app/dashboard.html"
   ],
-  "diff_stat": "app/clients/shipping_client.py | 47 +++---\napp/dashboard.html | 7 +-\n2 files changed, 29 insertions(+), 25 deletions(-)",
+  "diff_stat": "app/clients/shipping_client.py | 48 ++++++++++++++++++++++++++----------------\napp/dashboard.html | 7 +++---\n2 files changed, 34 insertions(+), 21 deletions(-)",
   "commits_after_duo": [
     {
       "commit": "d372014",
@@ -25,15 +27,15 @@
       "message": "fix(resilience): bound shipping call to 0.8s with circuit breaker and fallback estimate"
     },
     {
-      "commit": "7fbd086",
+      "commit": "3294042",
       "author": "FaultForge Agent",
-      "message": "Merge branch main into fix/resilience-shipping-timeout"
+      "message": "Merge branch 'main' into fix/resilience-shipping-timeout"
     },
     {
-      "commit": "559dc4d",
-      "author": "FaultForge Agent",
-      "message": "fix: honest cloud run claims, referenced receipt URLs, and Part B CI integration"
+      "commit": "79348f4",
+      "author": "FaultForge, Supervised, Resilience, Healer",
+      "message": "fix(resilience): bound shipping call to 0.8s with circuit breaker and graceful fallback"
     }
   ],
-  "explanation": "Duo synthesized core resilience in f8aa9d98. Subsequent commits on the branch added asyncio.wait_for outer timeout guard and updated dashboard.html, so app_tree_matches_duo_commit is false."
+  "explanation": "Duo synthesized the initial resilience implementation in f8aa9d98 and d372014 authored by the service account. The orchestration agent merged main, updated app/dashboard.html, and refined shipping_client.py error handling, producing evaluated candidate commit 79348f47 (diff: 2 files changed, 34 insertions(+), 21 deletions(-): app/clients/shipping_client.py and app/dashboard.html). Because app/dashboard.html and error handling were updated after f8aa9d98, app_tree_matches_duo_commit is false."
 }

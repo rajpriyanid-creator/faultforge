@@ -201,4 +201,23 @@ def test_audit_docs_claims_fails_on_unverified_latency_in_docs(tmp_path, monkeyp
     assert any("Stale candidate mean latency (825/825.56 ms)" in v for v in violations)
     assert any("Stale reduction percentage (80.4%)" in v for v in violations)
 
+def test_audit_passes_for_lf_and_crlf_copies(tmp_path, monkeypatch):
+    from scripts.truth_audit import hash_file_sha256, audit_report_consistency
+    monkeypatch.chdir(tmp_path)
+    reports_dir = tmp_path / "reports"
+    reports_dir.mkdir(parents=True, exist_ok=True)
+
+    # Write identical JSON payload with LF vs CRLF
+    content = '{\n  "found": true,\n  "mr_iid": 3,\n  "status": "COMPLETED"\n}\n'
+    art_file = reports_dir / "duo_evidence.json"
+    art_file.write_bytes(content.encode("utf-8"))
+    sha_lf = hash_file_sha256(str(art_file))
+
+    # Convert to CRLF on disk
+    art_file.write_bytes(content.replace("\n", "\r\n").encode("utf-8"))
+    sha_crlf = hash_file_sha256(str(art_file))
+
+    assert sha_lf == sha_crlf, "hash_file_sha256 must yield identical hash regardless of LF or CRLF line endings"
+
+
 

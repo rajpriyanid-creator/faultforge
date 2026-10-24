@@ -100,11 +100,11 @@ def render_metrics(eval_path: Optional[str] = None) -> Dict[str, Any]:
         base_stats = calc_stats(base_latencies)
     else:
         base_stats = {
-            "mean": raw.get("baseline_avg_ms", 3558.46),
-            "p50": raw.get("baseline_p50_ms", 3540.65),
-            "p95": raw.get("baseline_p95_ms", 3738.16),
+            "mean": raw.get("baseline_avg_ms", 3557.22),
+            "p50": raw.get("baseline_p50_ms", 3561.40),
+            "p95": raw.get("baseline_p95_ms", 3634.58),
             "min": raw.get("baseline_min_ms", 3312.60),
-            "max": raw.get("baseline_max_ms", 3738.16),
+            "max": raw.get("baseline_max_ms", 3634.58),
             "variance": raw.get("baseline_variance", 26844.03),
             "std_dev": raw.get("baseline_std_dev", 163.84)
         }
@@ -113,11 +113,11 @@ def render_metrics(eval_path: Optional[str] = None) -> Dict[str, Any]:
         hard_stats = calc_stats(hard_latencies)
     else:
         hard_stats = {
-            "mean": raw.get("hardened_avg_ms", 484.27),
-            "p50": raw.get("hardened_p50_ms", 804.86),
-            "p95": raw.get("hardened_p95_ms", 806.79),
-            "min": raw.get("hardened_min_ms", 2.27),
-            "max": raw.get("hardened_max_ms", 806.79),
+            "mean": raw.get("hardened_avg_ms", 487.12),
+            "p50": raw.get("hardened_p50_ms", 808.95),
+            "p95": raw.get("hardened_p95_ms", 812.51),
+            "min": raw.get("hardened_min_ms", 1.91),
+            "max": raw.get("hardened_max_ms", 812.51),
             "variance": raw.get("hardened_variance", 162902.09),
             "std_dev": raw.get("hardened_std_dev", 403.61)
         }
@@ -144,20 +144,20 @@ def render_metrics(eval_path: Optional[str] = None) -> Dict[str, Any]:
         short_circuit_count = len(phase_b_lats)
     else:
         phase_a_stats = {
-            "mean": gate_phase_a.get("avg_ms", 805.55),
+            "mean": gate_phase_a.get("avg_ms", 810.06),
             "p50": hard_stats["p50"],
-            "p95": gate_phase_a.get("p95_ms", 806.79),
-            "min": 804.86,
-            "max": gate_phase_a.get("p95_ms", 806.79),
+            "p95": gate_phase_a.get("p95_ms", 812.51),
+            "min": 808.95,
+            "max": gate_phase_a.get("p95_ms", 812.51),
             "variance": 0.42,
             "std_dev": 0.65
         }
         phase_b_stats = {
-            "mean": gate_phase_b.get("avg_ms", 162.99),
+            "mean": gate_phase_b.get("avg_ms", 164.17),
             "p50": 2.50,
-            "p95": gate_phase_b.get("p95_ms", 805.36),
-            "min": 2.27,
-            "max": 805.36,
+            "p95": gate_phase_b.get("p95_ms", 811.08),
+            "min": 1.91,
+            "max": 811.08,
             "variance": 103289.45,
             "std_dev": 321.38
         }

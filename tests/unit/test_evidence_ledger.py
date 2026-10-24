@@ -11,6 +11,17 @@ def test_hash_file_sha256(tmp_path):
     assert len(h) == 64
     assert isinstance(h, str)
 
+def test_hash_file_sha256_lf_crlf_identical(tmp_path):
+    lf_file = tmp_path / "test_lf.json"
+    crlf_file = tmp_path / "test_crlf.json"
+    content = '{\n  "status": "success",\n  "probes": 20\n}\n'
+    lf_file.write_bytes(content.encode("utf-8"))
+    crlf_file.write_bytes(content.replace("\n", "\r\n").encode("utf-8"))
+
+    h_lf = hash_file_sha256(str(lf_file))
+    h_crlf = hash_file_sha256(str(crlf_file))
+    assert h_lf == h_crlf, f"Hash mismatch between LF ({h_lf}) and CRLF ({h_crlf})"
+
 def test_evidence_ledger_records_verified_artifacts(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     reports_dir = tmp_path / "reports"

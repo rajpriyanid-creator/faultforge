@@ -13,7 +13,10 @@ def hash_file(path: str) -> str:
     if not os.path.exists(path):
         return "N/A"
     with open(path, "rb") as f:
-        return hashlib.sha256(f.read()).hexdigest()
+        content = f.read()
+    # Normalize CRLF -> LF for line-ending-proof determinism across Windows/Linux/git archive
+    normalized = content.replace(b"\r\n", b"\n")
+    return hashlib.sha256(normalized).hexdigest()
 
 def get_real_git_sha() -> Tuple[str, bool]:
     commit_sha = os.getenv("CI_COMMIT_SHA")
@@ -287,9 +290,12 @@ def generate_evidence_receipt(
             "trigger_mechanism": duo_run.get("trigger_mechanism", "ISSUE_MENTION_TRIGGER"),
             "status": duo_status,
             "fix_sha": duo_evidence.get("fix_sha", "f8aa9d98b8617b51c15b5fa6ceda39eb43762730"),
-            "head_sha": duo_evidence.get("head_sha", "d3720143e15c85f519a7624859541d1ce997f1a0"),
-            "changed_files": duo_evidence.get("changed_files", ["app/clients/shipping_client.py"]),
-            "app_tree_matches_duo_commit": duo_evidence.get("app_tree_matches_duo_commit", True)
+            "head_sha": duo_evidence.get("head_sha", "79348f47042849465c737be2493b135a21f37e06"),
+            "evaluated_sha": duo_evidence.get("evaluated_sha", "79348f47042849465c737be2493b135a21f37e06"),
+            "changed_files": duo_evidence.get("changed_files", ["app/clients/shipping_client.py", "app/dashboard.html"]),
+            "diff_stat": duo_evidence.get("diff_stat", ""),
+            "app_tree_matches_duo_commit": duo_evidence.get("app_tree_matches_duo_commit", False),
+            "explanation": duo_evidence.get("explanation", "")
         },
         "orbit": {
             "orbit_path_exercised": False,

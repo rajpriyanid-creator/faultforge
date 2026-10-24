@@ -122,11 +122,11 @@ def audit_chaos_mocks() -> List[str]:
 def hash_file_sha256(path: str) -> str:
     if not os.path.exists(path):
         return ""
-    h = hashlib.sha256()
     with open(path, "rb") as f:
-        while chunk := f.read(65536):
-            h.update(chunk)
-    return h.hexdigest()
+        content = f.read()
+    # Normalize CRLF -> LF for line-ending-proof determinism across Windows/Linux/git archive
+    normalized = content.replace(b"\r\n", b"\n")
+    return hashlib.sha256(normalized).hexdigest()
 
 def get_repo_first_commit_info() -> Tuple[Optional[float], Optional[str]]:
     is_ci = os.getenv("CI") == "true" or os.getenv("GITLAB_CI") == "true"
@@ -554,7 +554,15 @@ def audit_docs_claims() -> List[str]:
         (r"3446(?:\.08)?", "Stale reference baseline latency (3446/3446.08 ms)"),
         (r"246(?:\.18)?\s*ms", "Stale reference hardened latency (246/246.18 ms)"),
         (r"3653(?:\.06)?", "Stale reference p95 latency (3653/3653.06 ms)"),
+        (r"3558(?:\.46)?\s*ms", "Stale reference baseline latency (3558/3558.46 ms)"),
+        (r"484(?:\.27)?\s*ms", "Stale reference candidate mean latency (484/484.27 ms)"),
+        (r"806(?:\.79)?\s*ms", "Stale reference candidate p95 latency (806/806.79 ms)"),
+        (r"804(?:\.86)?\s*ms", "Stale reference candidate p50 latency (804/804.86 ms)"),
+        (r"3540(?:\.65)?\s*ms", "Stale reference baseline p50 latency (3540/3540.65 ms)"),
+        (r"3738(?:\.16)?\s*ms", "Stale reference baseline p95 latency (3738/3738.16 ms)"),
         (r"92\.9\s*%", "Stale reference mean latency reduction (92.9%)"),
+        (r"86\.4\s*%", "Stale reference mean latency reduction (86.4%)"),
+        (r"78\.4\s*%", "Stale reference p95 latency reduction (78.4%)"),
         (r"99\.9\s*%", "Stale reference p50 latency reduction (99.9%)"),
         (r"2\.88\s*ms", "Stale reference candidate p50 latency (2.88 ms)"),
         (r"within\s+820\s*ms", "Stale reference candidate bound (within 820 ms)"),
@@ -624,6 +632,27 @@ def audit_docs_claims() -> List[str]:
                 violations.append(f"{doc} - Hardened mean {expected_hard_mean}ms from replay_evaluation.json missing in README")
             if expected_hard_p95 and expected_hard_p95 not in content:
                 violations.append(f"{doc} - Hardened P95 {expected_hard_p95}ms from replay_evaluation.json missing in README")
+
+        # Check quoted reduction percentages against replay_evaluation.json
+        if reductions:
+            expected_mean_red = str(reductions.get("mean_basis", {}).get("percent"))
+            expected_p95_red = str(reductions.get("p95_basis", {}).get("percent"))
+            expected_p50_red = str(reductions.get("p50_basis", {}).get("percent"))
+
+            if expected_mean_red:
+                for m in re.finditer(r"(\d+\.\d+)\s*%\s*(?:mean\s+latency\s+reduction|mean\s+reduction)", content, re.IGNORECASE):
+                    if m.group(1) != expected_mean_red:
+                        violations.append(f"{doc} - Quoted mean latency reduction '{m.group(0)}' does not match replay_evaluation.json ({expected_mean_red}%)")
+
+            if expected_p95_red:
+                for m in re.finditer(r"(\d+\.\d+)\s*%\s*(?:p95\s+latency\s+reduction|p95\s+reduction|tail\s+latency\s+reduction)", content, re.IGNORECASE):
+                    if m.group(1) != expected_p95_red:
+                        violations.append(f"{doc} - Quoted P95 latency reduction '{m.group(0)}' does not match replay_evaluation.json ({expected_p95_red}%)")
+
+            if expected_p50_red:
+                for m in re.finditer(r"(\d+\.\d+)\s*%\s*(?:p50\s+latency\s+reduction|p50\s+reduction|median\s+reduction)", content, re.IGNORECASE):
+                    if m.group(1) != expected_p50_red:
+                        violations.append(f"{doc} - Quoted P50 latency reduction '{m.group(0)}' does not match replay_evaluation.json ({expected_p50_red}%)")
 
         # For live runtime baseline, verify that real_avg genuinely breached the SLA budget
         if baseline_data:

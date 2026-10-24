@@ -29,11 +29,13 @@ def get_ledger_commit_sha() -> str:
     return "UNKNOWN_NO_GIT"
 
 def hash_file_sha256(path: str) -> str:
-    h = hashlib.sha256()
+    if not os.path.exists(path):
+        return ""
     with open(path, "rb") as f:
-        while chunk := f.read(65536):
-            h.update(chunk)
-    return h.hexdigest()
+        content = f.read()
+    # Normalize CRLF -> LF for line-ending-proof determinism across Windows/Linux/git archive
+    normalized = content.replace(b"\r\n", b"\n")
+    return hashlib.sha256(normalized).hexdigest()
 
 def load_ledger(ledger_path: str = LEDGER_PATH) -> Dict[str, Any]:
     ledger = {

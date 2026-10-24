@@ -151,7 +151,7 @@ FaultForge implements testable programmatic routing based on diff scope, touched
 ```mermaid
 flowchart TD
     subgraph Swimlane1["1. Chaos Engine (Toxiproxy)"]
-        C1["Inject 3,500ms Delay<br/>(Hash: 644a89784316)"] --> C2["Prove Baseline Breach<br/>(3,558.46ms > 1,500ms SLA)"]
+        C1["Inject 3,500ms Delay<br/>(Hash: 644a89784316)"] --> C2["Prove Baseline Breach<br/>(3,557.22ms > 1,500ms SLA)"]
         C2 --> C3["Exact Fault Replay<br/>(20 Probes: Phase A & B)"]
     end
 
@@ -202,8 +202,11 @@ FaultForge implements real, testable operations with machine-readable artifacts 
 | **Secure** | `secure:secret_detection` + `secure:semgrep-sast` + `secure:sast_and_secret_scan` | [`reports/bandit_security_report.json`](docs/sample_reports/bandit_security_report.json) | 0 high/medium AST security vulnerabilities, 0 hardcoded credentials, clean Gitleaks scan. |
 | **Package** | `package:container_build` + `pages` | [`reports/image_digest.txt`](docs/sample_reports/image_digest.txt) | Multi-stage production container image digest and published dashboard page. |
 | **Release** | `release:cloudrun_candidate_deploy` | [`reports/release.json`](docs/sample_reports/release.json) + [`reports/live_verification.json`](docs/sample_reports/live_verification.json) | Candidate container revision deployed to Cloud Run staging canary with verified 90/10 traffic split. |
-| **Monitor** | `monitor:telemetry_probes` | [`reports/monitor.json`](docs/sample_reports/monitor.json) | Live HTTP probe telemetry: 0 SLA breaches, -86.4% mean latency reduction, observable fallbacks. |
+| **Monitor** | `monitor:telemetry_probes` | [`reports/monitor.json`](docs/sample_reports/monitor.json) | Live HTTP probe telemetry: 0 SLA breaches, -86.3% mean latency reduction, observable fallbacks. |
 | **Govern** | `govern:audit_receipt_and_gate` + `govern:promote_to_production` | [`reports/evidence_receipt.json`](docs/sample_reports/evidence_receipt.json) | SHA-256 sealed cryptographic receipt and Supervised human approval gate for production traffic promotion. |
+
+#### GitLab Duo Code Provenance: What Duo Wrote vs. What Was Evaluated
+GitLab Duo Agent Platform session `9909079` synthesized the initial resilience implementation on branch `fix/resilience-shipping-timeout` (commits `f8aa9d98` and `d372014` authored by service account `FaultForge, Supervised, Resilience, Healer`), adding the strict 0.8s timeout, circuit breaker load shedding, and deterministic fallback calculation in `app/clients/shipping_client.py`. Subsequently, the orchestration agent merged `main` into the branch, updated telemetry links in `app/dashboard.html`, and standardized error handling in `shipping_client.py` (`git diff --stat f8aa9d98 79348f47 -- app/ app/dashboard.html`: 2 files changed, 34 insertions(+), 21 deletions(-)), producing the evaluated candidate commit `79348f47` tested during exact-fault replay proof in pipeline #2982633493.
 
 ### Evidence Snapshot
 > Machine-readable receipts and audit logs are produced in real-time by the GitLab CI/CD pipeline in `reports/` and retained as CI job artifacts. Sample reports in `docs/sample_reports/` are populated from verified pipeline runs, copied unmodified from job artifacts per `docs/sample_reports/README.md`.

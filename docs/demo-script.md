@@ -18,7 +18,7 @@
   > "Ordinary CI pipelines mock downstream dependencies, giving teams false confidence. But in production, when an external carrier slows down, unhardened services hang.
   > Our automated monitor triggers an incident issue in GitLab when outbound dependency latency spikes.
   > Here, Toxiproxy injects a controlled 3500 millisecond network delay on the shipping path.
-  > "Running our baseline probe against the unpatched checkout service reproduces the incident: all 5 requests breach our 1500 millisecond SLA budget, averaging 3558.46 milliseconds (p95: 3738.16 ms)."
+  > "Running our baseline probe against the unpatched checkout service reproduces the incident: all 5 requests breach our 1500 millisecond SLA budget, averaging 3557.22 milliseconds (p95: 3634.58 ms)."
 
 ---
 
@@ -60,8 +60,8 @@
 - **Narrator:**
   > "Here is our core differentiator: We don't trust a fix just because an AI wrote it. We replay the exact same fault profile against the candidate patch inside our 9-stage GitLab CI pipeline.
   > Replay verification confirms Toxiproxy is in-path with canonical profile hash `644a89784316`.
-  > Under 20 probes with the identical 3500 millisecond network delay, all 20 pass within our 1500 millisecond SLA budget — achieving an 86.4% mean reduction (3558.46 ms down to 484.27 ms) and 78.4% P95 reduction (3738.16 ms down to 806.79 ms) with zero SLA breaches.
-  > Phase A bounds the timeout path within the 1500ms budget (P95 806.79ms) while the breaker is reset; Phase B trips the breaker OPEN to short-circuit subsequent calls in just 2.27 to 2.99 milliseconds.
+  > Under 20 probes with the identical 3500 millisecond network delay, all 20 pass within our 1500 millisecond SLA budget — achieving an 86.3% mean reduction (3557.22 ms down to 487.12 ms) and 77.6% P95 reduction (3634.58 ms down to 812.51 ms) with zero SLA breaches.
+  > Phase A bounds the timeout path within the 1500ms budget (P95 812.51ms) while the breaker is reset; Phase B trips the breaker OPEN to short-circuit subsequent calls in just 1.91 to 2.99 milliseconds.
   > The response explicitly flags `is_fallback: true` and `is_estimate: true` so carrier data is never misrepresented."
 
 ---

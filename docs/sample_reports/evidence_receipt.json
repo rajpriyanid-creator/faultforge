@@ -47,12 +47,15 @@
     "trigger_mechanism": "AGENT_PLATFORM_SESSION",
     "status": "COMPLETED",
     "fix_sha": "f8aa9d98b8617b51c15b5fa6ceda39eb43762730",
-    "head_sha": "d3720143e15c85f519a7624859541d1ce997f1a0",
+    "head_sha": "79348f47042849465c737be2493b135a21f37e06",
     "changed_files": [
-      "app/clients/shipping_client.py"
+      "app/clients/shipping_client.py",
+      "app/dashboard.html"
     ],
     "app_tree_matches_duo_commit": false,
-    "explanation": "Duo synthesized core resilience in f8aa9d98. Subsequent commits on the branch added asyncio.wait_for outer timeout guard and updated dashboard.html, so app_tree_matches_duo_commit is false."
+    "explanation": "Duo synthesized the initial resilience implementation in f8aa9d98 and d372014 authored by the service account. The orchestration agent merged main, updated app/dashboard.html, and refined shipping_client.py error handling, producing evaluated candidate commit 79348f47 (diff: 2 files changed, 34 insertions(+), 21 deletions(-): app/clients/shipping_client.py and app/dashboard.html). Because app/dashboard.html and error handling were updated after f8aa9d98, app_tree_matches_duo_commit is false.",
+    "evaluated_sha": "79348f47042849465c737be2493b135a21f37e06",
+    "diff_stat": "app/clients/shipping_client.py | 48 ++++++++++++++++++++++++++----------------\napp/dashboard.html | 7 +++---\n2 files changed, 34 insertions(+), 21 deletions(-)"
   },
   "orbit": {
     "orbit_path_exercised": false,
@@ -463,5 +466,5 @@
     "requires_human_approval_to_promote": true,
     "promotion_gate": "BLOCKED_PENDING_APPROVAL"
   },
-  "tamper_evident_seal_sha256": "1fdf9fae649e620d1f92be6574b9cdb7b62b1a5b707fc6062a3a91797d9eb800"
+  "tamper_evident_seal_sha256": "5b141937791b7a5bf9d31aa27e4618df5678d4c9268ee22909f16c900135218c"
 }
