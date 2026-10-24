@@ -151,7 +151,7 @@ FaultForge implements testable programmatic routing based on diff scope, touched
 ```mermaid
 flowchart TD
     subgraph Swimlane1["1. Chaos Engine (Toxiproxy)"]
-        C1["Inject 3,500ms Delay<br/>(Hash: 644a89784316)"] --> C2["Prove Baseline Breach<br/>(3,557.22ms > 1,500ms SLA)"]
+        C1["Inject 3,500ms Delay<br/>(Hash: 644a89784316)"] --> C2["Prove Baseline Breach<br/>(3,572.47ms > 1,500ms SLA)"]
         C2 --> C3["Exact Fault Replay<br/>(20 Probes: Phase A & B)"]
     end
 
@@ -227,7 +227,7 @@ To ensure the exact `app/` tree that passes the exact-fault replay proof is the 
 For evaluators and judges seeking instant verification of repository integrity, test suites, and cryptographic seals:
 
 ```bash
-# 1. Run full unit and integration test suite (139 passed, 1 skipped)
+# 1. Run full unit and integration test suite (154 passed, 4 skipped in clean archive)
 pytest tests/unit tests/integration tests/test_*.py -v
 
 # 2. Run anti-fake truth audit in strict final mode
@@ -239,7 +239,7 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8090
 ```
 
 > [!NOTE]
-> **Local Test Runtime & Skip Transparency:** The local test suite runs in ~58 seconds because it executes full static analysis, security checks, and packaging hygiene validations. The 1 skipped test is `tests/chaos/test_resilience.py:32` (an offline guard when local Toxiproxy container is not running; in CI, chaos replay is executed under real Toxiproxy as a service in `verify:exact_fault_replay_proof`).
+> **Local Test Runtime & Skip Transparency:** The local test suite runs in ~58 seconds because it executes full static analysis, security checks, and packaging hygiene validations. The 4 skipped tests in an offline archive include `tests/chaos/test_resilience.py:32` (an offline guard when local Toxiproxy container is not running; in CI, chaos replay is executed under real Toxiproxy as a service in `verify:exact_fault_replay_proof`) and the three baseline-tag verification tests (`tests/unit/test_verify_baseline_tag.py`) which skip in a clean git archive (no `.git` directory) and run in CI.
 
 ### Step-by-Step Closed-Loop Walkthrough
 
@@ -260,7 +260,7 @@ python scripts/trigger_duo_flow.py --mode manual
 # Note: The candidate resilience fix lives on commit f8aa9d98 on branch fix/resilience-shipping-timeout (MR !3) and is merged into main.
 python scripts/run_fault.py --label candidate --output reports/fault_run_candidate.json
 python scripts/evaluate_replay.py --baseline reports/fault_run_baseline.json --candidate reports/fault_run_candidate.json
-# Expected Outcome: SLA breaches drop from 5 to 0 (0/20 breaches). Average latency drops from 3652.0ms to 488.75ms (-86.3% mean reduction, candidate p50 811.5ms, p95 815.41ms). Status: RECOVERED_AND_VERIFIED.
+# Expected Outcome: SLA breaches drop from 5 to 0 (0/20 breaches). Average latency drops from 3572.47ms to 488.20ms (-86.3% mean reduction, candidate p50 810.53ms, p95 814.05ms). Status: RECOVERED_AND_VERIFIED.
 
 # Step 5: Verify Governance & Cloud Run Staging Promotion Gate
 python scripts/generate_receipt.py
@@ -300,13 +300,13 @@ If evaluating the Supervised Human Gate and instant rollback without Google Clou
 |---|---|---|---|---|
 | **Fault Profile Canonical Hash** | `644a89784316` (3,500ms delay ± 250ms) | `644a89784316` (3,500ms delay ± 250ms) | Exact match (100% deterministic) | **Measured** |
 | **SLA Budget Breaches** | 5 / 5 breaches (>1,500ms budget) | 0 / 20 breaches (0%) | 100% reduction: Degraded but Available | **Measured** |
-| **Mean Request Latency** | 3652.0 ms | 488.75 ms | -86.3% mean reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
-| **Median Latency (P50)** | 3560.49 ms | 810.53 ms | -77.2% median reduction (candidate p50 810.53ms, p95 814.05ms) | **Measured** |
+| **Mean Request Latency** | 3572.47 ms | 488.20 ms | -86.3% mean reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
+| **Median Latency (P50)** | 3560.49 ms | 810.53 ms | -77.2% P50 reduction (deterministic fallback rate quote) | **Measured** |
 | **Tail Latency (P95)** | 3678.92 ms | 814.05 ms | -77.9% P95 reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
-| **Min / Max Latency** | 3312.60 ms / 3718.82 ms | 2.32 ms / 815.41 ms | -78.1% Max reduction | **Measured** |
-| **Sample Variance / Std Dev** | 26844.03 ms² (±163.84 ms) | 162902.09 ms² (±403.61 ms) | Bimodal candidate (timeout path vs open-breaker short-circuit) | **Measured** |
+| **Min / Max Latency** | 3463.35 ms / 3678.92 ms | 2.18 ms / 814.05 ms | -77.9% Max reduction | **Measured** |
+| **Sample Variance / Std Dev** | 9647.77 ms² (±98.22 ms) | 165564.24 ms² (±406.90 ms) | Bimodal candidate (timeout path vs open-breaker short-circuit) | **Measured** |
 | **Circuit Breaker State** | N/A (cascading thread starvation) | Phase A (CLOSED (reset each probe)) & Phase B (OPEN (8 of 20 short-circuited)) | Downstream protected | **Measured** |
-| **Fallback Observability** | None (returned 200 after ~3.6 s, breaching the 1,500 ms SLA) | `is_fallback: true`, `is_estimate: true` | Zero dropped checkouts (local fallback estimate) | **Measured** |
+| **Fallback Observability** | None (returned 200 after ~3.5 s, breaching the 1,500 ms SLA) | `is_fallback: true`, `is_estimate: true` | Zero dropped checkouts (local fallback estimate) | **Measured** |
 | **Incident MTTR (Mean Time to Recovery)** | ~45 minutes (industry manual response) | < 90 seconds (autonomous agent flow) | Design target, not measured | **Design target, not measured** |
 
 ---
@@ -321,7 +321,7 @@ In strict compliance with the **Never Fabricate Evidence** and **Claim Only What
 4. **Orbit Dependency Unexercised in Submitted Evidence:** While the client stub is implemented in [`app/clients/orbit_client.py`](app/clients/orbit_client.py) for forward compatibility with GitLab Duo Orbit MCP (`ENABLE_ORBIT_MCP`), Orbit was not exercised during submitted pipeline executions due to platform feature-flag constraints in the hackathon namespace. All submitted runs deterministically used `resolution_path: "fallback_ast_git"` (AST call-site inspection + `git bisect`).
 5. **Dual-Proxy Engine Architecture:** CI downloads and runs the official Shopify Toxiproxy v2.9.0 binary inside the job container (`scripts/start_toxiproxy.py`); Docker Compose runs the container image; the in-process standalone proxy exists only for local dev with `--allow-standalone-proxy` and downgrades the receipt to `NOT_VERIFIED_STANDALONE`.
 6. **GitLab Duo Flow Requirements & Fallback Wording:** Automated Duo Flow execution relies on GitLab Duo Agent Platform enabled on the GitLab instance or namespace. If API credits or platform access are unconfigured, `scripts/trigger_duo_flow.py` falls back to Issue Mention/Assignment or manual workflow execution without generating fake MR payloads. If Duo did not execute, describe the Duo flow as implemented and verified for spec validity, and the pipeline as agent-agnostic verification of any candidate fix. FaultForge never claims Duo authored the fix unless `duo_run.json` confirms `executed: true`.
-7. **Test Suite Details & Single Skipped Test:** Running `pytest tests/unit tests/integration tests/test_*.py` executes 140 tests with 139 passed and 1 skipped. The single skipped test (`tests/chaos/test_resilience.py`) tests live socket interception and requires a running Toxiproxy daemon (`http://127.0.0.1:8474`); in GitLab CI (`verify:exact_fault_replay_proof`), Toxiproxy is started as a native background service, running the full suite.
+7. **Test Suite Details & Skipped Tests:** Running pytest locally executes 158 tests with 154 passed and 4 skipped (0 failures) in a clean git archive without `.git`, or 157 passed and 1 skipped when run inside the full git checkout. In addition to test_resilience.py (which requires a running Toxiproxy daemon and runs in CI), the three baseline-tag verification tests (tests/unit/test_verify_baseline_tag.py) skip in a clean git archive (no .git directory) and run in CI with full git history (GIT_DEPTH: "0").
 
 ---
 

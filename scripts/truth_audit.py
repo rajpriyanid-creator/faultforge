@@ -620,6 +620,18 @@ def audit_docs_claims() -> List[str]:
         (r"66\.2\s*%", "Stale reduction percentage (66.2%)"),
         (r"68\.4\s*%", "Stale reduction percentage (68.4%)"),
         (r"96\.4\s*%", "Stale reduction percentage (96.4%)"),
+        (r"\b3652(?:\.0)?\b", "Stale reference baseline latency (3652/3652.0 ms)"),
+        (r"\b488\.75\b", "Stale reference candidate mean latency (488.75 ms)"),
+        (r"\b815\.41\b", "Stale reference candidate p95 latency (815.41 ms)"),
+        (r"\b811\.5\b", "Stale reference candidate p50 latency (811.5 ms)"),
+        (r"\b3312\.60\b", "Stale reference baseline min latency (3312.60 ms)"),
+        (r"\b3718\.82\b", "Stale reference baseline max latency (3718.82 ms)"),
+        (r"\b2\.32\s*ms\b", "Stale reference candidate min latency (2.32 ms)"),
+        (r"\b26844(?:\.03)?\b", "Stale reference baseline variance (26844.03 ms²)"),
+        (r"\b162902(?:\.09)?\b", "Stale reference candidate variance (162902.09 ms²)"),
+        (r"163\.84\s*ms", "Stale reference baseline std dev (163.84 ms)"),
+        (r"403\.61\s*ms", "Stale reference candidate std dev (403.61 ms)"),
+        (r"\b78\.1\s*%", "Stale reference max latency reduction (78.1%)"),
     ]
 
     # 1. Enforce zero stale figures across all markdown files
@@ -632,6 +644,79 @@ def audit_docs_claims() -> List[str]:
         for pattern, desc in stale_figures:
             if re.search(pattern, content):
                 violations.append(f"{doc} - Stale metric detected: {desc}")
+
+    # 1.5 Dynamically collect all valid evidence numbers and verify metric lines
+    evidence_nums = {
+        0.0, 10.0, 90.0, 100.0, 1500.0, 800.0, 3500.0, 250.0,
+        60.0, 80.0, 685.95, 1496.73, 5.0, 6.0
+    }
+    for v in raw_metrics.values():
+        if isinstance(v, (int, float)):
+            evidence_nums.add(round(float(v), 2))
+    for v in reductions.values():
+        if isinstance(v, dict):
+            for sub_v in v.values():
+                if isinstance(sub_v, (int, float)):
+                    evidence_nums.add(round(float(sub_v), 2))
+                    evidence_nums.add(round(float(sub_v), 1))
+
+    if baseline_data:
+        b_lats = baseline_data.get("metrics", {}).get("latencies_ms", [])
+        if b_lats:
+            evidence_nums.add(round(min(b_lats), 2))
+            evidence_nums.add(round(max(b_lats), 2))
+            mean_b = sum(b_lats) / len(b_lats)
+            evidence_nums.add(round(mean_b, 2))
+            var_b = sum((x - mean_b) ** 2 for x in b_lats) / (len(b_lats) - 1)
+            evidence_nums.add(round(var_b, 2))
+            evidence_nums.add(round(var_b ** 0.5, 2))
+
+    hardened_path = "reports/fault_run_hardened.json"
+    if not os.path.exists(hardened_path):
+        hardened_path = "docs/sample_reports/fault_run_hardened.json"
+    if os.path.exists(hardened_path):
+        try:
+            with open(hardened_path, "r", encoding="utf-8") as hf:
+                h_data = json.load(hf)
+            h_lats = h_data.get("metrics", {}).get("latencies_ms", [])
+            if h_lats:
+                import math
+                evidence_nums.add(round(min(h_lats), 2))
+                evidence_nums.add(round(max(h_lats), 2))
+                mean_h = sum(h_lats) / len(h_lats)
+                evidence_nums.add(round(mean_h, 2))
+                var_h = sum((x - mean_h) ** 2 for x in h_lats) / (len(h_lats) - 1)
+                evidence_nums.add(round(var_h, 2))
+                evidence_nums.add(round(var_h ** 0.5, 2))
+                if len(h_lats) >= 12:
+                    p_a = h_lats[:12]
+                    evidence_nums.add(round(sum(p_a) / len(p_a), 2))
+                    evidence_nums.add(round(sorted(p_a)[math.floor(len(p_a) * 0.95)], 2))
+                    p_b = h_lats[12:]
+                    evidence_nums.add(round(sum(p_b) / len(p_b), 2))
+                    evidence_nums.add(round(sorted(p_b)[math.floor(len(p_b) * 0.95)], 2))
+        except Exception:
+            pass
+
+    for doc in all_markdown_files:
+        if not os.path.exists(doc):
+            continue
+        with open(doc, "r", encoding="utf-8", errors="ignore") as f:
+            lines = f.readlines()
+        for idx, line in enumerate(lines, 1):
+            lower_line = line.lower()
+            is_metric_line = False
+            if line.strip().startswith("|") and any(k in lower_line for k in ["metric", "latency", "p50", "p95", "mean", "variance", "std dev", "breaches", "phase"]):
+                is_metric_line = True
+            elif any(k in lower_line for k in ["latency reduction", "mean reduction", "p50 reduction", "p95 reduction", "sla budget", "averaging", "p95:", "short-circuit"]):
+                is_metric_line = True
+
+            if is_metric_line:
+                matches = re.finditer(r"(\b\d{1,3}(?:,\d{3})*(?:\.\d+)?|\b\d+(?:\.\d+)?)\s*(ms²|ms|%)", line)
+                for m in matches:
+                    val = float(m.group(1).replace(",", ""))
+                    if not any(abs(val - ev) <= 0.01 for ev in evidence_nums):
+                        violations.append(f"{doc}:{idx} - Quoted metric {m.group(0)} ({val}) has no matching evidence field")
 
     # 2. Enforce core doc claims on primary architecture/submission docs
     for doc in core_doc_files:

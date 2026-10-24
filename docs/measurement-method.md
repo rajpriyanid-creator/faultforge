@@ -69,8 +69,8 @@ $$\text{Max Reduction (\%)} = \left( \frac{3,678.92 - 814.05}{3,678.92} \right) 
 | **P95** | 3,678.92 ms | 814.05 ms | -77.9% P95 reduction |
 | **Minimum** | 3,463.35 ms | 2.18 ms | Min recorded latency |
 | **Maximum** | 3,678.92 ms | 814.05 ms | Max recorded latency |
-| **Sample Variance ($s^2$)** | 26,844.03 ms² | 162,902.09 ms² | Candidate has high variance due to bimodal distribution |
-| **Sample Std Dev ($s$)** | ±163.84 ms | ±403.61 ms | Bimodal: timeout vs open breaker |
+| **Sample Variance ($s^2$)** | 9,647.77 ms² | 165,564.24 ms² | Candidate has high variance due to bimodal distribution |
+| **Sample Std Dev ($s$)** | ±98.22 ms | ±406.90 ms | Bimodal: timeout vs open breaker |
 
 ### Why Candidate Variance is High (Bimodal Distribution)
 The candidate probe distribution is strictly bimodal across two operational phases:
@@ -81,7 +81,7 @@ The candidate probe distribution is strictly bimodal across two operational phas
 - **SLA Budget:** 1,500.00 ms
 - **Measured Candidate P95:** 814.05 ms (Max: 814.05 ms)
 - **Safety Margin:** **685.95 ms** under the budget ceiling.
-- **Production Implication:** The candidate operates with a comfortable 685.95 ms safety margin during initial socket timeouts. Once 3 consecutive timeouts occur, the circuit breaker transitions to `OPEN` (Phase B), instantly dropping probe latency from ~810 ms down to **1.91–2.99 ms** (providing a **1,497.01 ms** margin against the 1,500 ms SLA).
+- **Production Implication:** The candidate operates with a comfortable 685.95 ms safety margin during initial socket timeouts. Once 3 consecutive timeouts occur, the circuit breaker transitions to `OPEN` (Phase B), instantly dropping probe latency from ~810 ms down to **2.18–3.27 ms** (providing a **1,496.73 ms** margin against the 1,500 ms SLA).
 
 ---
 
@@ -92,7 +92,7 @@ FaultForge evaluates timeout verification and circuit-breaker short-circuit veri
 | Phase | Evaluation Gate | Execution Semantics | Probes | Measured Mean | Measured P95 | Breaker State | Status |
 |---|---|---|---|---|---|---|---|
 | **Phase A** | `candidate_timeout_only` | Initial probes exercise the bounded timeout path within SLA budget. | 12 probes | 812.02 ms | 814.05 ms | `CLOSED` (reset each probe) | PASS |
-| **Phase B** | `candidate_breaker_short_circuit` | Circuit breaker trips OPEN; subsequent probes short-circuit locally in ~1.91ms. | 8 probes | 2.48 ms | 3.27 ms | `OPEN` (8 of 10 short-circuited) | PASS |
+| **Phase B** | `candidate_breaker_short_circuit` | Circuit breaker trips OPEN; subsequent probes short-circuit locally in ~2.18ms. | 8 probes | 2.48 ms | 3.27 ms | `OPEN` (8 of 20 short-circuited) | PASS |
 
 ---
 

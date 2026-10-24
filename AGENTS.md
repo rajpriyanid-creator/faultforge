@@ -47,7 +47,7 @@ flowchart LR
 3. **Chaos Hardener Component:**
    - Authors or updates the deterministic regression test in `tests/chaos/test_resilience.py`.
    - Executes the exact-fault replay under the identical Toxiproxy canonical hash (`644a89784316`).
-   - Verifies candidate passes all replay probes (20 probes: 10 Phase A + 10 Phase B, at least 10 consecutive passes required), achieves 0 SLA breaches, and reduces latency by >60% (-86.3% mean reduction, -77.3% P50).
+   - Verifies candidate passes all replay probes (20 probes: 10 Phase A + 10 Phase B, at least 10 consecutive passes required), achieves 0 SLA breaches, and reduces latency by >60% (-86.3% mean reduction, -77.2% P50).
    - Creates a Merge Request targeting `main` with detailed before/after telemetry and logs.
    - Triggers Google Cloud Run candidate deployment to staging and compiles the cryptographic Evidence Receipt (`reports/evidence_receipt.json`).
 
@@ -59,7 +59,7 @@ The Supervised Agent autonomously clears 11 quality gates before presenting the 
 
 | Gate # | Stage | Autonomous Action | Deterministic Verification Tool |
 |---|---|---|---|
-| **Gate 1** | `plan` | Baseline SLA Breach Detection | Confirmed >1500ms budget breach (avg 3742ms, p95 3918ms) |
+| **Gate 1** | `plan` | Baseline SLA Breach Detection | Confirmed >1500ms budget breach (avg 3572.47ms, p95 3678.92ms) |
 | **Gate 2** | `plan` | Sanitized Incident Dossier | `scripts/collect_evidence.py` strips all secrets and tokens |
 | **Gate 3** | `create` | AST & Bisect Culprit Isolation | `scripts/diagnose_and_bisect.py` isolates commit `974035c` |
 | **Gate 4** | `create` | Scoped Resilience Patching | `flows/faultforge-flow.yaml` synthesizes 0.8s bounded timeout |

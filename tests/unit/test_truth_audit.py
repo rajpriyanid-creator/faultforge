@@ -219,5 +219,22 @@ def test_audit_passes_for_lf_and_crlf_copies(tmp_path, monkeypatch):
 
     assert sha_lf == sha_crlf, "hash_file_sha256 must yield identical hash regardless of LF or CRLF line endings"
 
+def test_audit_docs_claims_fails_on_old_run_metric(tmp_path, monkeypatch):
+    from scripts.truth_audit import audit_docs_claims
+    monkeypatch.chdir(tmp_path)
+
+    # Document quoting old-run values (e.g. 3652.0 ms or 815.41 ms) in a metric sentence/table
+    (tmp_path / "README.md").write_text(
+        "SLA budget 1500ms, 9 Stages, culprit 974035c.\n"
+        "| Mean Request Latency | 3652.0 ms | 488.75 ms | -86.3% mean reduction |\n"
+        "Candidate tail latency observed p95 815.41 ms.\n",
+        encoding="utf-8"
+    )
+
+    violations = audit_docs_claims()
+    assert len(violations) > 0
+    assert any("3652" in v or "488.75" in v or "815.41" in v for v in violations)
+
+
 
 
