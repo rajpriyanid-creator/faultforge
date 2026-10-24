@@ -15,11 +15,6 @@ PINNED_TAG_COMMIT_SHA = "4ec3a5ad7fd0cc635d9546acf6974b83f7a57054"
 
 def verify_baseline_tag() -> bool:
     try:
-        is_git = subprocess.run(["git", "rev-parse", "--is-inside-work-tree"], capture_output=True, text=True)
-        if is_git.returncode != 0:
-            print("[*] Outside git repository (e.g. clean git archive export); skipping live tag verification.")
-            return True
-
         tag_type = subprocess.check_output(
             ["git", "cat-file", "-t", "baseline-v0.1.0"],
             text=True, stderr=subprocess.DEVNULL
