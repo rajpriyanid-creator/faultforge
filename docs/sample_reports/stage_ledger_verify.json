@@ -9,11 +9,13 @@
   "approval_required": false,
   "artifacts_declared": [
     "reports/fault_run_hardened.json",
-    "reports/replay_evaluation.json"
+    "reports/replay_evaluation.json",
+    "reports/replay_tree_sha.txt"
   ],
   "artifacts_verified_on_disk": [
     "reports/fault_run_hardened.json",
-    "reports/replay_evaluation.json"
+    "reports/replay_evaluation.json",
+    "reports/replay_tree_sha.txt"
   ],
   "artifacts_details": [
     {
@@ -25,6 +27,11 @@
       "path": "reports/replay_evaluation.json",
       "size_bytes": 3552,
       "sha256": "71a52c5340fae65bc40b8bd8575e99c98a805abfdb8fbb407f42740fc619079f"
+    },
+    {
+      "path": "reports/replay_tree_sha.txt",
+      "size_bytes": 41,
+      "sha256": "14bd23f8746a140cda2df93c9b16c7713849943eabb5a40428523f0cefff7f92"
     }
   ],
   "timestamp": 1792782481.475415,

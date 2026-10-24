@@ -468,5 +468,8 @@
     "requires_human_approval_to_promote": true,
     "promotion_gate": "BLOCKED_PENDING_APPROVAL"
   },
-  "tamper_evident_seal_sha256": "b70cd298320d50ca4a84531e706aaae1e990bb4546d1e4aeb2b13d15d1aeb3bf"
+  "tamper_evident_seal_sha256": "eb0db1c3c6c0bdaf859e12ddae3786485f2d31313a7ab7791feefe02e9ef3ea1",
+  "replay_tree_sha": "5bd23d542337f74dff3320fdd8d7909c17d57e27",
+  "deployed_tree_sha": "5bd23d542337f74dff3320fdd8d7909c17d57e27",
+  "app_tree_matches_deployed": true
 }

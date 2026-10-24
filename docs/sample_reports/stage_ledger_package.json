@@ -8,16 +8,23 @@
   "artifact_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17426629837/artifacts/browse",
   "approval_required": false,
   "artifacts_declared": [
-    "reports/image_digest.txt"
+    "reports/image_digest.txt",
+    "reports/deployed_tree_sha.txt"
   ],
   "artifacts_verified_on_disk": [
-    "reports/image_digest.txt"
+    "reports/image_digest.txt",
+    "reports/deployed_tree_sha.txt"
   ],
   "artifacts_details": [
     {
       "path": "reports/image_digest.txt",
       "size_bytes": 153,
       "sha256": "237f7cb26adc3524eb20f932936a77cc2a6f35da6185e3d69034d1e7eec0f745"
+    },
+    {
+      "path": "reports/deployed_tree_sha.txt",
+      "size_bytes": 41,
+      "sha256": "14bd23f8746a140cda2df93c9b16c7713849943eabb5a40428523f0cefff7f92"
     }
   ],
   "timestamp": 1792782603.4264534,

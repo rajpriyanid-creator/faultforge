@@ -46,6 +46,8 @@ def generate_evidence_receipt(
     hard_run_path = os.path.join(reports_dir, "fault_run_hardened.json")
     image_digest_path = os.path.join(reports_dir, "image_digest.txt")
     release_path = os.path.join(reports_dir, "release.json")
+    replay_tree_path = os.path.join(reports_dir, "replay_tree_sha.txt")
+    deployed_tree_path = os.path.join(reports_dir, "deployed_tree_sha.txt")
 
     dossier = {}
     if os.path.exists(dossier_path):
@@ -124,6 +126,36 @@ def generate_evidence_receipt(
     # Cross-file consistency checks
     not_established = []
     is_verified = replay.get("verified", False) and (replay.get("evaluation_status") == "RECOVERED_AND_VERIFIED")
+
+    # Tree parity checks
+    replay_tree_sha = ""
+    if os.path.exists(replay_tree_path):
+        with open(replay_tree_path, "r", encoding="utf-8") as f:
+            replay_tree_sha = f.read().strip()
+    if not replay_tree_sha:
+        try:
+            replay_tree_sha = subprocess.check_output(
+                ["git", "rev-parse", "HEAD:app"], text=True, stderr=subprocess.DEVNULL
+            ).strip()
+        except Exception:
+            pass
+
+    deployed_tree_sha = ""
+    if os.path.exists(deployed_tree_path):
+        with open(deployed_tree_path, "r", encoding="utf-8") as f:
+            deployed_tree_sha = f.read().strip()
+    if not deployed_tree_sha:
+        try:
+            deployed_tree_sha = subprocess.check_output(
+                ["git", "rev-parse", "HEAD:app"], text=True, stderr=subprocess.DEVNULL
+            ).strip()
+        except Exception:
+            pass
+
+    app_tree_matches_deployed = (bool(replay_tree_sha) and replay_tree_sha == deployed_tree_sha)
+    if not app_tree_matches_deployed:
+        not_established.append("Exact app/ tree parity between replay and deployed container could not be established.")
+        is_verified = False
 
     base_hash = replay.get("gates", {}).get("identical_profile_hash", {}).get("baseline_hash")
     hard_hash = replay.get("gates", {}).get("identical_profile_hash", {}).get("hardened_hash")
@@ -276,6 +308,9 @@ def generate_evidence_receipt(
         "image_digest": image_digest,
         "cloud_run_revision": cloud_run_revision,
         "promotion_gate": promotion_gate,
+        "replay_tree_sha": replay_tree_sha,
+        "deployed_tree_sha": deployed_tree_sha,
+        "app_tree_matches_deployed": app_tree_matches_deployed,
         "probe_count": 20,
         "probe_results": {
             "total": len(hard_run.get("per_request_results", [])) or 20,
@@ -365,6 +400,9 @@ def generate_evidence_receipt(
 - **Incident Issue URL:** `{receipt_data['urls']['issue_url'] or 'not established'}`
 - **Duo Merge Request URL:** `{receipt_data['urls']['merge_request_url'] or 'not established'}`
 - **Duo Flow Run URL:** `{receipt_data['urls']['flow_run_url'] or 'not established'}`
+- **Replay App Tree SHA:** `{receipt_data.get('replay_tree_sha') or 'not established'}`
+- **Deployed App Tree SHA:** `{receipt_data.get('deployed_tree_sha') or 'not established'}`
+- **App Tree Parity Verified:** `{receipt_data.get('app_tree_matches_deployed', False)}`
 
 ## 2. Before & After Verified Metrics
 | Metric | Baseline (Unpatched) | Hardened (Candidate Patch) |

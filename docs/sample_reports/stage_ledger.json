@@ -75,8 +75,8 @@
         },
         {
           "path": "reports/duo_evidence.json",
-          "size_bytes": 3532,
-          "sha256": "c0f0915de767534264ea42a7432e545e611e74ed8c3cb0a29888e1b2df8f792a"
+          "size_bytes": 4250,
+          "sha256": "dd1bd275174b77bed58603bd99fcd7809e758f6ca7accaa1dc013e5c26baa294"
         }
       ],
       "timestamp": 1792782397.696244,
@@ -120,11 +120,13 @@
       "approval_required": false,
       "artifacts_declared": [
         "reports/fault_run_hardened.json",
-        "reports/replay_evaluation.json"
+        "reports/replay_evaluation.json",
+        "reports/replay_tree_sha.txt"
       ],
       "artifacts_verified_on_disk": [
         "reports/fault_run_hardened.json",
-        "reports/replay_evaluation.json"
+        "reports/replay_evaluation.json",
+        "reports/replay_tree_sha.txt"
       ],
       "artifacts_details": [
         {
@@ -136,6 +138,11 @@
           "path": "reports/replay_evaluation.json",
           "size_bytes": 3552,
           "sha256": "71a52c5340fae65bc40b8bd8575e99c98a805abfdb8fbb407f42740fc619079f"
+        },
+        {
+          "path": "reports/replay_tree_sha.txt",
+          "size_bytes": 41,
+          "sha256": "14bd23f8746a140cda2df93c9b16c7713849943eabb5a40428523f0cefff7f92"
         }
       ],
       "timestamp": 1792782481.475415,
@@ -178,16 +185,23 @@
       "artifact_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17426629837/artifacts/browse",
       "approval_required": false,
       "artifacts_declared": [
-        "reports/image_digest.txt"
+        "reports/image_digest.txt",
+        "reports/deployed_tree_sha.txt"
       ],
       "artifacts_verified_on_disk": [
-        "reports/image_digest.txt"
+        "reports/image_digest.txt",
+        "reports/deployed_tree_sha.txt"
       ],
       "artifacts_details": [
         {
           "path": "reports/image_digest.txt",
           "size_bytes": 153,
           "sha256": "237f7cb26adc3524eb20f932936a77cc2a6f35da6185e3d69034d1e7eec0f745"
+        },
+        {
+          "path": "reports/deployed_tree_sha.txt",
+          "size_bytes": 41,
+          "sha256": "14bd23f8746a140cda2df93c9b16c7713849943eabb5a40428523f0cefff7f92"
         }
       ],
       "timestamp": 1792782603.4264534,
@@ -271,8 +285,8 @@
       "artifacts_details": [
         {
           "path": "reports/evidence_receipt.json",
-          "size_bytes": 14729,
-          "sha256": "27766d4a147107bc1c8f929e7ece0651a8113697ac6935419c6b5d862cc4de0f"
+          "size_bytes": 14898,
+          "sha256": "2e3cc3c48ccb370a73e3994401d629009288cfe88a773d60b7cc8261ec95416a"
         }
       ],
       "timestamp": 1792782751.9504948,

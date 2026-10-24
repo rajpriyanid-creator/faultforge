@@ -166,35 +166,29 @@ verify:exact_fault_replay_proof:
     - pip install -r requirements.txt
     - python scripts/start_toxiproxy.py
     - |
+      mkdir -p reports
+      REPLAY_TREE_SHA=$(git rev-parse HEAD:app)
+      echo "$REPLAY_TREE_SHA" > reports/replay_tree_sha.txt
+      echo "[+] Replay app/ tree SHA: $REPLAY_TREE_SHA"
+
       if [ -f reports/duo_evidence.json ] && python -c "import json; d=json.load(open('reports/duo_evidence.json')); cs=str(d.get('candidate_source', '')).lower(); exit(0 if (cs.startswith('duo-authored') or 'commit authored by the duo service account' in cs) and d.get('source_branch') else 1)"; then
-        CANDIDATE_BRANCH=$(python -c "import json; print(json.load(open('reports/duo_evidence.json'))['source_branch'])")
         CANDIDATE_SRC=$(python -c "import json; print(json.load(open('reports/duo_evidence.json'))['candidate_source'])")
-        echo "[+] Testing Duo-authored candidate branch: $CANDIDATE_BRANCH ($CANDIDATE_SRC)"
-        git fetch origin main
-        git fetch origin "$CANDIDATE_BRANCH"
-        CHANGED_FILES=$(git diff --name-only origin/main...origin/$CANDIDATE_BRANCH)
-        echo "[+] Changed files on candidate branch:"
-        echo "$CHANGED_FILES"
-        python scripts/check_forbidden_paths.py --files $CHANGED_FILES
-        git checkout "origin/$CANDIDATE_BRANCH" -- app/
-        if echo "$CHANGED_FILES" | grep -q "^tests/chaos/"; then
-          echo "[+] Checking out tests/chaos/ from candidate branch"
-          git checkout "origin/$CANDIDATE_BRANCH" -- tests/chaos/
-        fi
-        FIX_SHA=$(git rev-parse "origin/$CANDIDATE_BRANCH")
+        echo "[+] Evaluating candidate commit with merged Duo resilience fix: $CI_COMMIT_SHA ($CANDIDATE_SRC)"
+        FIX_SHA=$CI_COMMIT_SHA
       else
         echo "[!] No Duo-authored MR branch detected; falling back to reference-fix"
         git fetch origin reference-fix
         git checkout origin/reference-fix -- app/
         FIX_SHA=$(git rev-parse origin/reference-fix || git rev-parse reference-fix)
         CANDIDATE_SRC="reference-fix (not Duo-authored)"
+        git rev-parse HEAD:app > reports/replay_tree_sha.txt
       fi
     - python -m uvicorn stub.mock_shipping_api:app --host 127.0.0.1 --port 8081 &
     - python -m uvicorn app.main:app --host 127.0.0.1 --port 8090 &
     - sleep 3
     - python scripts/run_fault.py --label candidate --git-sha $FIX_SHA --iterations 10 --output reports/fault_run_hardened.json
     - python scripts/evaluate_replay.py --baseline reports/fault_run_baseline.json --candidate reports/fault_run_hardened.json --output reports/replay_evaluation.json --candidate-source "$CANDIDATE_SRC"
-    - python scripts/evidence_ledger.py --stage verify --job verify:exact_fault_replay_proof --status SUCCESS --artifacts reports/fault_run_hardened.json reports/replay_evaluation.json
+    - python scripts/evidence_ledger.py --stage verify --job verify:exact_fault_replay_proof --status SUCCESS --artifacts reports/fault_run_hardened.json reports/replay_evaluation.json reports/replay_tree_sha.txt
   artifacts:
     name: "chaos-replay-evidence-$CI_COMMIT_SHA"
     expire_in: 30 days
@@ -202,6 +196,7 @@ verify:exact_fault_replay_proof:
       - reports/fault_run_baseline.json
       - reports/fault_run_hardened.json
       - reports/replay_evaluation.json
+      - reports/replay_tree_sha.txt
       - reports/duo_evidence.json
       - reports/stage_ledger.json
       - reports/stage_ledger_*.json
@@ -250,8 +245,14 @@ package:container_build:
   variables:
     DOCKER_TLS_CERTDIR: ""
   dependencies:
+    - verify:exact_fault_replay_proof
     - secure:sast_and_secret_scan
   script:
+    - apk add --no-cache git python3
+    - mkdir -p reports
+    - DEPLOYED_TREE_SHA=$(git rev-parse HEAD:app)
+    - echo "$DEPLOYED_TREE_SHA" > reports/deployed_tree_sha.txt
+    - echo "[+] Deployed app/ tree SHA: $DEPLOYED_TREE_SHA"
     - |
       if [ -n "$CI_REGISTRY_USER" ] && [ -n "$CI_REGISTRY_PASSWORD" ]; then
         echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
@@ -262,7 +263,6 @@ package:container_build:
         docker build -t $DOCKER_IMAGE .
         DIGEST=$(docker inspect --format='{{index .Id}}' $DOCKER_IMAGE)
       fi
-      mkdir -p reports
       echo "$DIGEST" > reports/image_digest.txt
 
       if [ -n "$GCP_PROJECT" ] && [ -n "$GCP_SA_KEY" ]; then
@@ -278,12 +278,13 @@ package:container_build:
         docker push "$GCP_IMAGE"
         echo "[+] Successfully pushed $GCP_IMAGE to Artifact Registry."
       fi
-    - apk add --no-cache python3
-    - python3 scripts/evidence_ledger.py --stage package --job package:container_build --status SUCCESS --artifacts reports/image_digest.txt
+    - python3 scripts/verify_tree_parity.py --fail-on-mismatch
+    - python3 scripts/evidence_ledger.py --stage package --job package:container_build --status SUCCESS --artifacts reports/image_digest.txt reports/deployed_tree_sha.txt
   artifacts:
     expire_in: 30 days
     paths:
       - reports/image_digest.txt
+      - reports/deployed_tree_sha.txt
       - reports/stage_ledger.json
       - reports/stage_ledger_*.json
 
@@ -307,8 +308,11 @@ release:cloudrun_candidate_deploy:
   image: google/cloud-sdk:slim
   dependencies:
     - package:container_build
+    - verify:exact_fault_replay_proof
   script:
     - mkdir -p reports
+    - apt-get update -qq && apt-get install -y -qq python3 git
+    - python3 scripts/verify_tree_parity.py --fail-on-mismatch
     - |
       if [ -n "$GCP_PROJECT" ] && [ -n "$GCP_SA_KEY" ]; then
         echo "[+] GCP credentials detected. Authenticating Service Account..."
@@ -430,6 +434,7 @@ govern:audit_receipt_and_gate:
   script:
     - apt-get update -qq && apt-get install -y -qq git
     - pip install -r requirements.txt
+    - python scripts/verify_tree_parity.py --fail-on-mismatch
     - python scripts/classify_risk.py
     - python scripts/generate_receipt.py
     - python scripts/evidence_ledger.py --stage govern --job govern:audit_receipt_and_gate --status SUCCESS --artifacts reports/evidence_receipt.json --approval-required

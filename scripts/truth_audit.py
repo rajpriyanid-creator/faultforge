@@ -258,6 +258,15 @@ def audit_report_consistency(final_mode: bool = False) -> List[str]:
             if duo_exec.get("executed") is False and receipt.get("final_status") == "RECOVERED_AND_VERIFIED":
                 violations.append("Evidence receipt claims RECOVERED_AND_VERIFIED despite unexecuted Duo flow (executed: false)")
 
+            # Enforce app tree parity between replay and deployment
+            if receipt.get("final_status") == "RECOVERED_AND_VERIFIED":
+                if receipt.get("app_tree_matches_deployed") is False:
+                    violations.append("Evidence receipt claims RECOVERED_AND_VERIFIED but app_tree_matches_deployed is false")
+            replay_tree = receipt.get("replay_tree_sha")
+            deployed_tree = receipt.get("deployed_tree_sha")
+            if replay_tree and deployed_tree and replay_tree != deployed_tree:
+                violations.append(f"Evidence receipt tree SHA mismatch: replay '{replay_tree}' vs deployed '{deployed_tree}'")
+
             # Enforce consistency between duo_run.json and evidence_receipt.json
             duo_run_file = os.path.join(reports_dir, "duo_run.json")
             if not os.path.exists(duo_run_file):

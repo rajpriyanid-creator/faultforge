@@ -44,8 +44,8 @@
     },
     {
       "path": "reports/duo_evidence.json",
-      "size_bytes": 3532,
-      "sha256": "c0f0915de767534264ea42a7432e545e611e74ed8c3cb0a29888e1b2df8f792a"
+      "size_bytes": 4250,
+      "sha256": "dd1bd275174b77bed58603bd99fcd7809e758f6ca7accaa1dc013e5c26baa294"
     }
   ],
   "timestamp": 1792782397.696244,

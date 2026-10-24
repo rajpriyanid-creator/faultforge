@@ -69,6 +69,22 @@ In `reports/duo_evidence.json` and the sealed receipt:
   ```
   This reflects post-merge main branch features such as `orbit_client.py`.
 
+### Shipping Client Diff: Candidate Branch Head (`79348f47`) vs. Merged Main (`e150fad`)
+Running `git diff 79348f47 e150fad -- app/clients/shipping_client.py`:
+- **Diff Stat:**
+  ```
+  app/clients/shipping_client.py | 48 ++++++++++++++++--------------------------
+  1 file changed, 18 insertions(+), 30 deletions(-)
+  ```
+- **Factual Description of Differences:**
+  The core resilience logic is functionally identical in both commits: both enforce a strict 0.8s timeout (`SHIPPING_TIMEOUT_SECONDS = 0.8`), 3-failure circuit breaker with 10s cooldown, and deterministic fallback calculation (`is_fallback=True`, `is_estimate=True`) on timeout, transport errors, HTTP 5xx errors, or OPEN circuit.
+  The changes in `e150fad` are purely syntactic refactorings:
+  1. `_fallback()` sets `data["is_fallback"] = True` and `data["is_estimate"] = True` directly, and records duration before calling `get_graceful_shipping_fallback()`.
+  2. `httpx.Timeout` explicitly specifies `connect=SHIPPING_TIMEOUT_SECONDS`.
+  3. `settings.CIRCUIT_BREAKER_ENABLED` is checked directly without an intermediate `use_breaker` local variable.
+  4. Logging statements use `logger.error` rather than `logger.warning`, and error message strings differ slightly (e.g. `"Upstream HTTP {code}"` vs `"Shipping dependency HTTP {code}"`).
+  None of the changes alter or relax the resilience policy or SLA timeout bounds.
+
 ### Verified Deployment Status:
 1. **Cloud Run Candidate Deployment:** `VERIFIED (SUCCESS)`  
    - *Status:* Candidate revision (`faultforge-checkout-00036-pih`) actively deployed to Google Cloud Run staging in `us-central1` via CI stage `release:cloudrun_candidate_deploy` (`reports/release.json` status `STAGED`).
