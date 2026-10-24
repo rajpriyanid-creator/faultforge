@@ -2,10 +2,10 @@
   "stage": "create",
   "job_name": "create:duo_remediation_mr",
   "status": "SUCCESS",
-  "commit_sha": "36c677fb8cc30f2cb1e036bca8ed0b9bcfe7426f",
-  "pipeline_id": "2984259115",
-  "job_id": "17436543216",
-  "artifact_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17436543216/artifacts/browse",
+  "commit_sha": "57757a3d0dcdd97a83009c0966a9ca3ad46378bf",
+  "pipeline_id": "2984485378",
+  "job_id": "17437653505",
+  "artifact_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17437653505/artifacts/browse",
   "approval_required": false,
   "artifacts_declared": [
     "reports/fault_run_baseline.json",
@@ -24,31 +24,31 @@
   "artifacts_details": [
     {
       "path": "reports/fault_run_baseline.json",
-      "size_bytes": 1983,
-      "sha256": "4ca453c3b35b8b39bd99be6e08c4eea40039470cf1ca2e107474418f0b378b39"
+      "size_bytes": 1981,
+      "sha256": "6a16fd75f491521920b6b21f47c6d73e0bcfe81b0f9e73ee50f7e7296a9b3562"
     },
     {
       "path": "reports/incident_dossier.json",
-      "size_bytes": 1518,
-      "sha256": "a2451eeb512e8b7ea757aea4966253fefe2746e912e50d52eb1a6aaf12a6673f"
+      "size_bytes": 1516,
+      "sha256": "c1fbdb3c5d1b8880095bbb7b81a9bc0d01ebf0a814cb21b39ca50591f8ea7821"
     },
     {
       "path": "reports/diagnosis_report.json",
       "size_bytes": 904,
-      "sha256": "de33aa46644918de826beb33e2f6b1723fac0aadca4375e69c02d2d3c4fd3df7"
+      "sha256": "e4040afdfd87898439678d07640850e1f1bed3b3185d2412e91f11a58701ce27"
     },
     {
       "path": "reports/duo_run.json",
       "size_bytes": 409,
-      "sha256": "c7d81216703c1e64b28bc25c7456e067ee63ffe91151f59bb23755d8afa76fcf"
+      "sha256": "8363c40ba8d3489a42dcf6c6d03fda340b9708f6b9f5ba5db2f8c3bf576c19df"
     },
     {
       "path": "reports/duo_evidence.json",
-      "size_bytes": 4285,
-      "sha256": "0bc64215ab045cee384b4dad3d224a8559d9e8400ea21cbc7b00eae43d867b38"
+      "size_bytes": 4286,
+      "sha256": "76e16e230a121f623e5be82e6859db70dc8696eb60f5d037d47b0a67a09b3e70"
     }
   ],
-  "timestamp": 1792834973.1135156,
+  "timestamp": 1792843810.1958485,
   "duo_executed": true,
   "notes": ""
 }

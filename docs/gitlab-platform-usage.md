@@ -36,7 +36,7 @@ In strict accordance with the hackathon's truthfulness rules, FaultForge reports
 ### Incident Work Item Provenance: Root Issue #42 vs. Pipeline Incident Work Item #62
 Evaluators inspecting evidence artifacts will note two incident issue references:
 - **Issue #42 (Root Remediation Issue):** The primary incident work item created during initial chaos discovery. The GitLab Duo Healer custom flow was triggered on Issue #42, synthesized the resilience patch, and opened Merge Request `!3`.
-- **Issue #62 (Pipeline Incident Tracking):** During automated GitLab CI pipeline executions on `main` (Pipeline `#2984259115`), the `plan:incident_tracking` job dynamically provisions a runtime incident work item (`#62`) to track the specific pipeline run and verify end-to-end incident automation without mutating historical issue records.
+- **Issue #62 (Pipeline Incident Tracking):** During automated GitLab CI pipeline executions on `main` (Pipeline `#2984485378`), the `plan:incident_tracking` job dynamically provisions a runtime incident work item (`#62`) to track the specific pipeline run and verify end-to-end incident automation without mutating historical issue records.
 
 ### Candidate Replay Architecture: Applying Candidate Branch on Pipeline Commit
 In the CI stage `verify:exact_fault_replay_proof`:
@@ -87,7 +87,7 @@ Running `git diff 79348f47 e150fad -- app/clients/shipping_client.py`:
 
 ### Verified Deployment Status:
 1. **Cloud Run Candidate Deployment:** `VERIFIED (SUCCESS)`  
-   - *Status:* Candidate revision (`faultforge-checkout-00050-keq`) actively deployed to Google Cloud Run staging in `us-central1` via CI stage `release:cloudrun_candidate_deploy` (`reports/release.json` status `STAGED`).
+   - *Status:* Candidate revision (`faultforge-checkout-00062-juq`) actively deployed to Google Cloud Run staging in `us-central1` via CI stage `release:cloudrun_candidate_deploy` (`reports/release.json` status `STAGED`).
 
 2. **Live Canary Traffic Split Verification:** `VERIFIED (SUCCESS)`  
    - *Status:* Probed against live endpoint; confirmed HTTP 200 OK with 10% canary traffic routing verified (`reports/live_verification.json` status `VERIFIED`).

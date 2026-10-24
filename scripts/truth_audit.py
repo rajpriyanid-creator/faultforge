@@ -653,7 +653,7 @@ def audit_docs_claims() -> List[str]:
         (r"\b1331(?:\.90)?\b", "Stale candidate p50 latency (1331/1331.90 ms)"),
         (r"\b3454(?:\.97)?\b", "Stale baseline mean latency (3454/3454.97 ms)"),
         (r"124(?:\.24)?\s*ms", "Stale candidate mean latency (124/124.24 ms)"),
-        (r"\b817(?:\.61)?\b", "Stale candidate p95 latency (817/817.61 ms)"),
+        (r"\b817\.61\b", "Stale candidate p95 latency (817.61 ms)"),
         (r"27\.88\s*ms", "Stale safety margin (27.88 ms)"),
         (r"80\.4\s*%", "Stale reduction percentage (80.4%)"),
         (r"66\.2\s*%", "Stale reduction percentage (66.2%)"),

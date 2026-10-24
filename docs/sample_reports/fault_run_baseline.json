@@ -1,6 +1,6 @@
 {
-  "run_id": "run-bfa2f522",
-  "timestamp": 1792834971.8662913,
+  "run_id": "run-63d15db2",
+  "timestamp": 1792843806.4206614,
   "label": "baseline",
   "git_sha": "4ec3a5ad7fd0cc635d9546acf6974b83f7a57054",
   "git_sha_verified": true,
@@ -20,8 +20,8 @@
   "per_request_results": [
     {
       "probe_index": 1,
-      "order_id": "ORD-17985cc6",
-      "latency_ms": 3492.9,
+      "order_id": "ORD-1ff29e6b",
+      "latency_ms": 3604.8,
       "status_code": 200,
       "is_fallback": false,
       "is_estimate": false,
@@ -29,8 +29,8 @@
     },
     {
       "probe_index": 2,
-      "order_id": "ORD-5ef9d40e",
-      "latency_ms": 3666.69,
+      "order_id": "ORD-586591ca",
+      "latency_ms": 3463.33,
       "status_code": 200,
       "is_fallback": false,
       "is_estimate": false,
@@ -38,8 +38,8 @@
     },
     {
       "probe_index": 3,
-      "order_id": "ORD-280e04e9",
-      "latency_ms": 3678.92,
+      "order_id": "ORD-2fbc7bb9",
+      "latency_ms": 3628.37,
       "status_code": 200,
       "is_fallback": false,
       "is_estimate": false,
@@ -47,8 +47,8 @@
     },
     {
       "probe_index": 4,
-      "order_id": "ORD-22c6b4fb",
-      "latency_ms": 3463.35,
+      "order_id": "ORD-178cac0d",
+      "latency_ms": 3757.09,
       "status_code": 200,
       "is_fallback": false,
       "is_estimate": false,
@@ -56,8 +56,8 @@
     },
     {
       "probe_index": 5,
-      "order_id": "ORD-70d31d5e",
-      "latency_ms": 3560.49,
+      "order_id": "ORD-7363613b",
+      "latency_ms": 3473.39,
       "status_code": 200,
       "is_fallback": false,
       "is_estimate": false,
@@ -78,15 +78,15 @@
     ],
     "errors": [],
     "latencies_ms": [
-      3492.9,
-      3666.69,
-      3678.92,
-      3463.35,
-      3560.49
+      3604.8,
+      3463.33,
+      3628.37,
+      3757.09,
+      3473.39
     ],
-    "p50_ms": 3560.49,
-    "p95_ms": 3678.92,
-    "p99_ms": 3678.92,
-    "avg_ms": 3572.47
+    "p50_ms": 3604.8,
+    "p95_ms": 3757.09,
+    "p99_ms": 3757.09,
+    "avg_ms": 3585.4
   }
 }

@@ -2,10 +2,10 @@
   "stage": "govern",
   "job_name": "govern:audit_receipt_and_gate",
   "status": "SUCCESS",
-  "commit_sha": "36c677fb8cc30f2cb1e036bca8ed0b9bcfe7426f",
-  "pipeline_id": "2984259115",
-  "job_id": "17436543228",
-  "artifact_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17436543228/artifacts/browse",
+  "commit_sha": "57757a3d0dcdd97a83009c0966a9ca3ad46378bf",
+  "pipeline_id": "2984485378",
+  "job_id": "17437653517",
+  "artifact_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17437653517/artifacts/browse",
   "approval_required": true,
   "artifacts_declared": [
     "reports/evidence_receipt.json"
@@ -16,11 +16,11 @@
   "artifacts_details": [
     {
       "path": "reports/evidence_receipt.json",
-      "size_bytes": 14925,
-      "sha256": "bd83b4f5de9edaab63a2ad921ea78e2e69179413f02ddb41941bc9ee17d48da7"
+      "size_bytes": 14949,
+      "sha256": "e3cc9efdb5f2cafee6506e31c74bf9c1e10f30571a1ee15bec89333bd04a71d0"
     }
   ],
-  "timestamp": 1792835465.4772341,
+  "timestamp": 1792844166.9253767,
   "duo_executed": false,
   "notes": ""
 }

@@ -4,24 +4,14 @@
   "lines_changed": 20,
   "files_changed": [
     ".gitlab-ci.yml",
-    "README.md",
-    "scripts/generate_receipt.py",
-    "scripts/record_duo_evidence.py",
-    "scripts/render_metrics.py",
-    "scripts/truth_audit.py",
-    "scripts/verify_baseline_tag.py",
-    "tests/unit/test_record_duo_evidence.py",
-    "tests/unit/test_render_metrics.py",
-    "tests/unit/test_verify_baseline_tag.py"
+    "app/main.py",
+    "scripts/verify_live_evidence_api.py",
+    "tests/integration/test_live_evidence_api.py"
   ],
   "reasons": [
     "Changed file '.gitlab-ci.yml' is outside allowed low-risk paths: ['app/clients/', 'app/resilience/', 'tests/']",
-    "Changed file 'README.md' is outside allowed low-risk paths: ['app/clients/', 'app/resilience/', 'tests/']",
-    "Changed file 'scripts/generate_receipt.py' is outside allowed low-risk paths: ['app/clients/', 'app/resilience/', 'tests/']",
-    "Changed file 'scripts/record_duo_evidence.py' is outside allowed low-risk paths: ['app/clients/', 'app/resilience/', 'tests/']",
-    "Changed file 'scripts/render_metrics.py' is outside allowed low-risk paths: ['app/clients/', 'app/resilience/', 'tests/']",
-    "Changed file 'scripts/truth_audit.py' is outside allowed low-risk paths: ['app/clients/', 'app/resilience/', 'tests/']",
-    "Changed file 'scripts/verify_baseline_tag.py' is outside allowed low-risk paths: ['app/clients/', 'app/resilience/', 'tests/']",
+    "Changed file 'app/main.py' is outside allowed low-risk paths: ['app/clients/', 'app/resilience/', 'tests/']",
+    "Changed file 'scripts/verify_live_evidence_api.py' is outside allowed low-risk paths: ['app/clients/', 'app/resilience/', 'tests/']",
     "Autonomy Dial: SUPERVISED mode active (autonomous staging/replay; human sign-off for live promotion)."
   ],
   "requires_human_approval": true,

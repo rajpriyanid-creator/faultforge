@@ -1,11 +1,11 @@
 {
-  "timestamp": 1792835428.1402445,
+  "timestamp": 1792844128.9231539,
   "target_url": "https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app",
   "health_endpoint_status": "HEALTHY",
   "health_status_code": 200,
   "metrics": {
-    "baseline_avg_ms": 3572.47,
-    "hardened_avg_ms": 488.2,
+    "baseline_avg_ms": 3585.4,
+    "hardened_avg_ms": 489.66,
     "sla_breaches_contained": true
   }
 }
