@@ -188,3 +188,34 @@ def test_duo_evidence_candidate_tree_match_fields(tmp_path):
     assert duo_exec.get("app_tree_matches_evaluated_candidate") is False
     assert "180 insertions" in duo_exec.get("app_tree_evaluated_candidate_diff_stat", "")
 
+def test_duo_evidence_explanation_and_diff_stat_non_empty_when_found(tmp_path, monkeypatch):
+    monkeypatch.setenv("FF_FLOW_RUN_URL", "https://gitlab.com/test/automate/agent-sessions/9909079")
+    monkeypatch.setenv("CI_MERGE_REQUEST_IID", "3")
+    monkeypatch.setenv("CI_COMMIT_REF_NAME", "fix/resilience-shipping-timeout")
+    output_file = str(tmp_path / "duo_evidence.json")
+    evidence = query_duo_evidence(auth_token_str=None, project_id=None, from_ci_env=True, output_path=output_file)
+    assert evidence["found"] is True
+    assert evidence.get("diff_stat"), "diff_stat must be non-empty when found=True"
+    assert evidence.get("explanation"), "explanation must be non-empty when found=True"
+    assert "f8aa9d98" in evidence["explanation"]
+    assert "79348f4" in evidence["explanation"]
+    assert "MR !3" in evidence["explanation"]
+
+def test_duo_evidence_validation_rejects_empty_explanation_or_diff_stat():
+    def validate_duo_evidence(ev):
+        if ev.get("found"):
+            assert ev.get("diff_stat") and str(ev["diff_stat"]).strip(), "diff_stat must not be empty when found=True"
+            assert ev.get("explanation") and str(ev["explanation"]).strip(), "explanation must not be empty when found=True"
+
+    # Valid
+    validate_duo_evidence({"found": True, "diff_stat": "1 file changed", "explanation": "Duo authored"})
+
+    # Invalid empty diff_stat
+    with pytest.raises(AssertionError, match="diff_stat must not be empty"):
+        validate_duo_evidence({"found": True, "diff_stat": "", "explanation": "Duo authored"})
+
+    # Invalid empty explanation
+    with pytest.raises(AssertionError, match="explanation must not be empty"):
+        validate_duo_evidence({"found": True, "diff_stat": "1 file changed", "explanation": ""})
+
+

@@ -95,31 +95,41 @@ def render_metrics(eval_path: Optional[str] = None) -> Dict[str, Any]:
     raw = ev_data.get("raw_metrics", {})
     reduction_dict = ev_data.get("latency_reduction", {})
 
-    # Compute stats from raw probe lists if available, else fallback to raw_metrics in eval
+    # Compute stats from raw probe lists if available, else strictly from raw_metrics in eval
     if base_latencies:
         base_stats = calc_stats(base_latencies)
     else:
+        req_base = ["baseline_avg_ms", "baseline_p50_ms", "baseline_p95_ms", "baseline_max_ms"]
+        missing_base = [k for k in req_base if k not in raw]
+        if missing_base:
+            print(f"[-] Error: Missing required baseline metric fields in {target_path}: {missing_base}", file=sys.stderr)
+            sys.exit(1)
         base_stats = {
-            "mean": raw.get("baseline_avg_ms", 3557.22),
-            "p50": raw.get("baseline_p50_ms", 3561.40),
-            "p95": raw.get("baseline_p95_ms", 3634.58),
-            "min": raw.get("baseline_min_ms", 3312.60),
-            "max": raw.get("baseline_max_ms", 3634.58),
-            "variance": raw.get("baseline_variance", 26844.03),
-            "std_dev": raw.get("baseline_std_dev", 163.84)
+            "mean": raw["baseline_avg_ms"],
+            "p50": raw["baseline_p50_ms"],
+            "p95": raw["baseline_p95_ms"],
+            "min": raw.get("baseline_min_ms", raw["baseline_p50_ms"]),
+            "max": raw["baseline_max_ms"],
+            "variance": raw.get("baseline_variance", 0.0),
+            "std_dev": raw.get("baseline_std_dev", 0.0)
         }
 
     if hard_latencies:
         hard_stats = calc_stats(hard_latencies)
     else:
+        req_hard = ["hardened_avg_ms", "hardened_p50_ms", "hardened_p95_ms", "hardened_max_ms"]
+        missing_hard = [k for k in req_hard if k not in raw]
+        if missing_hard:
+            print(f"[-] Error: Missing required candidate metric fields in {target_path}: {missing_hard}", file=sys.stderr)
+            sys.exit(1)
         hard_stats = {
-            "mean": raw.get("hardened_avg_ms", 487.12),
-            "p50": raw.get("hardened_p50_ms", 808.95),
-            "p95": raw.get("hardened_p95_ms", 812.51),
-            "min": raw.get("hardened_min_ms", 1.91),
-            "max": raw.get("hardened_max_ms", 812.51),
-            "variance": raw.get("hardened_variance", 162902.09),
-            "std_dev": raw.get("hardened_std_dev", 403.61)
+            "mean": raw["hardened_avg_ms"],
+            "p50": raw["hardened_p50_ms"],
+            "p95": raw["hardened_p95_ms"],
+            "min": raw.get("hardened_min_ms", 0.0),
+            "max": raw["hardened_max_ms"],
+            "variance": raw.get("hardened_variance", 0.0),
+            "std_dev": raw.get("hardened_std_dev", 0.0)
         }
 
     reductions = {
@@ -139,31 +149,38 @@ def render_metrics(eval_path: Optional[str] = None) -> Dict[str, Any]:
         phase_b_lats = [x for x in hard_latencies if x < 150.0]
         phase_a_stats = calc_stats(phase_a_lats) if phase_a_lats else hard_stats
         phase_b_stats = calc_stats(phase_b_lats) if phase_b_lats else hard_stats
-        phase_a_count = len(phase_a_lats) if phase_a_lats else gate_phase_a.get("total_probes", 10)
-        phase_b_count = len(phase_b_lats) if phase_b_lats else gate_phase_b.get("total_probes", 10)
+        phase_a_count = len(phase_a_lats) if phase_a_lats else gate_phase_a.get("total_probes", 0)
+        phase_b_count = len(phase_b_lats) if phase_b_lats else gate_phase_b.get("total_probes", 0)
         short_circuit_count = len(phase_b_lats)
     else:
+        if not gate_phase_a or "avg_ms" not in gate_phase_a or "p95_ms" not in gate_phase_a:
+            print(f"[-] Error: Missing candidate_timeout_only gate metrics in {target_path}", file=sys.stderr)
+            sys.exit(1)
+        if not gate_phase_b or "avg_ms" not in gate_phase_b or "p95_ms" not in gate_phase_b:
+            print(f"[-] Error: Missing candidate_breaker_short_circuit gate metrics in {target_path}", file=sys.stderr)
+            sys.exit(1)
+
         phase_a_stats = {
-            "mean": gate_phase_a.get("avg_ms", 810.06),
+            "mean": gate_phase_a["avg_ms"],
             "p50": hard_stats["p50"],
-            "p95": gate_phase_a.get("p95_ms", 812.51),
-            "min": 808.95,
-            "max": gate_phase_a.get("p95_ms", 812.51),
-            "variance": 0.42,
-            "std_dev": 0.65
+            "p95": gate_phase_a["p95_ms"],
+            "min": gate_phase_a.get("min_ms", gate_phase_a["avg_ms"]),
+            "max": gate_phase_a["p95_ms"],
+            "variance": gate_phase_a.get("variance", 0.0),
+            "std_dev": gate_phase_a.get("std_dev", 0.0)
         }
         phase_b_stats = {
-            "mean": gate_phase_b.get("avg_ms", 164.17),
-            "p50": 2.50,
-            "p95": gate_phase_b.get("p95_ms", 811.08),
-            "min": 1.91,
-            "max": 811.08,
-            "variance": 103289.45,
-            "std_dev": 321.38
+            "mean": gate_phase_b["avg_ms"],
+            "p50": gate_phase_b.get("p50_ms", gate_phase_b["avg_ms"]),
+            "p95": gate_phase_b["p95_ms"],
+            "min": gate_phase_b.get("min_ms", 0.0),
+            "max": gate_phase_b["p95_ms"],
+            "variance": gate_phase_b.get("variance", 0.0),
+            "std_dev": gate_phase_b.get("std_dev", 0.0)
         }
-        phase_a_count = gate_phase_a.get("total_probes", 10)
-        phase_b_count = gate_phase_b.get("total_probes", 10)
-        short_circuit_count = gate_phase_b.get("short_circuited_probes", 8)
+        phase_a_count = gate_phase_a.get("total_probes", 0)
+        phase_b_count = gate_phase_b.get("total_probes", 0)
+        short_circuit_count = gate_phase_b.get("short_circuited_probes", 0)
 
     breaker_state_phase_a = "CLOSED (reset each probe)"
     breaker_state_phase_b = f"OPEN ({short_circuit_count} of {len(hard_latencies) or 20} short-circuited)"

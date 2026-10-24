@@ -76,14 +76,17 @@ plan:incident_tracking:
 create:duo_remediation_mr:
   stage: create
   image: python:3.12-slim
+  variables:
+    GIT_DEPTH: "0"
   dependencies:
     - plan:incident_tracking
   script:
     - apt-get update -qq && apt-get install -y -qq git
     - pip install -r requirements.txt
     - git fetch origin --tags
+    - python scripts/verify_baseline_tag.py
     - git checkout baseline-v0.1.0 -- app/
-    - BASELINE_SHA=$(git rev-parse baseline-v0.1.0)
+    - BASELINE_SHA=$(git rev-parse baseline-v0.1.0^{commit})
     - python scripts/start_toxiproxy.py
     - python -m uvicorn stub.mock_shipping_api:app --host 127.0.0.1 --port 8081 &
     - python -m uvicorn app.main:app --host 127.0.0.1 --port 8090 &

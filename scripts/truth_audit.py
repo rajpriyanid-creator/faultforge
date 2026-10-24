@@ -24,6 +24,18 @@ def audit_forbidden_patterns() -> List[str]:
         (r"duo_" + r"orchestrator", "Deleted mock orchestrator reference (" + "duo_" + "orchestrator)"),
     ]
 
+    hardcoded_metric_literals = [
+        (r"\b3557\.22\b", "Hardcoded fallback metric literal (3557.22)"),
+        (r"\b487\.12\b", "Hardcoded fallback metric literal (487.12)"),
+        (r"\b808\.95\b", "Hardcoded fallback metric literal (808.95)"),
+        (r"\b812\.51\b", "Hardcoded fallback metric literal (812.51)"),
+        (r"\b810\.06\b", "Hardcoded fallback metric literal (810.06)"),
+        (r"\b164\.17\b", "Hardcoded fallback metric literal (164.17)"),
+        (r"\b3558\.46\b", "Hardcoded fallback metric literal (3558.46)"),
+        (r"\b484\.27\b", "Hardcoded fallback metric literal (484.27)"),
+        (r"\b806\.79\b", "Hardcoded fallback metric literal (806.79)"),
+    ]
+
     target_files = [".gitlab-ci.yml"]
     for root, _, files in os.walk("scripts"):
         for f in files:
@@ -42,6 +54,10 @@ def audit_forbidden_patterns() -> List[str]:
             for pattern, desc in forbidden_tokens:
                 if re.search(pattern, cleaned):
                     violations.append(f"{path}:{idx} - {desc}: '{cleaned}'")
+            if path.startswith("scripts") and path.endswith(".py"):
+                for pattern, desc in hardcoded_metric_literals:
+                    if re.search(pattern, cleaned):
+                        violations.append(f"{path}:{idx} - {desc}: '{cleaned}' (must read dynamically from replay evaluation)")
 
     collect_evidence_path = "scripts/collect_evidence.py"
     if os.path.exists(collect_evidence_path):
@@ -327,6 +343,20 @@ def audit_report_consistency(final_mode: bool = False) -> List[str]:
 
         except Exception as exc:
             violations.append(f"Could not parse stage_ledger.json: {exc}")
+
+    # Audit duo_evidence.json completeness when found=True
+    duo_ev_file = os.path.join(reports_dir, "duo_evidence.json")
+    if os.path.exists(duo_ev_file):
+        try:
+            with open(duo_ev_file, "r", encoding="utf-8") as df:
+                duo_data = json.load(df)
+            if duo_data.get("found") is True:
+                if not str(duo_data.get("diff_stat") or "").strip():
+                    violations.append(f"{duo_ev_file} - diff_stat must not be empty when found=True")
+                if not str(duo_data.get("explanation") or "").strip():
+                    violations.append(f"{duo_ev_file} - explanation must not be empty when found=True")
+        except Exception as exc:
+            violations.append(f"Could not parse {duo_ev_file}: {exc}")
 
     # Verify docs/sample_reports/* byte-identical check
     if reports_dir != sample_dir and os.path.exists(sample_dir) and os.path.exists(reports_dir):

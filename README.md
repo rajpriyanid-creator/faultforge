@@ -63,7 +63,7 @@ curl -sI https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/
 ### How Candidate Was Built & Evaluated (Commit Provenance)
 
 To ensure zero ambiguity between baseline regression, candidate fix, and cloud deployments:
-1. **Unpatched Baseline Pinned to Tag:** The regression baseline is pinned to tag `baseline-v0.1.0` (`4ec3a5ad`), preserving the unpatched shipping client without timeouts.
+1. **Unpatched Baseline Pinned to Tag:** The regression baseline is pinned to tag `baseline-v0.1.0` (commit `4ec3a5ad`, annotated tag object `578689ad`), preserving the unpatched shipping client without timeouts.
 2. **Duo-Authored Candidate Remediation:** In agent session `9909079`, the GitLab Duo service account authored commit `f8aa9d98` on branch `fix/resilience-shipping-timeout` and opened Merge Request `!3`, adding the bounded 0.8s timeout, circuit breaker, and fallback estimate. The resilience fix is merged into `main`.
 3. **Container Image Built from Patched Code:** In CI stage `package:container_build`, the Docker container is built directly from `main` (patched resilience code).
 4. **Cloud Run Candidate Deployment:** In CI stage `release:cloudrun_candidate_deploy`, the patched container is deployed to Google Cloud Run as candidate revision `faultforge-checkout-00032-cux` under the `candidate` URL and allocated 10% canary traffic.

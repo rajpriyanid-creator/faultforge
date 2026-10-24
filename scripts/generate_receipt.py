@@ -329,7 +329,7 @@ def generate_evidence_receipt(
             "changed_files": duo_evidence.get("changed_files", ["app/clients/shipping_client.py", "app/dashboard.html"]),
             "diff_stat": duo_evidence.get("diff_stat", ""),
             "app_tree_matches_duo_commit": duo_evidence.get("app_tree_matches_duo_commit", False),
-            "app_tree_matches_evaluated_candidate": duo_evidence.get("app_tree_matches_evaluated_candidate", False),
+            "app_tree_matches_evaluated_candidate": duo_evidence.get("app_tree_matches_evaluated_candidate", app_tree_matches_deployed),
             "app_tree_evaluated_candidate_diff_stat": duo_evidence.get("app_tree_evaluated_candidate_diff_stat", ""),
             "explanation": duo_evidence.get("explanation", "")
         },
