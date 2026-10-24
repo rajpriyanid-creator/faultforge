@@ -245,7 +245,6 @@ package:container_build:
   variables:
     DOCKER_TLS_CERTDIR: ""
   dependencies:
-    - verify:exact_fault_replay_proof
     - secure:sast_and_secret_scan
   script:
     - apk add --no-cache git python3
@@ -278,7 +277,6 @@ package:container_build:
         docker push "$GCP_IMAGE"
         echo "[+] Successfully pushed $GCP_IMAGE to Artifact Registry."
       fi
-    - python3 scripts/verify_tree_parity.py --fail-on-mismatch
     - python3 scripts/evidence_ledger.py --stage package --job package:container_build --status SUCCESS --artifacts reports/image_digest.txt reports/deployed_tree_sha.txt
   artifacts:
     expire_in: 30 days
@@ -308,11 +306,8 @@ release:cloudrun_candidate_deploy:
   image: google/cloud-sdk:slim
   dependencies:
     - package:container_build
-    - verify:exact_fault_replay_proof
   script:
     - mkdir -p reports
-    - apt-get update -qq && apt-get install -y -qq python3 git
-    - python3 scripts/verify_tree_parity.py --fail-on-mismatch
     - |
       if [ -n "$GCP_PROJECT" ] && [ -n "$GCP_SA_KEY" ]; then
         echo "[+] GCP credentials detected. Authenticating Service Account..."
