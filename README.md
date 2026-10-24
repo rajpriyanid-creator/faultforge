@@ -237,6 +237,16 @@ Candidate modifications are strictly constrained by `scripts/check_forbidden_pat
 - **Primary 9-Stage Verification Pipeline:** [#2984589851](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2984589851) (commit `d75de80a`, executed `2026-10-24T13:23:46Z` to `13:31:30Z`) — **Status: Blocked / Manual Gate Pending** (GitLab displays pipeline status as "Blocked" because the manual `govern:promote_to_production` job is intentionally waiting for human approval per Supervised Autonomy policy; 15 jobs total: 13 automated pipeline jobs passed + `pages` passed + 1 manual promotion gate waiting). The pipeline's Tests tab records **173 passed tests** (commit `d75de80a`, running `tests/unit` and `tests/integration`), whereas an offline clean-archive run executes repository-wide yielding **180 passed / 4 skipped** because later commits added 10 unit tests in `tests/unit/test_forbidden_paths.py` and the scopes differ. Candidate revision `faultforge-checkout-00068-gaw` deployed to Cloud Run staging.
 - **Candidate Merge Request !3 Pipeline:** [#2982289232](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2982289232) (commit `b57584ae`, evaluated MR !3 branch).
 
+### 🌿 Active Repository Branches & Provenance (Judges Quick Reference)
+
+The repository maintains strictly 3 active branches to ensure zero evaluator confusion:
+
+| Branch Name | Role & State | Ahead / Behind `main` | Why It Exists & How to Evaluate |
+|---|---|:---:|---|
+| **`main`** *(Default)* | Protected Production Baseline & CI Pipeline | `0 / 0` (HEAD) | The primary submission branch containing the 9-stage CI definitions, full test suite (180 passed in archive), empirical sample reports, and documentation. |
+| **`fix/resilience-shipping-timeout`** | Candidate Remediation Branch ([MR !3](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/merge_requests/3)) | `16 ahead, 41 behind` | The exact branch authored by the GitLab Duo service account (`f8aa9d98` / session `9909079`). **16 ahead** reflects Duo's iterative remediation commits; **41 behind** reflects subsequent post-code lifecycle commits on `main` (CI packaging, Cloud Run deployment, truth audits) added after the resilience fix was merged into `main` in commit `e150fad`. |
+| **`reference-fix`** | CI Fallback Reference Implementation | `1 ahead, 125 behind` | The early static fallback branch referenced by `.gitlab-ci.yml` (`git fetch origin reference-fix`) to guarantee deterministic pipeline verification when live Duo platform credentials are absent. |
+
 ---
 
 ## 5. Quickstart & Judge Reproducibility
