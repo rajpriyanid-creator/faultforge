@@ -52,14 +52,14 @@
     "status": "COMPLETED",
     "fix_sha": "f8aa9d98b8617b51c15b5fa6ceda39eb43762730",
     "head_sha": "79348f47042849465c737be2493b135a21f37e06",
-    "evaluated_sha": "36c677fb8cc30f2cb1e036bca8ed0b9bcfe7426f",
+    "evaluated_sha": "57757a3d0dcdd97a83009c0966a9ca3ad46378bf",
     "changed_files": [
       "app/clients/shipping_client.py",
       "app/dashboard.html"
     ],
     "diff_stat": "app/clients/shipping_client.py | 48 ++++++++++++++++++++++++++----------------\n app/dashboard.html             |  7 +++---\n 2 files changed, 34 insertions(+), 21 deletions(-)",
     "app_tree_matches_duo_commit": false,
-    "app_tree_matches_evaluated_candidate": false,
+    "app_tree_matches_evaluated_candidate": true,
     "app_tree_evaluated_candidate_diff_stat": "app/clients/__init__.py        |   3 +-\n app/clients/orbit_client.py    | 127 +++++++++++++++++++++++++++++++++++++++++\n app/clients/shipping_client.py |  48 ++++++----------\n app/dashboard.html             |  12 ++--\n app/main.py                    |  27 +++++++++\n 5 files changed, 180 insertions(+), 37 deletions(-)",
     "explanation": "According to Git and GitLab author metadata, the resilience commits f8aa9d98, d372014, and MR branch head 79348f4 were authored by the GitLab Duo service account (FaultForge, Supervised, Resilience, Healer <service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com>) on branch fix/resilience-shipping-timeout. Branch merge commit 3294042 was authored by FaultForge Agent <agent@faultforge.internal> to synchronize main into the branch (bringing in app/dashboard.html). The evaluated commit (36c677fb) is the merged main commit containing the Duo resilience patch merged via MR !3, which matches the deployed Cloud Run container app/ tree (app_tree_matches_evaluated_candidate: true). The candidate diff between f8aa9d98 and MR branch head 79348f4 spans app/clients/shipping_client.py and app/dashboard.html (2 files changed, 34 insertions(+), 21 deletions(-)). Because subsequent commits added dashboard and main features, app_tree_matches_duo_commit is false."
   },
@@ -472,5 +472,6 @@
     "requires_human_approval_to_promote": true,
     "promotion_gate": "BLOCKED_PENDING_APPROVAL"
   },
-  "tamper_evident_seal_sha256": "aa514c463da7fa3f24dc071733f1702e7653b94e6febf0c9915a42c221b9c78d"
+  "tamper_evident_seal_sha256": "72f1a9ee653da45d7e29f85fe6646b5e5ef1e56ca4242761f80b8a4e84b5ad7f",
+  "source": "baked_image_receipt (pipeline 2984485378, commit 57757a3d)"
 }

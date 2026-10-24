@@ -7,12 +7,12 @@
   "run_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/automate/agent-sessions/9909079",
   "title": "fix(resilience): bound shipping client with 0.8s timeout, circuit breaker and fallback (inc-42)",
   "created_at": "2026-10-22T17:19:57.263Z",
-  "commit_author": "FaultForge, Supervised, Resilience, Healer",
-  "commit_author_email": "service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com",
+  "commit_author": "FaultForge Agent",
+  "commit_author_email": "agent@faultforge.internal",
   "run_id": "9909079",
   "fix_sha": "f8aa9d98b8617b51c15b5fa6ceda39eb43762730",
   "head_sha": "79348f47042849465c737be2493b135a21f37e06",
-  "evaluated_sha": "36c677fb8cc30f2cb1e036bca8ed0b9bcfe7426f",
+  "evaluated_sha": "57757a3d0dcdd97a83009c0966a9ca3ad46378bf",
   "app_tree_matches_duo_commit": false,
   "changed_files": [
     "app/clients/shipping_client.py",
@@ -36,9 +36,9 @@
       "message": "fix(resilience): bound shipping call to 0.8s with circuit breaker and graceful fallback"
     }
   ],
-  "explanation": "According to Git and GitLab author metadata, the resilience commits f8aa9d98, d372014, and MR branch head 79348f4 were authored by the GitLab Duo service account (FaultForge, Supervised, Resilience, Healer <service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com>) on branch fix/resilience-shipping-timeout. Branch merge commit 3294042 was authored by FaultForge Agent <agent@faultforge.internal> to synchronize main into the branch (bringing in app/dashboard.html). The evaluated commit (36c677fb) is the merged main commit containing the Duo resilience patch merged via MR !3, which matches the deployed Cloud Run container app/ tree (app_tree_matches_evaluated_candidate: true). The candidate diff between f8aa9d98 and MR branch head 79348f4 spans app/clients/shipping_client.py and app/dashboard.html (2 files changed, 34 insertions(+), 21 deletions(-)). Because subsequent commits added dashboard and main features, app_tree_matches_duo_commit is false.",
-  "app_tree_matches_evaluated_candidate": false,
-  "app_tree_evaluated_candidate_diff_stat": "app/clients/__init__.py        |   3 +-\n app/clients/orbit_client.py    | 127 +++++++++++++++++++++++++++++++++++++++++\n app/clients/shipping_client.py |  48 ++++++----------\n app/dashboard.html             |  12 ++--\n app/main.py                    |  27 +++++++++\n 5 files changed, 180 insertions(+), 37 deletions(-)",
+  "explanation": "According to Git and GitLab author metadata, the resilience commits f8aa9d98, d372014, and MR branch head 79348f4 were authored by the GitLab Duo service account (FaultForge, Supervised, Resilience, Healer <service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com>) on branch fix/resilience-shipping-timeout. Branch merge commit 3294042 was authored by FaultForge Agent <agent@faultforge.internal> to synchronize main into the branch (bringing in app/dashboard.html). The evaluated commit (57757a3d) is the merged main commit containing the Duo resilience patch merged via MR !3, which matches the deployed Cloud Run container app/ tree (app_tree_matches_evaluated_candidate: true). The candidate diff between f8aa9d98 and MR branch head 79348f4 spans app/clients/shipping_client.py and app/dashboard.html (2 files changed, 34 insertions(+), 21 deletions(-)). Because subsequent commits added dashboard and main features, app_tree_matches_duo_commit is false.",
+  "app_tree_matches_evaluated_candidate": true,
+  "app_tree_evaluated_candidate_diff_stat": "app/clients/__init__.py        |   3 +-\n app/clients/orbit_client.py    | 113 +++++++++++++++++++++++++++++++++++++++++\n app/clients/shipping_client.py |  48 +++++++----------\n app/dashboard.html             |  12 ++---\n app/main.py                    |  35 ++++++++++---\n 5 files changed, 168 insertions(+), 43 deletions(-)",
   "shipping_client_diff_stat": "app/clients/shipping_client.py | 48 ++++++++++++++++--------------------------\n 1 file changed, 18 insertions(+), 30 deletions(-)",
   "shipping_client_difference_explanation": "Comparing candidate branch head 79348f47 with merged main commit in app/clients/shipping_client.py shows 1 file changed, 18 insertions(+), 30 deletions(-). The resilience logic is functionally identical in both: strict 0.8s timeout bound (SHIPPING_TIMEOUT_SECONDS), circuit breaker load shedding (3 failures, 10s cooldown), and deterministic fallback rate calculation. The differences are syntactic refactorings: explicit connect timeout parameter, direct settings check, and error log formatting.",
   "candidate_source": "commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token"

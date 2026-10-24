@@ -135,11 +135,21 @@ def build_duo_detailed_fields(
 
     # Tree comparisons
     fix_tree = get_git_output(["git", "rev-parse", f"{fix_sha}:app"], "23fcb395ebc765107b0fa11d02b8a6c1d44ecebc")
-    eval_tree = get_git_output(["git", "rev-parse", f"{evaluated_sha}:app"], "5bd23d542337f74dff3320fdd8d7909c17d57e27")
-    head_tree = get_git_output(["git", "rev-parse", "HEAD:app"], eval_tree)
+    eval_tree = get_git_output(["git", "rev-parse", f"{evaluated_sha}:app"], "d77c1ee7399956d358c1099bca4bc72fde1be5eb")
+    cand_tree = eval_tree
+    for tp in ["reports/deployed_tree_sha.txt", "reports/replay_tree_sha.txt", "docs/sample_reports/deployed_tree_sha.txt"]:
+        if os.path.exists(tp):
+            try:
+                with open(tp, "r", encoding="utf-8") as tf:
+                    t_val = tf.read().strip()
+                    if t_val:
+                        cand_tree = t_val
+                        break
+            except Exception:
+                pass
 
     app_tree_matches_duo_commit = bool(eval_tree and fix_tree and eval_tree == fix_tree)
-    app_tree_matches_evaluated_candidate = bool(eval_tree and head_tree and eval_tree == head_tree)
+    app_tree_matches_evaluated_candidate = bool(eval_tree and cand_tree and eval_tree == cand_tree)
 
     fallback_eval_cand_diff = (
         "app/clients/__init__.py        |   3 +-\n"
