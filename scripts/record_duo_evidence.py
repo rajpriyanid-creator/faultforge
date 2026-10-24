@@ -137,7 +137,7 @@ def build_duo_detailed_fields(
     fix_tree = get_git_output(["git", "rev-parse", f"{fix_sha}:app"], "23fcb395ebc765107b0fa11d02b8a6c1d44ecebc")
     eval_tree = get_git_output(["git", "rev-parse", f"{evaluated_sha}:app"], "d77c1ee7399956d358c1099bca4bc72fde1be5eb")
     cand_tree = eval_tree
-    for tp in ["reports/deployed_tree_sha.txt", "reports/replay_tree_sha.txt", "docs/sample_reports/deployed_tree_sha.txt"]:
+    for tp in ["reports/deployed_tree_sha.txt", "reports/replay_tree_sha.txt"]:
         if os.path.exists(tp):
             try:
                 with open(tp, "r", encoding="utf-8") as tf:

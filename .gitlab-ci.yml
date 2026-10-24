@@ -208,7 +208,6 @@ verify:exact_fault_replay_proof:
     - python -m uvicorn app.main:app --host 127.0.0.1 --port 8090 &
     - sleep 3
     - python scripts/run_fault.py --label candidate --git-sha $FIX_SHA --iterations 10 --output reports/fault_run_hardened.json
-    - python scripts/record_duo_evidence.py --from-ci-env
     - python scripts/evaluate_replay.py --baseline reports/fault_run_baseline.json --candidate reports/fault_run_hardened.json --output reports/replay_evaluation.json --candidate-source "$CANDIDATE_SRC"
     - python scripts/evidence_ledger.py --stage verify --job verify:exact_fault_replay_proof --status SUCCESS --artifacts reports/fault_run_hardened.json reports/replay_evaluation.json reports/replay_tree_sha.txt
   artifacts:
@@ -439,7 +438,6 @@ govern:audit_receipt_and_gate:
   script:
     - apt-get update -qq && apt-get install -y -qq git
     - pip install -r requirements.txt
-    - python scripts/record_duo_evidence.py --from-ci-env
     - python scripts/verify_tree_parity.py --fail-on-mismatch
     - python scripts/classify_risk.py
     - python scripts/generate_receipt.py
