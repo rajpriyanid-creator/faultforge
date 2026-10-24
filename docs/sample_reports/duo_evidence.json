@@ -10,36 +10,5 @@
   "commit_author": "FaultForge, Supervised, Resilience, Healer",
   "commit_author_email": "service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com",
   "run_id": "9909079",
-  "candidate_source": "commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token",
-  "fix_sha": "f8aa9d98b8617b51c15b5fa6ceda39eb43762730",
-  "head_sha": "79348f47042849465c737be2493b135a21f37e06",
-  "evaluated_sha": "79348f47042849465c737be2493b135a21f37e06",
-  "app_tree_matches_duo_commit": false,
-  "changed_files": [
-    "app/clients/shipping_client.py",
-    "app/dashboard.html"
-  ],
-  "diff_stat": "app/clients/shipping_client.py | 48 ++++++++++++++++++++++++++----------------\napp/dashboard.html | 7 +++---\n2 files changed, 34 insertions(+), 21 deletions(-)",
-  "commits_after_duo": [
-    {
-      "commit": "d372014",
-      "author": "FaultForge, Supervised, Resilience, Healer <service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com>",
-      "message": "fix(resilience): bound shipping call to 0.8s with circuit breaker and fallback estimate"
-    },
-    {
-      "commit": "3294042",
-      "author": "FaultForge Agent <agent@faultforge.internal>",
-      "message": "Merge branch 'main' into fix/resilience-shipping-timeout"
-    },
-    {
-      "commit": "79348f4",
-      "author": "FaultForge, Supervised, Resilience, Healer <service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com>",
-      "message": "fix(resilience): bound shipping call to 0.8s with circuit breaker and graceful fallback"
-    }
-  ],
-  "explanation": "According to Git and GitLab author metadata, the resilience commits f8aa9d98, d372014, and evaluated candidate commit 79348f4 were all authored by the GitLab Duo service account (FaultForge, Supervised, Resilience, Healer <service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com>) on branch fix/resilience-shipping-timeout. The branch merge commit 3294042 was authored by FaultForge Agent <agent@faultforge.internal> to synchronize main into the branch (bringing in app/dashboard.html). The candidate diff between f8aa9d98 and evaluated candidate 79348f4 spans app/clients/shipping_client.py and app/dashboard.html (2 files changed, 34 insertions(+), 21 deletions(-)). Comparing evaluated candidate 79348f4 against main branch pipeline commit e150fad confirms app_tree_matches_evaluated_candidate is false (5 files changed, 180 insertions(+), 37 deletions(-)), reflecting post-merge main branch features such as orbit_client.py.",
-  "app_tree_matches_evaluated_candidate": false,
-  "app_tree_evaluated_candidate_diff_stat": "app/clients/__init__.py        |   3 +-\n app/clients/orbit_client.py    | 127 +++++++++++++++++++++++++++++++++++++++++\n app/clients/shipping_client.py |  48 ++++++----------\n app/dashboard.html             |  12 ++--\n app/main.py                    |  27 +++++++++\n 5 files changed, 180 insertions(+), 37 deletions(-)",
-  "shipping_client_diff_stat": "app/clients/shipping_client.py | 48 ++++++++++++++++--------------------------\n 1 file changed, 18 insertions(+), 30 deletions(-)",
-  "shipping_client_difference_explanation": "Comparing candidate branch head 79348f47 with merged main commit e150fad in app/clients/shipping_client.py shows 1 file changed, 18 insertions(+), 30 deletions(-). The resilience logic is functionally identical in both: strict 0.8s timeout bound (SHIPPING_TIMEOUT_SECONDS), circuit breaker load shedding (3 failures, 10s cooldown), and deterministic fallback rate calculation. The differences are syntactic refactorings: explicit connect timeout parameter, direct settings check, and error log formatting."
+  "candidate_source": "commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token"
 }

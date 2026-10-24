@@ -2,10 +2,10 @@
   "stage": "verify",
   "job_name": "verify:exact_fault_replay_proof",
   "status": "SUCCESS",
-  "commit_sha": "e150fad07a8627fbc5c1535d8fa9081ef9dc3a52",
-  "pipeline_id": "2982633493",
-  "job_id": "17426629832",
-  "artifact_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17426629832/artifacts/browse",
+  "commit_sha": "c5d67cdfd092371194fca081d9105116ee0dbc2e",
+  "pipeline_id": "2984172017",
+  "job_id": "17436072834",
+  "artifact_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17436072834/artifacts/browse",
   "approval_required": false,
   "artifacts_declared": [
     "reports/fault_run_hardened.json",
@@ -20,13 +20,13 @@
   "artifacts_details": [
     {
       "path": "reports/fault_run_hardened.json",
-      "size_bytes": 10850,
-      "sha256": "46d39df1629eaa3c6ddb8c357832ee5052e952657b3a459355bbde8a69cd1b22"
+      "size_bytes": 10842,
+      "sha256": "d2794bc60bc3da51aee5c69cb817f46a0c91c33d587a6bc2721587019d9e2a34"
     },
     {
       "path": "reports/replay_evaluation.json",
-      "size_bytes": 3552,
-      "sha256": "71a52c5340fae65bc40b8bd8575e99c98a805abfdb8fbb407f42740fc619079f"
+      "size_bytes": 3548,
+      "sha256": "35c4f58915b8b3fc0cd7074b2e1eebb25fae54441f8d99686efed913c518c412"
     },
     {
       "path": "reports/replay_tree_sha.txt",
@@ -34,7 +34,7 @@
       "sha256": "14bd23f8746a140cda2df93c9b16c7713849943eabb5a40428523f0cefff7f92"
     }
   ],
-  "timestamp": 1792782481.475415,
+  "timestamp": 1792831299.7093704,
   "duo_executed": false,
   "notes": ""
 }

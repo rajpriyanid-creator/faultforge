@@ -80,12 +80,12 @@ Most CI pipelines only verify that unit tests pass in isolation. Because unit te
 **FaultForge** connects deterministic chaos engineering, AI-assisted diagnosis via **GitLab Duo Agent Platform**, automated resilience healing, and empirical proof into a closed-loop platform engineering workflow:
 
 1. **Inject Controlled Chaos:** Inject a deterministic network delay (3500ms ± 250ms jitter) into an isolated downstream shipping dependency via Toxiproxy.
-2. **Detect & Collect Evidence:** Record SLA budget breaches (>1500ms budget, observed baseline avg 3557.22ms, p95 3634.58ms, 5/5 breaches), capture sanitized logs, and compile a structured Incident Dossier.
+2. **Detect & Collect Evidence:** Record SLA budget breaches (>1500ms budget, observed baseline avg 3652.0ms, p95 3718.82ms, 5/5 breaches), capture sanitized logs, and compile a structured Incident Dossier.
 3. **Deterministic Diagnosis & Bisect:** Execute AST call-site inspection and automated `git bisect` to pinpoint the exact regressing commit (`974035c6e45e7c177452df260a155b6508b828e9`) where timeouts and circuit breakers were stripped.
 4. **GitLab Duo Agent Platform Remediation:** Trigger a custom GitLab Duo flow (`flows/faultforge-flow.yaml`) whose Diagnostician, Resilience Healer, and Chaos Hardener synthesize a minimal scoped fix: a bounded 0.8s timeout, circuit breaker (3 failures, 10s cooldown), and deterministic fallback rate. The candidate resilience fix is implemented in commit [`f8aa9d98`](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/commit/f8aa9d98b8617b51c15b5fa6ceda39eb43762730) on branch `fix/resilience-shipping-timeout` (authored by the Duo service account via session 9909079; opened as Merge Request [!3](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/merge_requests/3)) and merged into `main`. The unpatched baseline is pinned to tag [`baseline-v0.1.0`](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/tags/baseline-v0.1.0).
 5. **Replay Identical Fault:** Re-execute the **identical Toxiproxy fault profile** (`644a89784316`) against the candidate release across 20 probe iterations (10 Phase A timeout-only + 10 Phase B breaker short-circuit).
-6. **Empirical Proof:** Confirm zero SLA budget breaches (0/20 breaches), -86.3% mean latency reduction (3557.22ms down to 487.12ms, candidate p50 808.95ms, p95 812.51ms), and observable fallback responses (`is_fallback: true`, `is_estimate: true`).
-7. **Supervised Autonomy Gate:** Enforce risk-based governance, deploy candidate container to Google Cloud Run staging with 10% canary routing (revision `faultforge-checkout-00036-pih`), and require human review before live production promotion, with automated instant rollback.
+6. **Empirical Proof:** Confirm zero SLA budget breaches (0/20 breaches), -86.6% mean latency reduction (3652.0ms down to 488.75ms, candidate p50 811.5ms, p95 815.41ms), and observable fallback responses (`is_fallback: true`, `is_estimate: true`).
+7. **Supervised Autonomy Gate:** Enforce risk-based governance, deploy candidate container to Google Cloud Run staging with 10% canary routing (revision `faultforge-checkout-00046-yeg`), and require human review before live production promotion, with automated instant rollback.
 
 > **The Differentiator:** It is not "AI says it fixed the app." **It is the before/after empirical proof under the exact same controlled failure condition.**
 
@@ -202,7 +202,7 @@ FaultForge implements real, testable operations with machine-readable artifacts 
 | **Secure** | `secure:secret_detection` + `secure:semgrep-sast` + `secure:sast_and_secret_scan` | [`reports/bandit_security_report.json`](docs/sample_reports/bandit_security_report.json) | 0 high/medium AST security vulnerabilities, 0 hardcoded credentials, clean Gitleaks scan. |
 | **Package** | `package:container_build` + `pages` | [`reports/image_digest.txt`](docs/sample_reports/image_digest.txt) | Multi-stage production container image digest and published dashboard page. |
 | **Release** | `release:cloudrun_candidate_deploy` | [`reports/release.json`](docs/sample_reports/release.json) + [`reports/live_verification.json`](docs/sample_reports/live_verification.json) | Candidate container revision deployed to Cloud Run staging canary with verified 90/10 traffic split. |
-| **Monitor** | `monitor:telemetry_probes` | [`reports/monitor.json`](docs/sample_reports/monitor.json) | Live HTTP probe telemetry: 0 SLA breaches, -86.3% mean latency reduction, observable fallbacks. |
+| **Monitor** | `monitor:telemetry_probes` | [`reports/monitor.json`](docs/sample_reports/monitor.json) | Live HTTP probe telemetry: 0 SLA breaches, -86.6% mean latency reduction, observable fallbacks. |
 | **Govern** | `govern:audit_receipt_and_gate` + `govern:promote_to_production` | [`reports/evidence_receipt.json`](docs/sample_reports/evidence_receipt.json) | SHA-256 sealed cryptographic receipt and Supervised human approval gate for production traffic promotion. |
 
 #### GitLab Duo Code Provenance: What Duo Wrote vs. What Was Evaluated
@@ -246,7 +246,7 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8090
 ```bash
 # Step 1: Demonstrate Baseline Vulnerability Under Chaos (5 probes under 3500ms delay)
 python scripts/run_fault.py --label baseline --output reports/fault_run_baseline.json
-# Empirical Result: 5/5 probes breach SLA budget (>1500ms budget, avg 3557.22ms, p95 3634.58ms). Status: FAIL.
+# Empirical Result: 5/5 probes breach SLA budget (>1500ms budget, avg 3652.0ms, p95 3718.82ms). Status: FAIL.
 
 # Step 2: Ingest Evidence & Bisect Culprit Commit
 python scripts/collect_evidence.py
@@ -260,7 +260,7 @@ python scripts/trigger_duo_flow.py --mode manual
 # Note: The candidate resilience fix lives on commit f8aa9d98 on branch fix/resilience-shipping-timeout (MR !3) and is merged into main.
 python scripts/run_fault.py --label candidate --output reports/fault_run_candidate.json
 python scripts/evaluate_replay.py --baseline reports/fault_run_baseline.json --candidate reports/fault_run_candidate.json
-# Expected Outcome: SLA breaches drop from 5 to 0 (0/20 breaches). Average latency drops from 3557.22ms to 487.12ms (-86.3% mean reduction, candidate p50 808.95ms, p95 812.51ms). Status: RECOVERED_AND_VERIFIED.
+# Expected Outcome: SLA breaches drop from 5 to 0 (0/20 breaches). Average latency drops from 3652.0ms to 488.75ms (-86.6% mean reduction, candidate p50 811.5ms, p95 815.41ms). Status: RECOVERED_AND_VERIFIED.
 
 # Step 5: Verify Governance & Cloud Run Staging Promotion Gate
 python scripts/generate_receipt.py
@@ -294,16 +294,16 @@ If evaluating the Supervised Human Gate and instant rollback without Google Clou
 ## 6. Empirical Resilience Metrics & Recovery Dashboard
 
 > ### 🟢 Headline: 0/20 SLA Breaches: Degraded but Available (Deterministic Estimated Fallback Quotes)
-> **Deterministic Fallback Semantics:** All 20 candidate probes under active fault return `is_fallback: true` and `is_estimate: true`. The 808.95 ms P50 latency and -77.3% reduction measure returning deterministic local fallback rate quotes (`$7.50 + $1.25 * weight_kg`) during complete carrier outage, rather than waiting ~3.6 s for degraded carrier responses and breaching the 1,500 ms SLA.
+> **Deterministic Fallback Semantics:** All 20 candidate probes under active fault return `is_fallback: true` and `is_estimate: true`. The 811.5 ms P50 latency and -77.7% reduction measure returning deterministic local fallback rate quotes (`$7.50 + $1.25 * weight_kg`) during complete carrier outage, rather than waiting ~3.6 s for degraded carrier responses and breaching the 1,500 ms SLA.
 
 | Metric | Unpatched Baseline Under Fault | Hardened Candidate Under Identical Fault | Delta / Improvement | Measurement Type |
 |---|---|---|---|---|
 | **Fault Profile Canonical Hash** | `644a89784316` (3,500ms delay ± 250ms) | `644a89784316` (3,500ms delay ± 250ms) | Exact match (100% deterministic) | **Measured** |
 | **SLA Budget Breaches** | 5 / 5 breaches (>1,500ms budget) | 0 / 20 breaches (0%) | 100% reduction: Degraded but Available | **Measured** |
-| **Mean Request Latency** | 3557.22 ms | 487.12 ms | -86.3% mean reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
-| **Median Latency (P50)** | 3561.40 ms | 808.95 ms | -77.3% median reduction (candidate p50 808.95ms, p95 812.51ms) | **Measured** |
-| **Tail Latency (P95)** | 3634.58 ms | 812.51 ms | -77.6% P95 reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
-| **Min / Max Latency** | 3312.60 ms / 3634.58 ms | 2.27 ms / 812.51 ms | -77.6% Max reduction | **Measured** |
+| **Mean Request Latency** | 3652.0 ms | 488.75 ms | -86.6% mean reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
+| **Median Latency (P50)** | 3631.05 ms | 811.5 ms | -77.7% median reduction (candidate p50 811.5ms, p95 815.41ms) | **Measured** |
+| **Tail Latency (P95)** | 3718.82 ms | 815.41 ms | -78.1% P95 reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
+| **Min / Max Latency** | 3312.60 ms / 3718.82 ms | 2.32 ms / 815.41 ms | -78.1% Max reduction | **Measured** |
 | **Sample Variance / Std Dev** | 26844.03 ms² (±163.84 ms) | 162902.09 ms² (±403.61 ms) | Bimodal candidate (timeout path vs open-breaker short-circuit) | **Measured** |
 | **Circuit Breaker State** | N/A (cascading thread starvation) | Phase A (CLOSED (reset each probe)) & Phase B (OPEN (8 of 20 short-circuited)) | Downstream protected | **Measured** |
 | **Fallback Observability** | None (returned 200 after ~3.6 s, breaching the 1,500 ms SLA) | `is_fallback: true`, `is_estimate: true` | Zero dropped checkouts (local fallback estimate) | **Measured** |

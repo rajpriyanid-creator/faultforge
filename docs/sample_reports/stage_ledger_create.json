@@ -2,10 +2,10 @@
   "stage": "create",
   "job_name": "create:duo_remediation_mr",
   "status": "SUCCESS",
-  "commit_sha": "e150fad07a8627fbc5c1535d8fa9081ef9dc3a52",
-  "pipeline_id": "2982633493",
-  "job_id": "17426629829",
-  "artifact_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17426629829/artifacts/browse",
+  "commit_sha": "c5d67cdfd092371194fca081d9105116ee0dbc2e",
+  "pipeline_id": "2984172017",
+  "job_id": "17436072831",
+  "artifact_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17436072831/artifacts/browse",
   "approval_required": false,
   "artifacts_declared": [
     "reports/fault_run_baseline.json",
@@ -24,31 +24,31 @@
   "artifacts_details": [
     {
       "path": "reports/fault_run_baseline.json",
-      "size_bytes": 1982,
-      "sha256": "2ad3b05b0b53da24ec28908a40f71fa4d7475c2c8e9be1087959fb5b0501153b"
+      "size_bytes": 1984,
+      "sha256": "4428f7bdbc8f420e2c84bf0c6ee24b53b5798e859e521c89665204f4e0a7d8bc"
     },
     {
       "path": "reports/incident_dossier.json",
-      "size_bytes": 1518,
-      "sha256": "de4414c7d26f08800967cda478a7bf03646612615fa2490b73c1c4fdd6b94b8e"
+      "size_bytes": 1516,
+      "sha256": "d655246fd7d571959525788c5f2ab8bc25b82f6946c9e9a3b0e86e0c5c1502c4"
     },
     {
       "path": "reports/diagnosis_report.json",
       "size_bytes": 904,
-      "sha256": "da7a06a3ec7a0d755e80d55da3e3b9ab54715d23b5bdde0d66ac15acb096e219"
+      "sha256": "35feab9437f43de9ad01e4e190bdfdf02bb46f515bce97201c16e3e66bbbcfbb"
     },
     {
       "path": "reports/duo_run.json",
-      "size_bytes": 408,
-      "sha256": "76cc7ee31c8f8eb54875d8ca305605e58f650ff3cd28cc2343c887f490556637"
+      "size_bytes": 409,
+      "sha256": "c2a8fa475ca6b08c81619e0faed10003018761e472f2a5fdf16bc045ae055d5f"
     },
     {
       "path": "reports/duo_evidence.json",
-      "size_bytes": 4250,
-      "sha256": "dd1bd275174b77bed58603bd99fcd7809e758f6ca7accaa1dc013e5c26baa294"
+      "size_bytes": 848,
+      "sha256": "0b5958e9d40d92fdac098b2e52f46098057926d77e7514b9e6d4ea0e6bb6ccd9"
     }
   ],
-  "timestamp": 1792782397.696244,
+  "timestamp": 1792831216.5981646,
   "duo_executed": true,
   "notes": ""
 }

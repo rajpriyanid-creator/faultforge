@@ -1,5 +1,5 @@
 {
-  "diagnosis_id": "diag-8f3df5e9",
+  "diagnosis_id": "diag-f5d19543",
   "status": "CONFIRMED_REGRESSION",
   "confidence": "HIGH",
   "target_component": "app/clients/shipping_client.py",
