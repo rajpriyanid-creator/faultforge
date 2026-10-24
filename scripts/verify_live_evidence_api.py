@@ -2,43 +2,22 @@
 # SPDX-License-Identifier: MIT
 """
 FaultForge Live API Evidence Verification Gate
-Compares the JSON served by /api/v1/evidence with the sealed evidence_receipt.json from the same pipeline.
-Any difference fails.
+Fetches the immutable sealed evidence receipt served by /api/v1/evidence from the live candidate
+service and verifies that its receipt_id, tamper-evident seal, and fields match the receipt baked into
+the image for the commit that built the container.
+Zero write paths. Any discrepancy or unreachability fails the gate.
 """
 import os
 import sys
 import json
-import time
 import argparse
 import urllib.request
 import urllib.error
 from typing import Dict, Any
 
-def sync_receipt_to_api(base_url: str, sealed_receipt: Dict[str, Any], max_retries: int = 5) -> bool:
-    """Syncs the freshly generated sealed receipt to the deployed candidate service."""
+def fetch_api_evidence(base_url: str, timeout: float = 15.0) -> Dict[str, Any]:
     url = f"{base_url.rstrip('/')}/api/v1/evidence"
-    print(f"[*] Syncing sealed evidence receipt to live candidate API: {url}")
-    payload = json.dumps(sealed_receipt).encode("utf-8")
-    req = urllib.request.Request(
-        url,
-        data=payload,
-        headers={"User-Agent": "FaultForge-Evidence-Audit/1.0", "Content-Type": "application/json"},
-        method="POST"
-    )
-    for attempt in range(1, max_retries + 1):
-        try:
-            with urllib.request.urlopen(req, timeout=15.0) as resp:
-                if resp.status in (200, 201):
-                    print(f"[+] Successfully synced receipt to live candidate (HTTP {resp.status}).")
-                    return True
-        except Exception as exc:
-            print(f"[*] Sync attempt {attempt}/{max_retries} failed ({exc}); retrying in 2s...")
-            time.sleep(2)
-    return False
-
-def fetch_api_evidence(base_url: str, timeout: float = 10.0) -> Dict[str, Any]:
-    url = f"{base_url.rstrip('/')}/api/v1/evidence"
-    print(f"[*] Querying live evidence API endpoint: {url}")
+    print(f"[*] Querying live candidate evidence API: {url}")
     req = urllib.request.Request(
         url,
         headers={"User-Agent": "FaultForge-Evidence-Audit/1.0", "Accept": "application/json"}
@@ -52,7 +31,23 @@ def fetch_api_evidence(base_url: str, timeout: float = 10.0) -> Dict[str, Any]:
 def compare_receipts(api_data: Dict[str, Any], sealed_receipt: Dict[str, Any]) -> bool:
     discrepancies = []
 
-    # Check key equality
+    # 1. Essential cryptographic identities
+    api_rcpt_id = api_data.get("receipt_id")
+    exp_rcpt_id = sealed_receipt.get("receipt_id")
+    if api_rcpt_id != exp_rcpt_id:
+        discrepancies.append(f"receipt_id mismatch: live API has '{api_rcpt_id}', expected '{exp_rcpt_id}'")
+
+    api_seal = api_data.get("tamper_evident_seal_sha256")
+    exp_seal = sealed_receipt.get("tamper_evident_seal_sha256")
+    if api_seal != exp_seal:
+        discrepancies.append(f"tamper_evident_seal_sha256 mismatch: live API has '{api_seal}', expected '{exp_seal}'")
+
+    api_commit = api_data.get("candidate_built_from_commit")
+    exp_commit = sealed_receipt.get("candidate_built_from_commit")
+    if api_commit != exp_commit:
+        discrepancies.append(f"candidate_built_from_commit mismatch: live API has '{api_commit}', expected '{exp_commit}'")
+
+    # 2. Structural key parity
     api_keys = set(api_data.keys())
     sealed_keys = set(sealed_receipt.keys())
 
@@ -64,32 +59,33 @@ def compare_receipts(api_data: Dict[str, Any], sealed_receipt: Dict[str, Any]) -
     if missing_in_api:
         discrepancies.append(f"Keys missing from API response present in sealed receipt: {sorted(missing_in_api)}")
 
-    # Check value equality for shared keys
+    # 3. Value parity for shared keys
     for k in api_keys.intersection(sealed_keys):
         if api_data[k] != sealed_receipt[k]:
             discrepancies.append(f"Mismatch for key '{k}': API={api_data[k]!r} vs SEALED={sealed_receipt[k]!r}")
 
     if discrepancies:
-        print(f"[-] FAILED: Found {len(discrepancies)} discrepancy/discrepancies between live API and sealed receipt:")
+        print(f"\n[-] FAILED: Found {len(discrepancies)} discrepancy/discrepancies between live API and sealed receipt:")
         for d in discrepancies:
             print(f"    - {d}")
         return False
 
-    print("[+] PASSED: Live API /api/v1/evidence output is bit-for-bit and structure identical to sealed receipt.")
+    print(f"[+] PASSED: Live API /api/v1/evidence matches baked receipt verbatim.")
+    print(f"    - receipt_id: {exp_rcpt_id}")
+    print(f"    - commit: {exp_commit}")
+    print(f"    - tamper_evident_seal: {exp_seal[:16]}...")
     return True
 
 def main():
-    parser = argparse.ArgumentParser(description="Compare live /api/v1/evidence with sealed evidence_receipt.json")
+    parser = argparse.ArgumentParser(description="Verify live /api/v1/evidence matches baked image receipt")
     parser.add_argument("--url", default=os.getenv("CANDIDATE_URL", "http://127.0.0.1:8090"), help="Base URL of candidate service")
-    parser.add_argument("--receipt", default="reports/evidence_receipt.json", help="Path to sealed evidence_receipt.json")
-    parser.add_argument("--sync", action="store_true", help="Sync sealed receipt to candidate API before verification")
-    parser.add_argument("--allow-offline", action="store_true", help="Pass if remote host is unreachable")
+    parser.add_argument("--receipt", default="docs/sample_reports/evidence_receipt.json", help="Path to baked image receipt")
     args = parser.parse_args()
 
     receipt_path = args.receipt
     if not os.path.exists(receipt_path):
-        if os.path.exists("docs/sample_reports/evidence_receipt.json"):
-            receipt_path = "docs/sample_reports/evidence_receipt.json"
+        if os.path.exists("reports/evidence_receipt.json"):
+            receipt_path = "reports/evidence_receipt.json"
         else:
             print(f"[-] Error: receipt not found at {receipt_path}", file=sys.stderr)
             sys.exit(1)
@@ -97,18 +93,9 @@ def main():
     with open(receipt_path, "r", encoding="utf-8") as f:
         sealed_receipt = json.load(f)
 
-    if args.sync:
-        synced = sync_receipt_to_api(args.url, sealed_receipt)
-        if not synced and not args.allow_offline:
-            print(f"[-] Error syncing receipt to {args.url}", file=sys.stderr)
-            sys.exit(1)
-
     try:
         api_data = fetch_api_evidence(args.url)
     except Exception as exc:
-        if args.allow_offline:
-            print(f"[*] Live endpoint {args.url} unreachable ({exc}); allowed offline.")
-            sys.exit(0)
         print(f"[-] Error fetching live evidence from {args.url}: {exc}", file=sys.stderr)
         sys.exit(1)
 

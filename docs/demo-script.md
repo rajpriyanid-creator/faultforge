@@ -18,7 +18,7 @@
   > "Ordinary CI pipelines mock downstream dependencies, giving teams false confidence. But in production, when an external carrier slows down, unhardened services hang.
   > Our automated monitor triggers an incident issue in GitLab when outbound dependency latency spikes.
   > Here, Toxiproxy injects a controlled 3500 millisecond network delay on the shipping path.
-  > "Running our baseline probe against the unpatched checkout service reproduces the incident: all 5 requests breach our 1500 millisecond SLA budget, averaging 3572.47 milliseconds (p95: 3757.09 ms)."
+  > "Running our baseline probe against the unpatched checkout service reproduces the incident: all 5 requests breach our 1500 millisecond SLA budget, averaging 3585.40 milliseconds (p95: 3757.09 ms)."
 
 ---
 

@@ -3,15 +3,8 @@ import os
 import json
 import pytest
 from httpx import AsyncClient, ASGITransport
-import app.main as main_mod
 from app.main import app
 from scripts.verify_live_evidence_api import compare_receipts
-
-@pytest.fixture(autouse=True)
-def reset_runtime_receipt():
-    main_mod._RUNTIME_EVIDENCE_RECEIPT = None
-    yield
-    main_mod._RUNTIME_EVIDENCE_RECEIPT = None
 
 @pytest.mark.asyncio
 async def test_live_evidence_api_matches_sealed_receipt():
@@ -31,29 +24,25 @@ async def test_live_evidence_api_matches_sealed_receipt():
         assert compare_receipts(api_data, sealed_receipt) is True
         assert api_data == sealed_receipt
 
-        # POST updates runtime receipt
-        test_update = dict(sealed_receipt)
-        test_update["receipt_id"] = "rcpt-updated-test"
-        post_res = await client.post("/api/v1/evidence", json=test_update)
-        assert post_res.status_code == 200
-        assert post_res.json()["status"] == "STORED"
-
-        # Subsequent GET returns updated receipt
-        get_res = await client.get("/api/v1/evidence")
-        assert get_res.status_code == 200
-        assert get_res.json() == test_update
-
 @pytest.mark.asyncio
-async def test_live_evidence_api_rejects_invalid_post():
+async def test_evidence_endpoint_rejects_write_methods():
+    """Verify that any write route under /api/v1/evidence is strictly rejected with 405 Method Not Allowed."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
-        res = await client.post("/api/v1/evidence", json={"not_a_receipt": True})
-        assert res.status_code == 400
+        for method in ["post", "put", "patch", "delete"]:
+            req_fn = getattr(client, method)
+            if method == "delete":
+                res = await client.delete("/api/v1/evidence")
+            else:
+                res = await req_fn("/api/v1/evidence", json={"fake": "data"})
+            assert res.status_code == 405, f"Expected 405 for {method.upper()} /api/v1/evidence, got {res.status_code}"
 
 def test_compare_receipts_detects_synthesized_or_altered_fields():
     receipt = {
         "receipt_id": "rcpt-test",
         "final_status": "RECOVERED_AND_VERIFIED",
+        "tamper_evident_seal_sha256": "abcdef1234567890",
+        "candidate_built_from_commit": "1234567",
         "probe_count": 20
     }
     # Extra field in API
@@ -65,3 +54,8 @@ def test_compare_receipts_detects_synthesized_or_altered_fields():
     altered_val = dict(receipt)
     altered_val["probe_count"] = 99
     assert compare_receipts(altered_val, receipt) is False
+
+    # Mismatched seal
+    altered_seal = dict(receipt)
+    altered_seal["tamper_evident_seal_sha256"] = "wrongseal0000000"
+    assert compare_receipts(altered_seal, receipt) is False

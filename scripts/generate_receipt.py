@@ -289,6 +289,9 @@ def generate_evidence_receipt(
         approval_timestamp = time.time()
         promotion_gate = "PROMOTED_TO_PRODUCTION"
 
+    candidate_commit = os.getenv("CI_COMMIT_SHA") or git_sha
+    pipeline_id = os.getenv("CI_PIPELINE_ID") or (pipeline_url.split("/")[-1] if pipeline_url else "unknown")
+
     receipt_data = {
         "receipt_id": f"rcpt-{os.urandom(6).hex()}",
         "generated_at": time.time(),
@@ -299,8 +302,9 @@ def generate_evidence_receipt(
         "autonomy_model": "SUPERVISED",
         "risk_classification": risk_data.get("tier", "MEDIUM"),
         "approver": approver,
+        "source": f"baked_image_receipt (pipeline {pipeline_id}, commit {candidate_commit[:8]})",
         "candidate_source": candidate_source,
-        "candidate_built_from_commit": os.getenv("CI_COMMIT_SHA") or git_sha,
+        "candidate_built_from_commit": candidate_commit,
         "baseline_source": "tag:baseline-v0.1.0",
         "orbit_path_exercised": False,
         "orbit_path_available": "feature_flag_off",
@@ -402,6 +406,7 @@ def generate_evidence_receipt(
 **Final Status:** **`{receipt_data['final_status']}`**  
 **Autonomy Level:** `{receipt_data['autonomy_model']}` (Supervised Gate)  
 **Approver:** `{receipt_data['approver']}`  
+**Receipt Source:** `{receipt_data.get('source', '')}`  
 **Tamper-Evident Seal (SHA-256):** `{receipt_data['tamper_evident_seal_sha256']}`
 
 ---

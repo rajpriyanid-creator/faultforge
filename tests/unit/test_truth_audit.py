@@ -263,6 +263,47 @@ def test_audit_forbidden_patterns_fails_on_app_evidence_synthesis(tmp_path, monk
     violations = audit_forbidden_patterns()
     assert any("Forbidden evidence synthesis pattern" in v for v in violations)
 
+def test_audit_forbidden_patterns_fails_on_evidence_write_route(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    app_dir = tmp_path / "app"
+    app_dir.mkdir(parents=True, exist_ok=True)
+    bad_py = app_dir / "routes.py"
+    bad_py.write_text('@app.post("/api/v1/evidence")\ndef write_ev(): pass\n', encoding="utf-8")
+
+    violations = audit_forbidden_patterns()
+    assert any("Forbidden evidence write route detected" in v for v in violations)
+
+def test_audit_report_consistency_fails_on_evaluated_sha_mismatch(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    reports_dir = tmp_path / "reports"
+    reports_dir.mkdir(parents=True, exist_ok=True)
+
+    (reports_dir / "fault_run_hardened.json").write_text(json.dumps({
+        "git_sha": "aaaa111122223333444455556666777788889999"
+    }), encoding="utf-8")
+
+    (reports_dir / "duo_evidence.json").write_text(json.dumps({
+        "found": True,
+        "diff_stat": "some diff",
+        "explanation": "some explanation",
+        "evaluated_sha": "bbbb111122223333444455556666777788889999"
+    }), encoding="utf-8")
+
+    violations = audit_report_consistency(reports_dir=str(reports_dir), final_mode=False)
+    assert any("differs from replay's git_sha" in v for v in violations)
+
+def test_audit_docs_claims_fails_on_stale_figures_in_agents_md(tmp_path, monkeypatch):
+    from scripts.truth_audit import audit_docs_claims
+    monkeypatch.chdir(tmp_path)
+
+    (tmp_path / "AGENTS.md").write_text(
+        "| Gate 1 | plan | Confirmed SLA breach (avg 3572.47ms, p95 3678.92ms) |\n",
+        encoding="utf-8"
+    )
+
+    violations = audit_docs_claims()
+    assert any("3572" in v or "3678" in v for v in violations)
+
 
 
 

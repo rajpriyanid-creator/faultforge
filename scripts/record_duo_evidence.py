@@ -57,25 +57,38 @@ def get_git_output(cmd: list, fallback: str = "") -> str:
         return fallback
 
 def resolve_evaluated_sha(default_sha: str = "c5d67cdfd092371194fca081d9105116ee0dbc2e") -> str:
-    # 1. From fault_run_hardened.json if present
-    for p in ["reports/fault_run_hardened.json", "docs/sample_reports/fault_run_hardened.json"]:
-        if os.path.exists(p):
-            try:
-                with open(p, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    sha = data.get("git_sha")
-                    if sha and len(sha) >= 7:
-                        return sha
-            except Exception:
-                pass
+    # 1. From live pipeline fault_run_hardened.json if present
+    if os.path.exists("reports/fault_run_hardened.json"):
+        try:
+            with open("reports/fault_run_hardened.json", "r", encoding="utf-8") as f:
+                data = json.load(f)
+                sha = data.get("git_sha")
+                if sha and len(sha) >= 7:
+                    return sha
+        except Exception:
+            pass
+
     # 2. From CI environment
     ci_sha = os.getenv("CI_COMMIT_SHA")
     if ci_sha and len(ci_sha) >= 7:
         return ci_sha
+
     # 3. From local git HEAD
     head_sha = get_git_output(["git", "rev-parse", "HEAD"], "")
     if head_sha and len(head_sha) >= 7:
         return head_sha
+
+    # 4. From docs/sample_reports/fault_run_hardened.json if offline
+    if os.path.exists("docs/sample_reports/fault_run_hardened.json"):
+        try:
+            with open("docs/sample_reports/fault_run_hardened.json", "r", encoding="utf-8") as f:
+                data = json.load(f)
+                sha = data.get("git_sha")
+                if sha and len(sha) >= 7:
+                    return sha
+        except Exception:
+            pass
+
     return default_sha
 
 def build_duo_detailed_fields(

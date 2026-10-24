@@ -48,3 +48,18 @@ def test_validate_changed_files_fails_on_out_of_scope():
         "infra/cloudrun/service.yaml"
     ]
     assert validate_changed_files(files) is False
+
+def test_validate_changed_files_passes_on_documented_orchestration():
+    files = [
+        "app/main.py",
+        "app/dashboard.html",
+        "app/clients/orbit_client.py"
+    ]
+    assert validate_changed_files(files) is True
+
+def test_validate_changed_files_fails_on_unauthorized_app_file():
+    files = [
+        "app/clients/shipping_client.py",
+        "app/unauthorized_service.py"
+    ]
+    assert validate_changed_files(files) is False

@@ -76,7 +76,7 @@ def audit_forbidden_patterns() -> List[str]:
                 if "time.sleep(" in line and not line.strip().startswith("#"):
                     violations.append(f"{run_fault_path}:{idx} - Forbidden time.sleep simulation: '{line.strip()}'")
 
-    # Audit app/ codebase to guarantee zero evidence field synthesis or defaulting
+    # Audit app/ codebase to guarantee zero evidence field synthesis or defaulting and zero evidence write routes
     for root, _, files in os.walk("app"):
         for f in files:
             if f.endswith(".py"):
@@ -86,6 +86,10 @@ def audit_forbidden_patterns() -> List[str]:
                         cl = line.strip()
                         if cl.startswith("#"):
                             continue
+                        if re.search(r"@app\.(?:post|put|patch|delete)\(.*evidence", cl, re.IGNORECASE) or re.search(r"@app\.route\(.*methods=.*(?:post|put|patch|delete).*evidence", cl, re.IGNORECASE):
+                            violations.append(f"{app_path}:{idx} - Forbidden evidence write route detected: '{cl}' (/api/v1/evidence must be read-only)")
+                        if "_RUNTIME_EVIDENCE_RECEIPT" in cl:
+                            violations.append(f"{app_path}:{idx} - Forbidden runtime evidence mutable storage: '{cl}'")
                         if "setdefault" in cl and any(k in cl for k in ("probe_", "approval_", "duo_", "identical_")):
                             violations.append(f"{app_path}:{idx} - Forbidden evidence synthesis pattern: setdefault on receipt key: '{cl}'")
                         if "data[" in cl and any(k in cl for k in ("probe_count", "probe_results", "approval_timestamp", "identical_replay_confirmed")):
@@ -212,9 +216,8 @@ def audit_timestamps(timestamps: List[float], first_commit_ts: Optional[float]) 
                 break
     return violations
 
-def audit_report_consistency(final_mode: bool = False) -> List[str]:
+def audit_report_consistency(final_mode: bool = False, reports_dir: str = "reports") -> List[str]:
     violations = []
-    reports_dir = "reports"
     sample_dir = os.path.join("docs", "sample_reports")
 
     # If reports/ is empty or missing evidence, fallback to verified sample reports
@@ -369,8 +372,18 @@ def audit_report_consistency(final_mode: bool = False) -> List[str]:
         except Exception as exc:
             violations.append(f"Could not parse stage_ledger.json: {exc}")
 
-    # Audit duo_evidence.json completeness when found=True
+    # Audit duo_evidence.json completeness when found=True and consistency with hardened replay
     duo_ev_file = os.path.join(reports_dir, "duo_evidence.json")
+    hardened_file = os.path.join(reports_dir, "fault_run_hardened.json")
+    hardened_sha = None
+    if os.path.exists(hardened_file):
+        try:
+            with open(hardened_file, "r", encoding="utf-8") as hf:
+                h_data = json.load(hf)
+                hardened_sha = h_data.get("git_sha")
+        except Exception:
+            pass
+
     if os.path.exists(duo_ev_file):
         try:
             with open(duo_ev_file, "r", encoding="utf-8") as df:
@@ -380,6 +393,11 @@ def audit_report_consistency(final_mode: bool = False) -> List[str]:
                     violations.append(f"{duo_ev_file} - diff_stat must not be empty when found=True")
                 if not str(duo_data.get("explanation") or "").strip():
                     violations.append(f"{duo_ev_file} - explanation must not be empty when found=True")
+                eval_sha = duo_data.get("evaluated_sha")
+                if hardened_sha and eval_sha and eval_sha != hardened_sha:
+                    violations.append(
+                        f"{duo_ev_file} evaluated_sha ({eval_sha}) differs from replay's git_sha in {hardened_file} ({hardened_sha})"
+                    )
         except Exception as exc:
             violations.append(f"Could not parse {duo_ev_file}: {exc}")
 
@@ -550,6 +568,22 @@ def audit_sample_reports_provenance(sample_dir: str = "docs/sample_reports") -> 
         except Exception:
             pass
 
+    sample_hardened = os.path.join(sample_dir, "fault_run_hardened.json")
+    sample_duo = os.path.join(sample_dir, "duo_evidence.json")
+    if os.path.exists(sample_hardened) and os.path.exists(sample_duo):
+        try:
+            with open(sample_hardened, "r", encoding="utf-8") as shf, open(sample_duo, "r", encoding="utf-8") as sdf:
+                s_hard_data = json.load(shf)
+                s_duo_data = json.load(sdf)
+            s_hard_sha = s_hard_data.get("git_sha")
+            s_duo_sha = s_duo_data.get("evaluated_sha")
+            if s_hard_sha and s_duo_sha and s_hard_sha != s_duo_sha:
+                violations.append(
+                    f"{sample_duo} evaluated_sha ({s_duo_sha}) differs from replay's git_sha in {sample_hardened} ({s_hard_sha})"
+                )
+        except Exception:
+            pass
+
     return violations
 
 def audit_docs_claims() -> List[str]:
@@ -580,6 +614,7 @@ def audit_docs_claims() -> List[str]:
 
     core_doc_files = [
         "README.md",
+        "AGENTS.md",
         "docs/architecture.md",
         "docs/measurement-method.md",
         "docs/safety-policy.md",
@@ -659,6 +694,9 @@ def audit_docs_claims() -> List[str]:
         (r"66\.2\s*%", "Stale reduction percentage (66.2%)"),
         (r"68\.4\s*%", "Stale reduction percentage (68.4%)"),
         (r"96\.4\s*%", "Stale reduction percentage (96.4%)"),
+        (r"\b3572(?:\.47)?\b", "Stale reference baseline mean latency (3572/3572.47 ms)"),
+        (r"\b3678(?:\.92)?\b", "Stale reference baseline p95 latency (3678/3678.92 ms)"),
+        (r"\b77\.2\s*%", "Stale reference p50 latency reduction (77.2%)"),
         (r"\b3652(?:\.0)?\b", "Stale reference baseline latency (3652/3652.0 ms)"),
         (r"\b488\.75\b", "Stale reference candidate mean latency (488.75 ms)"),
         (r"\b815\.41\b", "Stale reference candidate p95 latency (815.41 ms)"),

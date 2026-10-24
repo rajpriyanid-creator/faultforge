@@ -2,9 +2,11 @@
 # SPDX-License-Identifier: MIT
 """
 FaultForge Enforced Safety Guard: Forbidden Paths Validator.
-Verifies that an AI/Duo-authored candidate branch does not touch forbidden
-security boundaries, authentication, payment processing, schemas, secrets, IAM,
-or CI/flow definitions.
+Verifies that candidate changes do not touch forbidden security boundaries,
+authentication, payment processing, schemas, secrets, IAM, or CI/flow definitions.
+Enforces strict allowlisting: only automated remediation scope
+(app/clients/shipping_client.py, app/resilience/, tests/) and explicitly documented
+human/orchestration files are permitted.
 """
 import sys
 import os
@@ -23,14 +25,22 @@ FORBIDDEN_PATTERNS = [
     (re.compile(r"^\.gitlab/", re.IGNORECASE), "GitLab Governance Configurations")
 ]
 
-ALLOWED_CANDIDATE_PREFIXES = [
-    "app/clients/",
+# Automated remediation scope: Duo AI or candidate patch
+ALLOWED_REMEDIATION_PATHS = [
+    "app/clients/shipping_client.py",
     "app/resilience/",
-    "app/",
     "tests/chaos/",
     "tests/unit/",
-    "tests/integration/"
+    "tests/integration/",
+    "tests/"
 ]
+
+# Documented human and platform orchestration changes (with commit authors and purpose)
+DOCUMENTED_ORCHESTRATION_FILES = {
+    "app/main.py": "Human/Orchestration: Evidence and health API endpoints, request timing middleware (Author: rajpriyanid)",
+    "app/dashboard.html": "Human/Orchestration: Visual review dashboard (Author: FaultForge Maintainer)",
+    "app/clients/orbit_client.py": "Human/Orchestration: AST + Git fallback stub for Duo Orbit (Author: FaultForge Maintainer)"
+}
 
 def check_file(file_path: str) -> List[Tuple[str, str]]:
     norm = file_path.replace("\\", "/").strip()
@@ -40,7 +50,7 @@ def check_file(file_path: str) -> List[Tuple[str, str]]:
     violations = []
     for pat, desc in FORBIDDEN_PATTERNS:
         if pat.search(norm):
-            violations.append((norm, desc))
+            violations.append((norm, f"Forbidden boundary violation: {desc}"))
 
     return violations
 
@@ -48,7 +58,7 @@ def validate_changed_files(files: List[str]) -> bool:
     all_violations = []
     clean_files = [f.strip() for f in files if f.strip()]
 
-    print(f"[*] Validating {len(clean_files)} changed file(s) against safety boundaries...")
+    print(f"[*] Validating {len(clean_files)} changed file(s) against safety boundaries:")
 
     for f in clean_files:
         norm = f.replace("\\", "/").strip()
@@ -56,18 +66,25 @@ def validate_changed_files(files: List[str]) -> bool:
         if violations:
             all_violations.extend(violations)
         
-        # Check that candidate changes are within permitted application scope
-        in_scope = any(norm.startswith(prefix) for prefix in ALLOWED_CANDIDATE_PREFIXES)
-        if not in_scope and not violations:
-            all_violations.append((norm, "Out-of-scope modification (allowed: app/clients/, app/resilience/, tests/)"))
+        in_remediation = any(norm == p or norm.startswith(p) for p in ALLOWED_REMEDIATION_PATHS)
+        in_orchestration = norm in DOCUMENTED_ORCHESTRATION_FILES
+
+        if in_remediation:
+            print(f"  [+] Allowed Remediation Scope: {norm}")
+        elif in_orchestration:
+            print(f"  [+] Documented Orchestration: {norm} ({DOCUMENTED_ORCHESTRATION_FILES[norm]})")
+        elif not violations:
+            violation_desc = "Out-of-scope modification (allowed: app/clients/shipping_client.py, app/resilience/, tests/; or documented orchestration)"
+            all_violations.append((norm, violation_desc))
+            print(f"  [-] Out of Scope: {norm}")
 
     if all_violations:
-        print(f"\n[-] SAFETY GUARD VIOLATION: Candidate branch modified forbidden or out-of-scope files:")
+        print(f"\n[-] SAFETY GUARD VIOLATION: Found {len(all_violations)} forbidden or out-of-scope file(s):")
         for fn, reason in all_violations:
             print(f"    - {fn}: {reason}")
         return False
 
-    print("[+] Safety Guard PASSED: Zero forbidden paths modified. All changes within approved resilience scope.")
+    print("\n[+] Safety Guard PASSED: Zero forbidden paths modified. All changes within approved scope.")
     return True
 
 def main():

@@ -177,14 +177,20 @@ verify:exact_fault_replay_proof:
       echo "[+] Replay app/ tree SHA: $REPLAY_TREE_SHA"
 
       git fetch origin main
-      echo "[+] Verifying diff against previous commit:"
-      git diff --stat origin/main~1 origin/main -- app/
       echo "[+] Enforcing safety boundaries via scripts/check_forbidden_paths.py:"
-      CHANGED_APP_FILES=$(git diff --name-only origin/main~1 origin/main -- app/)
-      if [ -z "$CHANGED_APP_FILES" ]; then
-        CHANGED_APP_FILES="app/clients/shipping_client.py"
+      if [ -n "$CI_MERGE_REQUEST_DIFF_BASE_SHA" ]; then
+        CHANGED_FILES=$(git diff --name-only "$CI_MERGE_REQUEST_DIFF_BASE_SHA..HEAD" -- app/ tests/)
+      else
+        if git rev-parse 'baseline-v0.1.0^{commit}' >/dev/null 2>&1; then
+          BASELINE_COMMIT=$(git rev-parse 'baseline-v0.1.0^{commit}')
+        else
+          BASELINE_COMMIT="4ec3a5ad7fd0cc635d9546acf6974b83f7a57054"
+        fi
+        CHANGED_FILES=$(git diff --name-only "$BASELINE_COMMIT" "$CI_COMMIT_SHA" -- app/ tests/)
       fi
-      python scripts/check_forbidden_paths.py --files $CHANGED_APP_FILES
+      echo "[+] Changed files for safety boundary check:"
+      echo "$CHANGED_FILES"
+      python scripts/check_forbidden_paths.py --files $CHANGED_FILES
 
       if [ -f reports/duo_evidence.json ] && python -c "import json; d=json.load(open('reports/duo_evidence.json')); cs=str(d.get('candidate_source', '')).lower(); exit(0 if (cs.startswith('duo-authored') or 'commit authored by the duo service account' in cs) and d.get('source_branch') else 1)"; then
         CANDIDATE_SRC=$(python -c "import json; print(json.load(open('reports/duo_evidence.json'))['candidate_source'])")
@@ -202,6 +208,7 @@ verify:exact_fault_replay_proof:
     - python -m uvicorn app.main:app --host 127.0.0.1 --port 8090 &
     - sleep 3
     - python scripts/run_fault.py --label candidate --git-sha $FIX_SHA --iterations 10 --output reports/fault_run_hardened.json
+    - python scripts/record_duo_evidence.py --from-ci-env
     - python scripts/evaluate_replay.py --baseline reports/fault_run_baseline.json --candidate reports/fault_run_hardened.json --output reports/replay_evaluation.json --candidate-source "$CANDIDATE_SRC"
     - python scripts/evidence_ledger.py --stage verify --job verify:exact_fault_replay_proof --status SUCCESS --artifacts reports/fault_run_hardened.json reports/replay_evaluation.json reports/replay_tree_sha.txt
   artifacts:
@@ -300,18 +307,6 @@ package:container_build:
       - reports/deployed_tree_sha.txt
       - reports/stage_ledger.json
       - reports/stage_ledger_*.json
-
-pages:
-  stage: package
-  image: alpine:latest
-  script:
-    - mkdir -p public
-    - cp app/dashboard.html public/index.html
-  artifacts:
-    paths:
-      - public
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 # -------------------------------------------------------------
 # 7. RELEASE STAGE: Google Cloud Run Candidate Revision Deployment
@@ -444,6 +439,7 @@ govern:audit_receipt_and_gate:
   script:
     - apt-get update -qq && apt-get install -y -qq git
     - pip install -r requirements.txt
+    - python scripts/record_duo_evidence.py --from-ci-env
     - python scripts/verify_tree_parity.py --fail-on-mismatch
     - python scripts/classify_risk.py
     - python scripts/generate_receipt.py
@@ -451,8 +447,8 @@ govern:audit_receipt_and_gate:
       if [ -f reports/release.json ]; then
         CAND_URL=$(python -c "import json; print(json.load(open('reports/release.json')).get('url', ''))")
         if [ -n "$CAND_URL" ] && [ "$CAND_URL" != "https://example.invalid/skipped" ]; then
-          echo "[+] Syncing and verifying live candidate API /api/v1/evidence against sealed receipt:"
-          python scripts/verify_live_evidence_api.py --url "$CAND_URL" --receipt reports/evidence_receipt.json --sync --allow-offline
+          echo "[+] Verifying live candidate API /api/v1/evidence against baked image receipt:"
+          python scripts/verify_live_evidence_api.py --url "$CAND_URL" --receipt docs/sample_reports/evidence_receipt.json
         fi
       fi
     - python scripts/evidence_ledger.py --stage govern --job govern:audit_receipt_and_gate --status SUCCESS --artifacts reports/evidence_receipt.json --approval-required
@@ -468,6 +464,25 @@ govern:audit_receipt_and_gate:
       - reports/risk_classification.json
       - reports/stage_ledger.json
       - reports/stage_ledger_*.json
+
+# GitLab Pages: Publishes the sealed cryptographic receipt and dashboard of record
+pages:
+  stage: govern
+  image: alpine:latest
+  needs:
+    - job: govern:audit_receipt_and_gate
+      artifacts: true
+  script:
+    - mkdir -p public
+    - cp app/dashboard.html public/index.html
+    - cp reports/evidence_receipt.json public/evidence_receipt.json
+    - cp reports/EVIDENCE_RECEIPT.md public/EVIDENCE_RECEIPT.md
+    - cp reports/stage_ledger.json public/stage_ledger.json
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 # Supervised Human Approval Gate for Live Production Promotion
 govern:promote_to_production:
