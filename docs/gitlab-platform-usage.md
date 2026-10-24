@@ -85,6 +85,61 @@ Running `git diff 79348f47 e150fad -- app/clients/shipping_client.py`:
   4. Logging statements use `logger.error` rather than `logger.warning`, and error message strings differ slightly (e.g. `"Upstream HTTP {code}"` vs `"Shipping dependency HTTP {code}"`).
   None of the changes alter or relax the resilience policy or SLA timeout bounds.
 
+### Tree-Parity Proof: Evaluated Candidate (`d75de80a`) vs. Archive Head (`dd1f966`)
+To guarantee that post-pipeline documentation, test fixtures, and audit tooling commits did not modify the candidate application code:
+- **Evaluated Candidate Commit (CI Pipeline #2984589851):** `d75de80a4242637bdf354f3b0631f4762c2f1f0e` (short `d75de80a`)
+- **Documentation & Verification Commit:** `dd1f966eff9b14fb2dc86dec6c132bb0e66df35f` (short `dd1f966`)
+- **Full Repository Diff Stat (`git diff --stat d75de80a..dd1f966`):**
+  ```text
+  .gitlab-ci.yml                                  |  11 +-
+  AGENTS.md                                       |   4 +-
+  README.md                                       |  64 +++---
+  docs/architecture.md                            |   2 +-
+  docs/demo-script.md                             |   6 +-
+  docs/duo-integration.md                         |   2 +-
+  docs/gitlab-platform-usage.md                   |  12 +-
+  docs/hackathon-submission.md                    |   8 +-
+  docs/measurement-method.md                      |  71 ++++---
+  docs/sample_reports/EVIDENCE_RECEIPT.md         |  19 +-
+  docs/sample_reports/README.md                   |  60 +++---
+  docs/sample_reports/bandit_security_report.json |  14 +-
+  docs/sample_reports/deployed_tree_sha.txt       |   2 +-
+  docs/sample_reports/diagnosis_report.json       |   2 +-
+  docs/sample_reports/duo_evidence.json           |  10 +-
+  docs/sample_reports/duo_run.json                |   2 +-
+  docs/sample_reports/evidence_receipt.json       | 200 +++++++++---------
+  docs/sample_reports/fault_run_baseline.json     |  42 ++--
+  docs/sample_reports/fault_run_hardened.json     | 270 ++++++++++++------------
+  docs/sample_reports/image_digest.txt            |   2 +-
+  docs/sample_reports/incident_dossier.json       |  14 +-
+  docs/sample_reports/issue.json                  |   6 +-
+  docs/sample_reports/live_verification.json      |  12 +-
+  docs/sample_reports/monitor.json                |   6 +-
+  docs/sample_reports/release.json                |   4 +-
+  docs/sample_reports/replay_evaluation.json      |  58 ++---
+  docs/sample_reports/replay_tree_sha.txt         |   2 +-
+  docs/sample_reports/risk_classification.json    |   8 +-
+  docs/sample_reports/stage_ledger.json           | 138 ++++++------
+  docs/sample_reports/stage_ledger_configure.json |  10 +-
+  docs/sample_reports/stage_ledger_create.json    |  26 +--
+  docs/sample_reports/stage_ledger_govern.json    |  14 +-
+  docs/sample_reports/stage_ledger_monitor.json   |  12 +-
+  docs/sample_reports/stage_ledger_package.json   |  14 +-
+  docs/sample_reports/stage_ledger_plan.json      |  12 +-
+  docs/sample_reports/stage_ledger_release.json   |  16 +-
+  docs/sample_reports/stage_ledger_secure.json    |  12 +-
+  docs/sample_reports/stage_ledger_verify.json    |  20 +-
+  scripts/build_submission_zip.py                 |  12 +-
+  scripts/check_forbidden_paths.py                |  84 ++++++--
+  scripts/truth_audit.py                          |   2 +-
+  tests/unit/test_forbidden_paths.py              |  31 ++-
+  tests/unit/test_package_hygiene.py              |   5 +
+  43 files changed, 725 insertions(+), 596 deletions(-)
+  ```
+- **Application Code Diff (`git diff d75de80a..dd1f966 -- app/`):**
+  *(Output is empty — 0 files changed, 0 insertions, 0 deletions).*
+- Later commits changed docs, tests, CI configuration and packaging/audit tooling; `app/` is unchanged, preserving the exact tree SHA `de7c0b1cc7d6b7edb90c6b3041b10885ea702492`.
+
 ### Safety Guard Boundary and Documented Orchestration Exemptions
 To prevent automated remediation agents from tampering with critical platform boundaries or test suites, `scripts/check_forbidden_paths.py` enforces strict boundaries in CI:
 - **Automated Remediation Scope:** Duo AI and automated candidate patches are strictly restricted to `app/clients/shipping_client.py`, `app/resilience/`, and **new test additions only** under `tests/`. Enforced for automated MR pipelines (`--name-status`) and covered by unit tests, edits or deletions of existing test files are strictly forbidden (`status='M'` or `status='D'` triggers a fatal gate violation).

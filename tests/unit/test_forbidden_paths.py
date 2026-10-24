@@ -92,3 +92,67 @@ def test_validate_changed_files_fails_on_unauthorized_app_file():
         "app/unauthorized_service.py"
     ]
     assert validate_changed_files(files) is False
+
+def test_stdin_subprocess_added_test_and_modified_shipping_client_exits_zero():
+    import sys, subprocess
+    stdin_data = "A\ttests/unit/test_new_patch.py\nM\tapp/clients/shipping_client.py\n"
+    res = subprocess.run(
+        [sys.executable, "scripts/check_forbidden_paths.py", "--mode", "automated_remediation"],
+        input=stdin_data,
+        text=True,
+        capture_output=True
+    )
+    assert res.returncode == 0, f"Expected exit 0, got {res.returncode}. Output:\n{res.stdout}\n{res.stderr}"
+
+def test_stdin_subprocess_modified_existing_test_exits_one():
+    import sys, subprocess
+    stdin_data = "M\ttests/chaos/test_resilience.py\n"
+    res = subprocess.run(
+        [sys.executable, "scripts/check_forbidden_paths.py", "--mode", "automated_remediation"],
+        input=stdin_data,
+        text=True,
+        capture_output=True
+    )
+    assert res.returncode == 1, f"Expected exit 1, got {res.returncode}. Output:\n{res.stdout}\n{res.stderr}"
+
+def test_stdin_subprocess_deleted_existing_test_exits_one():
+    import sys, subprocess
+    stdin_data = "D\ttests/unit/test_shipping_client.py\n"
+    res = subprocess.run(
+        [sys.executable, "scripts/check_forbidden_paths.py", "--mode", "automated_remediation"],
+        input=stdin_data,
+        text=True,
+        capture_output=True
+    )
+    assert res.returncode == 1, f"Expected exit 1, got {res.returncode}. Output:\n{res.stdout}\n{res.stderr}"
+
+def test_stdin_subprocess_renamed_existing_test_exits_one():
+    import sys, subprocess
+    stdin_data = "R100\ttests/old_test.py\ttests/new_test.py\n"
+    res = subprocess.run(
+        [sys.executable, "scripts/check_forbidden_paths.py", "--mode", "automated_remediation"],
+        input=stdin_data,
+        text=True,
+        capture_output=True
+    )
+    assert res.returncode == 1, f"Expected exit 1, got {res.returncode}. Output:\n{res.stdout}\n{res.stderr}"
+
+def test_gitlab_ci_no_unquoted_changed_files_after_name_status():
+    import re
+    with open(".gitlab-ci.yml", "r", encoding="utf-8") as f:
+        ci_content = f.read()
+
+    # Find the MR pipeline safety check block
+    mr_match = re.search(r'if\s+\[\s+-n\s+"\$CI_MERGE_REQUEST_DIFF_BASE_SHA"\s+\];\s*then(.*?)\belse\b', ci_content, re.DOTALL)
+    assert mr_match, "MR safety check block not found in .gitlab-ci.yml"
+    mr_block = mr_match.group(1)
+
+    # Ensure --name-status is used
+    assert "--name-status" in mr_block
+    # Ensure unquoted $CHANGED_FILES is NOT passed via --files in this MR block
+    assert "--files $CHANGED_FILES" not in mr_block, (
+        "Found unquoted $CHANGED_FILES passed via --files after --name-status diff in .gitlab-ci.yml. "
+        "Must pipe via stdin to preserve tab separation."
+    )
+    # Ensure piping via stdin is used instead
+    assert "printf '%s\\n' \"$CHANGED_FILES\" | python scripts/check_forbidden_paths.py --mode automated_remediation" in mr_block

@@ -56,28 +56,55 @@ def is_existing_git_file(rel_path: str) -> bool:
             pass
     return os.path.exists(rel_path)
 
-def parse_file_entry(entry: Any) -> Tuple[str, str]:
+def parse_file_entries(entry: Any) -> List[Tuple[str, str]]:
     """
-    Parse an input file entry into (normalized_path, status).
-    Status may be 'A' (added), 'M' (modified), 'D' (deleted), or '' (unspecified).
+    Parse an input file entry into a list of (normalized_path, status).
+    Handles:
+    - 'A\tpath', 'M\tpath', 'D\tpath', 'C\tpath'
+    - 'R100\told\tnew', 'R095\told\tnew', 'R\told\tnew' (both paths marked 'R')
+    - ('A', 'path') or ('path', 'status') tuples
+    - plain paths
     """
     if isinstance(entry, (tuple, list)) and len(entry) >= 2:
         if len(str(entry[0])) <= 2:  # ('A', 'path')
-            return str(entry[1]).replace("\\", "/").strip(), str(entry[0]).strip().upper()
-        return str(entry[0]).replace("\\", "/").strip(), str(entry[1]).strip().upper()
+            return [(str(entry[1]).replace("\\", "/").strip(), str(entry[0]).strip().upper())]
+        return [(str(entry[0]).replace("\\", "/").strip(), str(entry[1]).strip().upper())]
 
     line = str(entry).strip()
     if not line:
-        return "", ""
+        return []
 
-    # Check for git diff status prefix: e.g. "A\tpath", "M\tpath", "D\tpath", "A  path"
-    match = re.match(r"^([AMDCR])\s+(.+)$", line)
+    # Check for git rename status: e.g. "R100\told\tnew" or "R095\told\tnew" or "R\told\tnew"
+    parts = line.split("\t")
+    if len(parts) >= 3 and parts[0].upper().startswith("R"):
+        old_path = parts[1].replace("\\", "/").strip()
+        new_path = parts[2].replace("\\", "/").strip()
+        return [(old_path, "R"), (new_path, "R")]
+
+    rename_match = re.match(r"^R\d*\s+([^\s\t]+)\s+([^\s\t]+)$", line)
+    if rename_match:
+        old_path = rename_match.group(1).replace("\\", "/").strip()
+        new_path = rename_match.group(2).replace("\\", "/").strip()
+        return [(old_path, "R"), (new_path, "R")]
+
+    # Check for git diff status prefix: e.g. "A\tpath", "M\tpath", "D\tpath"
+    if len(parts) == 2 and re.match(r"^[AMDCR]\d*$", parts[0].strip().upper()):
+        status = parts[0].strip().upper()[0]
+        path = parts[1].replace("\\", "/").strip()
+        return [(path, status)]
+
+    match = re.match(r"^([AMDCR]\d*)\s+(.+)$", line)
     if match:
-        status = match.group(1).upper()
+        status = match.group(1).upper()[0]
         path = match.group(2).replace("\\", "/").strip()
-        return path, status
+        return [(path, status)]
 
-    return line.replace("\\", "/").strip(), ""
+    return [(line.replace("\\", "/").strip(), "")]
+
+def parse_file_entry(entry: Any) -> Tuple[str, str]:
+    """Single-entry compatibility wrapper around parse_file_entries."""
+    entries = parse_file_entries(entry)
+    return entries[0] if entries else ("", "")
 
 def check_file(file_path: str) -> List[Tuple[str, str]]:
     norm = file_path.replace("\\", "/").strip()
@@ -93,7 +120,10 @@ def check_file(file_path: str) -> List[Tuple[str, str]]:
 
 def validate_changed_files(files: List[Any], mode: str = "auto") -> bool:
     all_violations = []
-    parsed_entries = [parse_file_entry(f) for f in files if str(f).strip()]
+    parsed_entries = []
+    for f in files:
+        if str(f).strip():
+            parsed_entries.extend(parse_file_entries(f))
 
     print(f"[*] Validating {len(parsed_entries)} changed file(s) against safety boundaries (mode: {mode}):")
 
@@ -150,7 +180,8 @@ def main():
 
     files = args.files
     if not files and not sys.stdin.isatty():
-        files = sys.stdin.read().splitlines()
+        raw_input = sys.stdin.read()
+        files = [line.strip() for line in raw_input.splitlines() if line.strip()]
 
     if not files:
         print("[*] No files provided to check_forbidden_paths.py; passing by default.")

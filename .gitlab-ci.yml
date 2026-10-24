@@ -182,7 +182,7 @@ verify:exact_fault_replay_proof:
         CHANGED_FILES=$(git diff --name-status "$CI_MERGE_REQUEST_DIFF_BASE_SHA..HEAD" -- app/ tests/)
         echo "[+] Changed files for safety boundary check (MR automated remediation mode):"
         echo "$CHANGED_FILES"
-        python scripts/check_forbidden_paths.py --mode automated_remediation --files $CHANGED_FILES
+        printf '%s\n' "$CHANGED_FILES" | python scripts/check_forbidden_paths.py --mode automated_remediation
       else
         if git rev-parse 'baseline-v0.1.0^{commit}' >/dev/null 2>&1; then
           BASELINE_COMMIT=$(git rev-parse 'baseline-v0.1.0^{commit}')
