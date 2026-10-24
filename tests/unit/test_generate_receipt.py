@@ -106,6 +106,12 @@ def test_generate_receipt_fully_verified_when_all_consistent(tmp_path, monkeypat
     with open(os.path.join(reports_dir, "image_digest.txt"), "w") as f:
         f.write("sha256:fedcba9876543210")
 
+    with open(os.path.join(reports_dir, "replay_tree_sha.txt"), "w") as f:
+        f.write("5bd23d542337f74dff3320fdd8d7909c17d57e27\n")
+
+    with open(os.path.join(reports_dir, "deployed_tree_sha.txt"), "w") as f:
+        f.write("5bd23d542337f74dff3320fdd8d7909c17d57e27\n")
+
     with open(os.path.join(reports_dir, "release.json"), "w") as f:
         json.dump({"revision": "faultforge-checkout-00002", "status": "STAGED"}, f)
 

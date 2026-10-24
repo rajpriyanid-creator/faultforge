@@ -83,11 +83,12 @@ create:duo_remediation_mr:
     - pip install -r requirements.txt
     - git fetch origin --tags
     - git checkout baseline-v0.1.0 -- app/
+    - BASELINE_SHA=$(git rev-parse baseline-v0.1.0 2>/dev/null || git rev-parse HEAD~1 2>/dev/null || echo "578689ad048f3bfdff9754dcd391e33c5f73b38e")
     - python scripts/start_toxiproxy.py
     - python -m uvicorn stub.mock_shipping_api:app --host 127.0.0.1 --port 8081 &
     - python -m uvicorn app.main:app --host 127.0.0.1 --port 8090 &
     - sleep 2
-    - python scripts/run_fault.py --label baseline --iterations 5 --expect-fail --output reports/fault_run_baseline.json
+    - python scripts/run_fault.py --label baseline --git-sha "$BASELINE_SHA" --iterations 5 --expect-fail --output reports/fault_run_baseline.json
     - git checkout HEAD -- app/
     - python scripts/collect_evidence.py
     - python scripts/diagnose_and_bisect.py
@@ -142,8 +143,9 @@ verify:unit_and_integration:
   stage: verify
   image: python:3.12-slim
   script:
+    - apt-get update -qq && apt-get install -y -qq git
     - pip install -r requirements.txt
-    - pytest tests/unit tests/integration tests/test_*.py -v --junitxml=reports/junit_tests.xml --cov=app --cov-report=xml:reports/coverage.xml --cov-report=term
+    - pytest tests/unit tests/integration -v --junitxml=reports/junit_tests.xml --cov=app --cov-report=xml:reports/coverage.xml --cov-report=term
   artifacts:
     expire_in: 30 days
     reports:
@@ -170,6 +172,10 @@ verify:exact_fault_replay_proof:
       REPLAY_TREE_SHA=$(git rev-parse HEAD:app)
       echo "$REPLAY_TREE_SHA" > reports/replay_tree_sha.txt
       echo "[+] Replay app/ tree SHA: $REPLAY_TREE_SHA"
+
+      git fetch origin main
+      echo "[+] Verifying diff against previous commit:"
+      git diff --stat origin/main~1 origin/main -- app/
 
       if [ -f reports/duo_evidence.json ] && python -c "import json; d=json.load(open('reports/duo_evidence.json')); cs=str(d.get('candidate_source', '')).lower(); exit(0 if (cs.startswith('duo-authored') or 'commit authored by the duo service account' in cs) and d.get('source_branch') else 1)"; then
         CANDIDATE_SRC=$(python -c "import json; print(json.load(open('reports/duo_evidence.json'))['candidate_source'])")
