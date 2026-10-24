@@ -4,14 +4,12 @@
   "lines_changed": 20,
   "files_changed": [
     ".gitlab-ci.yml",
-    "app/main.py",
-    "scripts/verify_live_evidence_api.py",
-    "tests/integration/test_live_evidence_api.py"
+    "scripts/record_duo_evidence.py"
   ],
   "reasons": [
     "Changed file '.gitlab-ci.yml' is outside allowed low-risk paths: ['app/clients/', 'app/resilience/', 'tests/']",
-    "Changed file 'app/main.py' is outside allowed low-risk paths: ['app/clients/', 'app/resilience/', 'tests/']",
-    "Changed file 'scripts/verify_live_evidence_api.py' is outside allowed low-risk paths: ['app/clients/', 'app/resilience/', 'tests/']",
+    "Changed file 'scripts/record_duo_evidence.py' is outside allowed low-risk paths: ['app/clients/', 'app/resilience/', 'tests/']",
+    "Merge request does not include or update regression tests under tests/.",
     "Autonomy Dial: SUPERVISED mode active (autonomous staging/replay; human sign-off for live promotion)."
   ],
   "requires_human_approval": true,

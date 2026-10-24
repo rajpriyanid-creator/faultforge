@@ -1,21 +1,22 @@
 {
-  "receipt_id": "rcpt-62698268db99",
-  "generated_at": 1792844166.6821344,
+  "receipt_id": "rcpt-0fdcbef2fed6",
+  "generated_at": 1792848668.8131812,
   "final_status": "RECOVERED_AND_VERIFIED",
   "project": "gitlab-ai-hackathon/transcend-october-2026/43424456/showcase",
-  "commit_sha": "57757a3d0dcdd97a83009c0966a9ca3ad46378bf",
+  "commit_sha": "d75de80ae1c754df386c6a227c5310a093c5a16c",
   "git_verified": true,
   "autonomy_model": "SUPERVISED",
   "risk_classification": "MEDIUM",
   "approver": "rajpriyanid",
+  "source": "baked_image_receipt (pipeline 2984589851, commit d75de80a)",
   "candidate_source": "commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token",
-  "candidate_built_from_commit": "57757a3d0dcdd97a83009c0966a9ca3ad46378bf",
+  "candidate_built_from_commit": "d75de80ae1c754df386c6a227c5310a093c5a16c",
   "baseline_source": "tag:baseline-v0.1.0",
   "orbit_path_exercised": false,
   "orbit_path_available": "feature_flag_off",
   "urls": {
-    "referenced_pipeline_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2984485378",
-    "referenced_job_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17437653517",
+    "referenced_pipeline_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2984589851",
+    "referenced_job_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17438210914",
     "issue_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/issues/62",
     "root_incident_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/issues/42",
     "merge_request_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/merge_requests/3",
@@ -30,11 +31,11 @@
   "identical_replay_confirmed": true,
   "duo_run_id": "9909079",
   "trigger_mechanism": "AGENT_PLATFORM_SESSION",
-  "image_digest": "registry.gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase@sha256:4dc94421415ae6be471ce69539361f2241ecc0955ecb9bbec9be40c427049f5d",
-  "cloud_run_revision": "faultforge-checkout-00062-juq",
+  "image_digest": "registry.gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase@sha256:cc9c46f5b49fc62fcc90a960bd978d15db15d07df4b5804feac416476a0a541e",
+  "cloud_run_revision": "faultforge-checkout-00068-gaw",
   "promotion_gate": "BLOCKED_PENDING_APPROVAL",
-  "replay_tree_sha": "d77c1ee7399956d358c1099bca4bc72fde1be5eb",
-  "deployed_tree_sha": "d77c1ee7399956d358c1099bca4bc72fde1be5eb",
+  "replay_tree_sha": "de7c0b1cc7d6b7edb90c6b3041b10885ea702492",
+  "deployed_tree_sha": "de7c0b1cc7d6b7edb90c6b3041b10885ea702492",
   "app_tree_matches_deployed": true,
   "probe_count": 20,
   "probe_results": {
@@ -52,7 +53,7 @@
     "status": "COMPLETED",
     "fix_sha": "f8aa9d98b8617b51c15b5fa6ceda39eb43762730",
     "head_sha": "79348f47042849465c737be2493b135a21f37e06",
-    "evaluated_sha": "57757a3d0dcdd97a83009c0966a9ca3ad46378bf",
+    "evaluated_sha": "d75de80ae1c754df386c6a227c5310a093c5a16c",
     "changed_files": [
       "app/clients/shipping_client.py",
       "app/dashboard.html"
@@ -60,8 +61,8 @@
     "diff_stat": "app/clients/shipping_client.py | 48 ++++++++++++++++++++++++++----------------\n app/dashboard.html             |  7 +++---\n 2 files changed, 34 insertions(+), 21 deletions(-)",
     "app_tree_matches_duo_commit": false,
     "app_tree_matches_evaluated_candidate": true,
-    "app_tree_evaluated_candidate_diff_stat": "app/clients/__init__.py        |   3 +-\n app/clients/orbit_client.py    | 127 +++++++++++++++++++++++++++++++++++++++++\n app/clients/shipping_client.py |  48 ++++++----------\n app/dashboard.html             |  12 ++--\n app/main.py                    |  27 +++++++++\n 5 files changed, 180 insertions(+), 37 deletions(-)",
-    "explanation": "According to Git and GitLab author metadata, the resilience commits f8aa9d98, d372014, and MR branch head 79348f4 were authored by the GitLab Duo service account (FaultForge, Supervised, Resilience, Healer <service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com>) on branch fix/resilience-shipping-timeout. Branch merge commit 3294042 was authored by FaultForge Agent <agent@faultforge.internal> to synchronize main into the branch (bringing in app/dashboard.html). The evaluated commit (36c677fb) is the merged main commit containing the Duo resilience patch merged via MR !3, which matches the deployed Cloud Run container app/ tree (app_tree_matches_evaluated_candidate: true). The candidate diff between f8aa9d98 and MR branch head 79348f4 spans app/clients/shipping_client.py and app/dashboard.html (2 files changed, 34 insertions(+), 21 deletions(-)). Because subsequent commits added dashboard and main features, app_tree_matches_duo_commit is false."
+    "app_tree_evaluated_candidate_diff_stat": "app/clients/__init__.py        |   3 +-\n app/clients/orbit_client.py    | 113 +++++++++++++++++++++++++++++++++++++++++\n app/clients/shipping_client.py |  48 +++++++----------\n app/dashboard.html             |  12 ++---\n app/main.py                    |   8 ++-\n 5 files changed, 142 insertions(+), 42 deletions(-)",
+    "explanation": "According to Git and GitLab author metadata, the resilience commits f8aa9d98, d372014, and MR branch head 79348f4 were authored by the GitLab Duo service account (FaultForge, Supervised, Resilience, Healer <service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com>) on branch fix/resilience-shipping-timeout. Branch merge commit 3294042 was authored by FaultForge Agent <agent@faultforge.internal> to synchronize main into the branch (bringing in app/dashboard.html). The evaluated commit (d75de80a) is the merged main commit containing the Duo resilience patch merged via MR !3, which matches the deployed Cloud Run container app/ tree (app_tree_matches_evaluated_candidate: true). The candidate diff between f8aa9d98 and MR branch head 79348f4 spans app/clients/shipping_client.py and app/dashboard.html (2 files changed, 34 insertions(+), 21 deletions(-)). Because subsequent commits added dashboard and main features, app_tree_matches_duo_commit is false."
   },
   "orbit": {
     "orbit_path_exercised": false,
@@ -79,12 +80,12 @@
     "valid_git_shas": {
       "passed": true,
       "baseline_sha": "4ec3a5ad7fd0cc635d9546acf6974b83f7a57054",
-      "hardened_sha": "57757a3d0dcdd97a83009c0966a9ca3ad46378bf"
+      "hardened_sha": "d75de80ae1c754df386c6a227c5310a093c5a16c"
     },
     "distinct_revisions": {
       "passed": true,
       "baseline_sha": "4ec3a5ad",
-      "hardened_sha": "57757a3d"
+      "hardened_sha": "d75de80a"
     },
     "identical_profile_hash": {
       "passed": true,
@@ -99,7 +100,7 @@
     "proxy_in_request_path": {
       "passed": true,
       "fault_delay_ms": 3500,
-      "candidate_min_ms": 2.69
+      "candidate_min_ms": 2.35
     },
     "identical_payload_hash": {
       "passed": true,
@@ -140,8 +141,8 @@
       "breaker_state": "CLOSED (reset each probe)",
       "total_probes": 10,
       "sla_breaches": 0,
-      "p95_ms": 817.02,
-      "avg_ms": 813.64
+      "p95_ms": 813.32,
+      "avg_ms": 811.29
     },
     "candidate_breaker_short_circuit": {
       "passed": true,
@@ -149,14 +150,14 @@
       "breaker_state": "OPEN (N of 10 short-circuited)",
       "total_probes": 10,
       "short_circuited_probes": 8,
-      "p95_ms": 815.89,
-      "avg_ms": 165.69
+      "p95_ms": 812.85,
+      "avg_ms": 164.54
     },
     "latency_budget": {
       "passed": true,
       "budget_ms": 1500,
-      "candidate_p95_ms": 817.02,
-      "candidate_max_ms": 817.02
+      "candidate_p95_ms": 813.32,
+      "candidate_max_ms": 813.32
     },
     "fallback_marked_estimated": {
       "passed": true,
@@ -172,8 +173,8 @@
     {
       "label": "baseline",
       "probe_index": 1,
-      "order_id": "ORD-1ff29e6b",
-      "latency_ms": 3604.8,
+      "order_id": "ORD-3e1837c8",
+      "latency_ms": 3640.62,
       "status_code": 200,
       "is_fallback": false,
       "is_estimate": false,
@@ -182,8 +183,8 @@
     {
       "label": "baseline",
       "probe_index": 2,
-      "order_id": "ORD-586591ca",
-      "latency_ms": 3463.33,
+      "order_id": "ORD-f4e629b1",
+      "latency_ms": 3540.6,
       "status_code": 200,
       "is_fallback": false,
       "is_estimate": false,
@@ -192,8 +193,8 @@
     {
       "label": "baseline",
       "probe_index": 3,
-      "order_id": "ORD-2fbc7bb9",
-      "latency_ms": 3628.37,
+      "order_id": "ORD-8b51fdb3",
+      "latency_ms": 3661.52,
       "status_code": 200,
       "is_fallback": false,
       "is_estimate": false,
@@ -202,8 +203,8 @@
     {
       "label": "baseline",
       "probe_index": 4,
-      "order_id": "ORD-178cac0d",
-      "latency_ms": 3757.09,
+      "order_id": "ORD-b4f0215a",
+      "latency_ms": 3647.69,
       "status_code": 200,
       "is_fallback": false,
       "is_estimate": false,
@@ -212,8 +213,8 @@
     {
       "label": "baseline",
       "probe_index": 5,
-      "order_id": "ORD-7363613b",
-      "latency_ms": 3473.39,
+      "order_id": "ORD-c1a98809",
+      "latency_ms": 3699.48,
       "status_code": 200,
       "is_fallback": false,
       "is_estimate": false,
@@ -222,8 +223,8 @@
     {
       "label": "candidate",
       "probe_index": 1,
-      "order_id": "ORD-b7ec45da",
-      "latency_ms": 817.02,
+      "order_id": "ORD-7817ee28",
+      "latency_ms": 813.18,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -232,8 +233,8 @@
     {
       "label": "candidate",
       "probe_index": 2,
-      "order_id": "ORD-8e31ac04",
-      "latency_ms": 813.22,
+      "order_id": "ORD-5a348a93",
+      "latency_ms": 811.09,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -242,8 +243,8 @@
     {
       "label": "candidate",
       "probe_index": 3,
-      "order_id": "ORD-c335b913",
-      "latency_ms": 812.62,
+      "order_id": "ORD-979d3de4",
+      "latency_ms": 809.16,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -252,8 +253,8 @@
     {
       "label": "candidate",
       "probe_index": 4,
-      "order_id": "ORD-125ad014",
-      "latency_ms": 812.74,
+      "order_id": "ORD-c5eca330",
+      "latency_ms": 810.55,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -262,8 +263,8 @@
     {
       "label": "candidate",
       "probe_index": 5,
-      "order_id": "ORD-03c784f1",
-      "latency_ms": 811.75,
+      "order_id": "ORD-5b0645fd",
+      "latency_ms": 811.48,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -272,8 +273,8 @@
     {
       "label": "candidate",
       "probe_index": 6,
-      "order_id": "ORD-b6b27562",
-      "latency_ms": 814.45,
+      "order_id": "ORD-23f31ae4",
+      "latency_ms": 813.32,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -282,8 +283,8 @@
     {
       "label": "candidate",
       "probe_index": 7,
-      "order_id": "ORD-7e7c2ccc",
-      "latency_ms": 812.55,
+      "order_id": "ORD-3511169d",
+      "latency_ms": 810.74,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -292,8 +293,8 @@
     {
       "label": "candidate",
       "probe_index": 8,
-      "order_id": "ORD-8a928633",
-      "latency_ms": 814.01,
+      "order_id": "ORD-f672e26f",
+      "latency_ms": 811.81,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -302,8 +303,8 @@
     {
       "label": "candidate",
       "probe_index": 9,
-      "order_id": "ORD-c9b5fccf",
-      "latency_ms": 812.56,
+      "order_id": "ORD-07be4561",
+      "latency_ms": 810.04,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -312,8 +313,8 @@
     {
       "label": "candidate",
       "probe_index": 10,
-      "order_id": "ORD-d28de64c",
-      "latency_ms": 815.49,
+      "order_id": "ORD-6709f1aa",
+      "latency_ms": 811.52,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -322,8 +323,8 @@
     {
       "label": "candidate",
       "probe_index": 11,
-      "order_id": "ORD-8053deb3",
-      "latency_ms": 812.94,
+      "order_id": "ORD-985482f0",
+      "latency_ms": 811.47,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -332,8 +333,8 @@
     {
       "label": "candidate",
       "probe_index": 12,
-      "order_id": "ORD-820dd85e",
-      "latency_ms": 815.89,
+      "order_id": "ORD-282386de",
+      "latency_ms": 812.85,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -342,8 +343,8 @@
     {
       "label": "candidate",
       "probe_index": 13,
-      "order_id": "ORD-1dde8268",
-      "latency_ms": 3.44,
+      "order_id": "ORD-1be2d1bf",
+      "latency_ms": 2.8,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -352,8 +353,8 @@
     {
       "label": "candidate",
       "probe_index": 14,
-      "order_id": "ORD-0263b950",
-      "latency_ms": 3.16,
+      "order_id": "ORD-105be224",
+      "latency_ms": 2.57,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -362,8 +363,8 @@
     {
       "label": "candidate",
       "probe_index": 15,
-      "order_id": "ORD-ef92ad5b",
-      "latency_ms": 3.56,
+      "order_id": "ORD-dd75e942",
+      "latency_ms": 2.52,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -372,8 +373,8 @@
     {
       "label": "candidate",
       "probe_index": 16,
-      "order_id": "ORD-506cf43e",
-      "latency_ms": 3.08,
+      "order_id": "ORD-0a3040ec",
+      "latency_ms": 2.35,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -382,8 +383,8 @@
     {
       "label": "candidate",
       "probe_index": 17,
-      "order_id": "ORD-72b776f0",
-      "latency_ms": 2.92,
+      "order_id": "ORD-3ca7402a",
+      "latency_ms": 2.74,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -392,8 +393,8 @@
     {
       "label": "candidate",
       "probe_index": 18,
-      "order_id": "ORD-7bb0b9b3",
-      "latency_ms": 2.69,
+      "order_id": "ORD-aa4d683b",
+      "latency_ms": 2.42,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -402,8 +403,8 @@
     {
       "label": "candidate",
       "probe_index": 19,
-      "order_id": "ORD-6f4840a8",
-      "latency_ms": 4.85,
+      "order_id": "ORD-3366b142",
+      "latency_ms": 2.35,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -412,8 +413,8 @@
     {
       "label": "candidate",
       "probe_index": 20,
-      "order_id": "ORD-74c0371d",
-      "latency_ms": 4.36,
+      "order_id": "ORD-38ea4ad0",
+      "latency_ms": 3.35,
       "status_code": 200,
       "is_fallback": true,
       "is_estimate": true,
@@ -421,57 +422,56 @@
     }
   ],
   "metrics_raw": {
-    "baseline_avg_ms": 3585.4,
-    "baseline_p50_ms": 3604.8,
-    "baseline_p95_ms": 3757.09,
-    "baseline_max_ms": 3757.09,
-    "hardened_avg_ms": 489.66,
-    "hardened_p50_ms": 812.56,
-    "hardened_p95_ms": 817.02,
-    "hardened_max_ms": 817.02
+    "baseline_avg_ms": 3637.98,
+    "baseline_p50_ms": 3647.69,
+    "baseline_p95_ms": 3699.48,
+    "baseline_max_ms": 3699.48,
+    "hardened_avg_ms": 487.92,
+    "hardened_p50_ms": 810.55,
+    "hardened_p95_ms": 813.32,
+    "hardened_max_ms": 813.32
   },
   "latency_reduction": {
     "mean_basis": {
       "metric": "mean_candidate_vs_mean_baseline",
-      "baseline_ms": 3585.4,
-      "candidate_ms": 489.66,
-      "percent": 86.3
+      "baseline_ms": 3637.98,
+      "candidate_ms": 487.92,
+      "percent": 86.6
     },
     "p50_basis": {
       "metric": "p50_candidate_vs_p50_baseline",
-      "baseline_ms": 3604.8,
-      "candidate_ms": 812.56,
-      "percent": 77.5
+      "baseline_ms": 3647.69,
+      "candidate_ms": 810.55,
+      "percent": 77.8
     },
     "p95_basis": {
       "metric": "p95_candidate_vs_p95_baseline",
-      "baseline_ms": 3757.09,
-      "candidate_ms": 817.02,
-      "percent": 78.3
+      "baseline_ms": 3699.48,
+      "candidate_ms": 813.32,
+      "percent": 78.0
     },
     "max_basis": {
       "metric": "max_candidate_vs_max_baseline",
-      "baseline_ms": 3757.09,
-      "candidate_ms": 817.02,
-      "percent": 78.3
+      "baseline_ms": 3699.48,
+      "candidate_ms": 813.32,
+      "percent": 78.0
     }
   },
   "deployment": {
-    "image_digest": "registry.gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase@sha256:4dc94421415ae6be471ce69539361f2241ecc0955ecb9bbec9be40c427049f5d",
-    "cloud_run_revision": "faultforge-checkout-00062-juq"
+    "image_digest": "registry.gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase@sha256:cc9c46f5b49fc62fcc90a960bd978d15db15d07df4b5804feac416476a0a541e",
+    "cloud_run_revision": "faultforge-checkout-00068-gaw"
   },
   "pipeline_artifacts": {
-    "incident_dossier_sha256": "c1fbdb3c5d1b8880095bbb7b81a9bc0d01ebf0a814cb21b39ca50591f8ea7821",
-    "diagnosis_report_sha256": "e4040afdfd87898439678d07640850e1f1bed3b3185d2412e91f11a58701ce27",
+    "incident_dossier_sha256": "051119eec426512818b4bd3a42e0d6ae160564a516c99b6976b1b8735da0679e",
+    "diagnosis_report_sha256": "662b7ac3dffc7b7f96176c43ccb65b22034d446ae7260864d2aad5c819f8c4ba",
     "mr_payload_sha256": "N/A",
-    "replay_evaluation_sha256": "34a2ff80c461613820163ea9c66c3313542a1f1a4506caf37d302cebbfa159f9",
-    "risk_classification_sha256": "9475556ca6640b0bf4d1e7e2ab41e43ac3e230b55e89c7650e5f83d31adf62b8"
+    "replay_evaluation_sha256": "20dcf4c3e19652292436aa7f91bc0141b5deeda9be9953a4d0d56c7fb8b1a87f",
+    "risk_classification_sha256": "833ce51647d6c6cf5bf9237086095e9c52f29b39f79b1bb0298e186a7b3cc60a"
   },
   "not_established": [],
   "governance": {
     "requires_human_approval_to_promote": true,
     "promotion_gate": "BLOCKED_PENDING_APPROVAL"
   },
-  "tamper_evident_seal_sha256": "72f1a9ee653da45d7e29f85fe6646b5e5ef1e56ca4242761f80b8a4e84b5ad7f",
-  "source": "baked_image_receipt (pipeline 2984485378, commit 57757a3d)"
+  "tamper_evident_seal_sha256": "c62ee3b35d29dcc013f4d70ab6a230892886911c83674f9b91b02a2d6846de23"
 }

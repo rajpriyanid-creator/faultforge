@@ -2,10 +2,10 @@
   "stage": "secure",
   "job_name": "secure:sast_and_secret_scan",
   "status": "SUCCESS",
-  "commit_sha": "57757a3d0dcdd97a83009c0966a9ca3ad46378bf",
-  "pipeline_id": "2984485378",
-  "job_id": "17437653511",
-  "artifact_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17437653511/artifacts/browse",
+  "commit_sha": "d75de80ae1c754df386c6a227c5310a093c5a16c",
+  "pipeline_id": "2984589851",
+  "job_id": "17438210909",
+  "artifact_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17438210909/artifacts/browse",
   "approval_required": false,
   "artifacts_declared": [
     "reports/bandit_security_report.json"
@@ -17,10 +17,10 @@
     {
       "path": "reports/bandit_security_report.json",
       "size_bytes": 3665,
-      "sha256": "e5993f4d4bd0daec7b1813189a8ba3091a0742589284314414bdef3da08b3d37"
+      "sha256": "12ee120a35f949d2a824afee0bf6ae40546ce028d3d21da28143e5d31e7e15ef"
     }
   ],
-  "timestamp": 1792843925.537616,
+  "timestamp": 1792848427.0802858,
   "duo_executed": false,
   "notes": ""
 }

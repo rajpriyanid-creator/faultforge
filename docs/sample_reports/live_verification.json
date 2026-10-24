@@ -1,5 +1,5 @@
 {
-  "timestamp": 1792844099.1552403,
+  "timestamp": 1792848599.9387279,
   "service_name": "faultforge-checkout",
   "region": "us-central1",
   "production_url": "https://faultforge-checkout-tiottsrikq-uc.a.run.app",
@@ -8,9 +8,9 @@
     "body": {
       "status": "healthy",
       "service": "faultforge-checkout",
-      "revision": "faultforge-checkout-00062-juq",
-      "uptime_seconds": 11.33,
-      "environment": "staging"
+      "revision": "faultforge-checkout-00002-kpl",
+      "uptime_seconds": 635.23,
+      "environment": "production"
     },
     "verified": true
   },
@@ -24,7 +24,7 @@
       },
       {
         "percent": 10,
-        "revisionName": "faultforge-checkout-00062-juq",
+        "revisionName": "faultforge-checkout-00068-gaw",
         "tag": "candidate",
         "url": "https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app"
       }
@@ -33,7 +33,7 @@
     "production_percent": 90,
     "candidate_tag": "candidate",
     "candidate_url": "https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app",
-    "candidate_revision": "faultforge-checkout-00062-juq",
+    "candidate_revision": "faultforge-checkout-00068-gaw",
     "production_revision": "faultforge-checkout-00002-kpl"
   }
 }

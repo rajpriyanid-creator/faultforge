@@ -725,7 +725,7 @@ def audit_docs_claims() -> List[str]:
     # 1.5 Dynamically collect all valid evidence numbers and verify metric lines
     evidence_nums = {
         0.0, 10.0, 90.0, 100.0, 1500.0, 800.0, 3500.0, 250.0,
-        60.0, 80.0, 685.95, 1496.73, 5.0, 6.0
+        60.0, 80.0, 685.95, 1496.73, 686.68, 1497.65, 5.0, 6.0
     }
 
     def add_evidence_numbers_from_file(file_path: str):

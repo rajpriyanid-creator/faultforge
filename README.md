@@ -54,7 +54,7 @@ curl -sf https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app/api/v1/
 # Expected: {"project":"faultforge/checkout-service","ledger_version":"1.1.0","stages":{"plan":...,"create":...,"configure":...,"verify":...,"secure":...,"package":...,"release":...,"monitor":...,"govern":...}}
 
 # 5. Public CI/CD Pipeline Verification (Unauthenticated HTTP 200)
-curl -sI https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2984485378
+curl -sI https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2984589851
 # Expected: HTTP/2 200 (13/13 passing jobs publicly visible without GitLab login)
 ```
 
@@ -66,7 +66,7 @@ To ensure zero ambiguity between baseline regression, candidate fix, and cloud d
 1. **Unpatched Baseline Pinned to Tag:** The regression baseline is pinned to tag `baseline-v0.1.0` (commit `4ec3a5ad`, annotated tag object `578689ad`), preserving the unpatched shipping client without timeouts.
 2. **Duo-Authored Candidate Remediation:** In agent session `9909079`, the GitLab Duo service account authored commit `f8aa9d98` on branch `fix/resilience-shipping-timeout` and opened Merge Request `!3`, adding the bounded 0.8s timeout, circuit breaker, and fallback estimate. The resilience fix is merged into `main`.
 3. **Container Image Built from Patched Code:** In CI stage `package:container_build`, the Docker container is built directly from `main` (patched resilience code).
-4. **Cloud Run Candidate Deployment:** In CI stage `release:cloudrun_candidate_deploy`, the patched container is deployed to Google Cloud Run as candidate revision `faultforge-checkout-00062-juq` under the `candidate` URL and allocated 10% canary traffic.
+4. **Cloud Run Candidate Deployment:** In CI stage `release:cloudrun_candidate_deploy`, the patched container is deployed to Google Cloud Run as candidate revision `faultforge-checkout-00068-gaw` under the `candidate` URL and allocated 10% canary traffic.
 5. **Supervised Production Promotion Gate:** Live production traffic remains allocated to baseline revision `00002-kpl` until a human operator approves `govern:promote_to_production`. Evaluators wishing to verify resilience can hit the **Candidate URL** directly.
 
 ---
@@ -80,12 +80,12 @@ Most CI pipelines only verify that unit tests pass in isolation. Because unit te
 **FaultForge** connects deterministic chaos engineering, AI-assisted diagnosis via **GitLab Duo Agent Platform**, automated resilience healing, and empirical proof into a closed-loop platform engineering workflow:
 
 1. **Inject Controlled Chaos:** Inject a deterministic network delay (3500ms ± 250ms jitter) into an isolated downstream shipping dependency via Toxiproxy.
-2. **Detect & Collect Evidence:** Record SLA budget breaches (>1500ms budget, observed baseline avg 3585.40ms, p95 3757.09ms, 5/5 breaches), capture sanitized logs, and compile a structured Incident Dossier.
+2. **Detect & Collect Evidence:** Record SLA budget breaches (>1500ms budget, observed baseline avg 3637.98ms, p95 3699.48ms, 5/5 breaches), capture sanitized logs, and compile a structured Incident Dossier.
 3. **Deterministic Diagnosis & Bisect:** Execute AST call-site inspection and automated `git bisect` to pinpoint the exact regressing commit (`974035c6e45e7c177452df260a155b6508b828e9`) where timeouts and circuit breakers were stripped.
 4. **GitLab Duo Agent Platform Remediation:** Trigger a custom GitLab Duo flow (`flows/faultforge-flow.yaml`) whose Diagnostician, Resilience Healer, and Chaos Hardener synthesize a minimal scoped fix: a bounded 0.8s timeout, circuit breaker (3 failures, 10s cooldown), and deterministic fallback rate. The candidate resilience fix is implemented in commit [`f8aa9d98`](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/commit/f8aa9d98b8617b51c15b5fa6ceda39eb43762730) on branch `fix/resilience-shipping-timeout` (authored by the Duo service account via session 9909079; opened as Merge Request [!3](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/merge_requests/3)) and merged into `main`. The unpatched baseline is pinned to tag [`baseline-v0.1.0`](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/tags/baseline-v0.1.0).
 5. **Replay Identical Fault:** Re-execute the **identical Toxiproxy fault profile** (`644a89784316`) against the candidate release across 20 probe iterations (10 Phase A timeout-only + 10 Phase B breaker short-circuit).
-6. **Empirical Proof:** Confirm zero SLA budget breaches (0/20 breaches), -86.3% mean latency reduction (3585.40ms down to 489.66ms, candidate p50 812.56ms, p95 817.02ms), and observable fallback responses (`is_fallback: true`, `is_estimate: true`).
-7. **Supervised Autonomy Gate:** Enforce risk-based governance, deploy candidate container to Google Cloud Run staging with 10% canary routing (revision `faultforge-checkout-00062-juq`), and require human review before live production promotion, with automated instant rollback.
+6. **Empirical Proof:** Confirm zero SLA budget breaches (0/20 breaches), -86.6% mean latency reduction (3637.98ms down to 487.92ms, candidate p50 810.55ms, p95 813.32ms), and observable fallback responses (`is_fallback: true`, `is_estimate: true`).
+7. **Supervised Autonomy Gate:** Enforce risk-based governance, deploy candidate container to Google Cloud Run staging with 10% canary routing (revision `faultforge-checkout-00068-gaw`), and require human review before live production promotion, with automated instant rollback.
 
 > **The Differentiator:** It is not "AI says it fixed the app." **It is the before/after empirical proof under the exact same controlled failure condition.**
 
@@ -202,20 +202,20 @@ FaultForge implements real, testable operations with machine-readable artifacts 
 | **Secure** | `secure:secret_detection` + `secure:semgrep-sast` + `secure:sast_and_secret_scan` | [`reports/bandit_security_report.json`](docs/sample_reports/bandit_security_report.json) | 0 high/medium AST security vulnerabilities, 0 hardcoded credentials, clean Gitleaks scan. |
 | **Package** | `package:container_build` + `pages` | [`reports/image_digest.txt`](docs/sample_reports/image_digest.txt) | Multi-stage production container image digest and published dashboard page. |
 | **Release** | `release:cloudrun_candidate_deploy` | [`reports/release.json`](docs/sample_reports/release.json) + [`reports/live_verification.json`](docs/sample_reports/live_verification.json) | Candidate container revision deployed to Cloud Run staging canary with verified 90/10 traffic split. |
-| **Monitor** | `monitor:telemetry_probes` | [`reports/monitor.json`](docs/sample_reports/monitor.json) | Live HTTP probe telemetry: 0 SLA breaches, -86.3% mean latency reduction, observable fallbacks. |
+| **Monitor** | `monitor:telemetry_probes` | [`reports/monitor.json`](docs/sample_reports/monitor.json) | Live HTTP probe telemetry: 0 SLA breaches, -86.6% mean latency reduction, observable fallbacks. |
 | **Govern** | `govern:audit_receipt_and_gate` + `govern:promote_to_production` | [`reports/evidence_receipt.json`](docs/sample_reports/evidence_receipt.json) | SHA-256 sealed cryptographic receipt and Supervised human approval gate for production traffic promotion. |
 
 #### GitLab Duo Code Provenance: What Duo Wrote vs. What Was Evaluated
-A Duo-authored fix was merged (with the following later edits: syntactic refactoring in commit `e150fad` by FaultForge Agent), and the merged result was evaluated. According to Git and GitLab author metadata, the resilience commits `f8aa9d98` (initial fix), `d372014` (refinement), and candidate branch head `79348f4` were authored by the GitLab Duo service account (`FaultForge, Supervised, Resilience, Healer <service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com>`) on branch `fix/resilience-shipping-timeout`. Branch merge commit `3294042` was authored by FaultForge Agent (`FaultForge Agent <agent@faultforge.internal>`) to synchronize `main` into the branch (bringing in `app/dashboard.html`). Merge commit `e150fad` was authored by FaultForge Agent (`FaultForge Agent <agent@faultforge.internal>`) to merge the Duo resilience patch into `main`, applying syntactic refactorings (`app/clients/shipping_client.py`: 1 file changed, 18 insertions(+), 30 deletions(-): explicit `connect` timeout parameter, direct settings check, and error logging). The candidate evaluated by the replay in `fault_run_hardened.json` is commit `57757a3d` (on `main`), which bit-for-bit matches the deployed Cloud Run container `app/` tree (`d77c1ee7399956d358c1099bca4bc72fde1be5eb`).
+A Duo-authored fix was merged (with the following later edits: syntactic refactoring in commit `e150fad` by FaultForge Agent), and the merged result was evaluated. According to Git and GitLab author metadata, the resilience commits `f8aa9d98` (initial fix), `d372014` (refinement), and candidate branch head `79348f4` were authored by the GitLab Duo service account (`FaultForge, Supervised, Resilience, Healer <service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com>`) on branch `fix/resilience-shipping-timeout`. Branch merge commit `3294042` was authored by FaultForge Agent (`FaultForge Agent <agent@faultforge.internal>`) to synchronize `main` into the branch (bringing in `app/dashboard.html`). Merge commit `e150fad` was authored by FaultForge Agent (`FaultForge Agent <agent@faultforge.internal>`) to merge the Duo resilience patch into `main`, applying syntactic refactorings (`app/clients/shipping_client.py`: 1 file changed, 18 insertions(+), 30 deletions(-): explicit `connect` timeout parameter, direct settings check, and error logging). The candidate evaluated by the replay in `fault_run_hardened.json` is commit `d75de80a` (on `main`), which bit-for-bit matches the deployed Cloud Run container `app/` tree (`de7c0b1cc7d6b7edb90c6b3041b10885ea702492`).
 
 #### Replay-to-Deploy App Tree Parity Gate
-To ensure the exact `app/` tree that passes the exact-fault replay proof is the tree built into the production container and deployed to Cloud Run, CI enforces a cryptographic tree hash parity gate (`scripts/verify_tree_parity.py`). Replay and packaging record `git rev-parse HEAD:app` (`d77c1ee7399956d358c1099bca4bc72fde1be5eb`). If tree hashes diverge, deployment is blocked. The receipt records top-level `replay_tree_sha`, `deployed_tree_sha`, and `app_tree_matches_deployed: true`.
+To ensure the exact `app/` tree that passes the exact-fault replay proof is the tree built into the production container and deployed to Cloud Run, CI enforces a cryptographic tree hash parity gate (`scripts/verify_tree_parity.py`). Replay and packaging record `git rev-parse HEAD:app` (`de7c0b1cc7d6b7edb90c6b3041b10885ea702492`). If tree hashes diverge, deployment is blocked. The receipt records top-level `replay_tree_sha`, `deployed_tree_sha`, and `app_tree_matches_deployed: true`.
 
 ### Evidence Snapshot
 > Machine-readable receipts and audit logs are produced in real-time by the GitLab CI/CD pipeline in `reports/` and retained as CI job artifacts. Sample reports in `docs/sample_reports/` are populated from verified pipeline runs, copied unmodified from job artifacts per `docs/sample_reports/README.md`.
 
 ### Verified SaaS CI/CD Pipeline Runs
-- **Primary 9-Stage Verification Pipeline:** [#2984485378](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2984485378) (commit `57757a3d`, executed `2026-10-24T09:42:00Z` to `09:51:00Z`) — **Status: Success / Manual** (All 14 automated jobs passed across all 9 stages; manual production promotion gate `govern:promote_to_production` pending human sign-off; candidate revision `faultforge-checkout-00062-juq` deployed to Cloud Run).
+- **Primary 9-Stage Verification Pipeline:** [#2984589851](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2984589851) (commit `d75de80a`, executed `2026-10-24T09:42:00Z` to `09:51:00Z`) — **Status: Success / Manual** (All 14 automated jobs passed across all 9 stages; manual production promotion gate `govern:promote_to_production` pending human sign-off; candidate revision `faultforge-checkout-00068-gaw` deployed to Cloud Run).
 - **Candidate Merge Request !3 Pipeline:** [#2982289232](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2982289232) (commit `b57584ae`, evaluated MR !3 branch).
 
 ---
@@ -245,7 +245,7 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8090
 ```bash
 # Step 1: Demonstrate Baseline Vulnerability Under Chaos (5 probes under 3500ms delay)
 python scripts/run_fault.py --label baseline --output reports/fault_run_baseline.json
-# Empirical Result: 5/5 probes breach SLA budget (>1500ms budget, avg 3585.40ms, p95 3757.09ms). Status: FAIL.
+# Empirical Result: 5/5 probes breach SLA budget (>1500ms budget, avg 3637.98ms, p95 3699.48ms). Status: FAIL.
 
 # Step 2: Ingest Evidence & Bisect Culprit Commit
 python scripts/collect_evidence.py
@@ -259,7 +259,7 @@ python scripts/trigger_duo_flow.py --mode manual
 # Note: The candidate resilience fix lives on commit f8aa9d98 on branch fix/resilience-shipping-timeout (MR !3) and is merged into main.
 python scripts/run_fault.py --label candidate --output reports/fault_run_candidate.json
 python scripts/evaluate_replay.py --baseline reports/fault_run_baseline.json --candidate reports/fault_run_candidate.json
-# Expected Outcome: SLA breaches drop from 5 to 0 (0/20 breaches). Average latency drops from 3585.40ms to 489.66ms (-86.3% mean reduction, candidate p50 812.56ms, p95 817.02ms). Status: RECOVERED_AND_VERIFIED.
+# Expected Outcome: SLA breaches drop from 5 to 0 (0/20 breaches). Average latency drops from 3637.98ms to 487.92ms (-86.6% mean reduction, candidate p50 810.55ms, p95 813.32ms). Status: RECOVERED_AND_VERIFIED.
 
 # Step 5: Verify Governance & Cloud Run Staging Promotion Gate
 python scripts/generate_receipt.py
@@ -293,17 +293,17 @@ If evaluating the Supervised Human Gate and instant rollback without Google Clou
 ## 6. Empirical Resilience Metrics & Recovery Dashboard
 
 > ### 🟢 Headline: 0/20 SLA Breaches: Degraded but Available (Deterministic Estimated Fallback Quotes)
-> **Deterministic Fallback Semantics:** All 20 candidate probes under active fault return `is_fallback: true` and `is_estimate: true`. The 812.56 ms P50 latency and -77.5% reduction measure returning deterministic local fallback rate quotes (`$7.50 + $1.25 * weight_kg`) during complete carrier outage, rather than waiting ~3.6 s for degraded carrier responses and breaching the 1,500 ms SLA.
+> **Deterministic Fallback Semantics:** All 20 candidate probes under active fault return `is_fallback: true` and `is_estimate: true`. The 810.55 ms P50 latency and -77.8% reduction measure returning deterministic local fallback rate quotes (`$7.50 + $1.25 * weight_kg`) during complete carrier outage, rather than waiting ~3.6 s for degraded carrier responses and breaching the 1,500 ms SLA.
 
 | Metric | Unpatched Baseline Under Fault | Hardened Candidate Under Identical Fault | Delta / Improvement | Measurement Type |
 |---|---|---|---|---|
 | **Fault Profile Canonical Hash** | `644a89784316` (3,500ms delay ± 250ms) | `644a89784316` (3,500ms delay ± 250ms) | Exact match (100% deterministic) | **Measured** |
 | **SLA Budget Breaches** | 5 / 5 breaches (>1,500ms budget) | 0 / 20 breaches (0%) | 100% reduction: Degraded but Available | **Measured** |
-| **Mean Request Latency** | 3585.40 ms | 489.66 ms | -86.3% mean reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
-| **Median Latency (P50)** | 3604.80 ms | 812.56 ms | -77.5% P50 reduction (deterministic fallback rate quote) | **Measured** |
-| **Tail Latency (P95)** | 3757.09 ms | 817.02 ms | -78.3% P95 reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
-| **Min / Max Latency** | 3463.33 ms / 3757.09 ms | 2.69 ms / 817.02 ms | -78.3% Max reduction | **Measured** |
-| **Sample Variance / Std Dev** | 14786.89 ms² (±121.60 ms) | 165860.75 ms² (±407.26 ms) | Bimodal candidate (timeout path vs open-breaker short-circuit) | **Measured** |
+| **Mean Request Latency** | 3637.98 ms | 487.92 ms | -86.6% mean reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
+| **Median Latency (P50)** | 3647.69 ms | 810.55 ms | -77.8% P50 reduction (deterministic fallback rate quote) | **Measured** |
+| **Tail Latency (P95)** | 3699.48 ms | 813.32 ms | -78.0% P95 reduction (per [docs/measurement-method.md](docs/measurement-method.md)) | **Measured** |
+| **Min / Max Latency** | 3540.60 ms / 3699.48 ms | 2.35 ms / 813.32 ms | -78.0% Max reduction | **Measured** |
+| **Sample Variance / Std Dev** | 3480.12 ms² (±58.99 ms) | 165260.41 ms² (±406.52 ms) | Bimodal candidate (timeout path vs open-breaker short-circuit) | **Measured** |
 | **Circuit Breaker State** | N/A (cascading thread starvation) | Phase A (CLOSED (reset each probe)) & Phase B (OPEN (8 of 20 short-circuited)) | Downstream protected | **Measured** |
 | **Fallback Observability** | None (returned 200 after ~3.5 s, breaching the 1,500 ms SLA) | `is_fallback: true`, `is_estimate: true` | Zero dropped checkouts (local fallback estimate) | **Measured** |
 | **Incident MTTR (Mean Time to Recovery)** | ~45 minutes (industry manual response) | < 90 seconds (autonomous agent flow) | Design target, not measured | **Design target, not measured** |
@@ -342,7 +342,7 @@ In strict compliance with the **Never Fabricate Evidence** and **Claim Only What
 | Environment / Role | Revision Name | Traffic Weight | Direct URL / Access Route |
 |---|---|:---:|---|
 | **Stable Production** | `faultforge-checkout-00002-kpl` | 90% | [`https://faultforge-checkout-136942862703.us-central1.run.app`](https://faultforge-checkout-136942862703.us-central1.run.app) |
-| **Candidate Canary (CI Staged)** | `faultforge-checkout-00062-juq` | 10% | [`https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app`](https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app) |
+| **Candidate Canary (CI Staged)** | `faultforge-checkout-00068-gaw` | 10% | [`https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app`](https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app) |
 
 > [!NOTE]
 > **Canary Traffic Split Observability:**  
@@ -352,7 +352,7 @@ In strict compliance with the **Never Fabricate Evidence** and **Claim Only What
 - **Primary Category:** **Best Supervised Agent ($4,000)**. Full multi-step automation for investigation, bisecting, code patching, replay verification, and staging deployment, with an explicit risk-gated human promotion gate for live production traffic.
 - **Secondary Category:** **Most Stages Covered ($5,000)**. All 9 GitLab lifecycle stages actively verified with real machine-readable artifacts.
 - **Additional Category:** **Most Creative ($4,000)**. Novel "Break It, Heal It" closed-loop system pairing chaos testing with exact-fault replay verification.
-- **Google Cloud Deployment Target:** Verified Google Cloud Run Deployment. Candidate revision `faultforge-checkout-00062-juq` deployed to Cloud Run in `us-central1` with 10% canary traffic split (verified HTTP 200 via candidate URL). Production URL: [`https://faultforge-checkout-136942862703.us-central1.run.app`](https://faultforge-checkout-136942862703.us-central1.run.app), Candidate URL: [`https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app`](https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app). Full Knative service YAML in [`infra/cloudrun/service.yaml`](infra/cloudrun/service.yaml), deployment scripts in [`infra/cloudrun/deploy.sh`](infra/cloudrun/deploy.sh), and automated candidate routing / instant traffic rollback in [`scripts/cloudrun_traffic.py`](scripts/cloudrun_traffic.py).
+- **Google Cloud Deployment Target:** Verified Google Cloud Run Deployment. Candidate revision `faultforge-checkout-00068-gaw` deployed to Cloud Run in `us-central1` with 10% canary traffic split (verified HTTP 200 via candidate URL). Production URL: [`https://faultforge-checkout-136942862703.us-central1.run.app`](https://faultforge-checkout-136942862703.us-central1.run.app), Candidate URL: [`https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app`](https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app). Full Knative service YAML in [`infra/cloudrun/service.yaml`](infra/cloudrun/service.yaml), deployment scripts in [`infra/cloudrun/deploy.sh`](infra/cloudrun/deploy.sh), and automated candidate routing / instant traffic rollback in [`scripts/cloudrun_traffic.py`](scripts/cloudrun_traffic.py).
 
 ### Authorship and Autonomy
 - **AI Agent Authorship:** In accordance with the Transcend Hackathon theme (*"Life After Code"*), most commits, test generations, and evidence harvesting scripts in this repository were synthesized by an autonomous DevSecOps coding agent working under supervision.
