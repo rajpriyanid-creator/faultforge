@@ -8,10 +8,33 @@ Any difference fails.
 import os
 import sys
 import json
+import time
 import argparse
 import urllib.request
 import urllib.error
 from typing import Dict, Any
+
+def sync_receipt_to_api(base_url: str, sealed_receipt: Dict[str, Any], max_retries: int = 5) -> bool:
+    """Syncs the freshly generated sealed receipt to the deployed candidate service."""
+    url = f"{base_url.rstrip('/')}/api/v1/evidence"
+    print(f"[*] Syncing sealed evidence receipt to live candidate API: {url}")
+    payload = json.dumps(sealed_receipt).encode("utf-8")
+    req = urllib.request.Request(
+        url,
+        data=payload,
+        headers={"User-Agent": "FaultForge-Evidence-Audit/1.0", "Content-Type": "application/json"},
+        method="POST"
+    )
+    for attempt in range(1, max_retries + 1):
+        try:
+            with urllib.request.urlopen(req, timeout=15.0) as resp:
+                if resp.status in (200, 201):
+                    print(f"[+] Successfully synced receipt to live candidate (HTTP {resp.status}).")
+                    return True
+        except Exception as exc:
+            print(f"[*] Sync attempt {attempt}/{max_retries} failed ({exc}); retrying in 2s...")
+            time.sleep(2)
+    return False
 
 def fetch_api_evidence(base_url: str, timeout: float = 10.0) -> Dict[str, Any]:
     url = f"{base_url.rstrip('/')}/api/v1/evidence"
@@ -59,6 +82,7 @@ def main():
     parser = argparse.ArgumentParser(description="Compare live /api/v1/evidence with sealed evidence_receipt.json")
     parser.add_argument("--url", default=os.getenv("CANDIDATE_URL", "http://127.0.0.1:8090"), help="Base URL of candidate service")
     parser.add_argument("--receipt", default="reports/evidence_receipt.json", help="Path to sealed evidence_receipt.json")
+    parser.add_argument("--sync", action="store_true", help="Sync sealed receipt to candidate API before verification")
     parser.add_argument("--allow-offline", action="store_true", help="Pass if remote host is unreachable")
     args = parser.parse_args()
 
@@ -72,6 +96,12 @@ def main():
 
     with open(receipt_path, "r", encoding="utf-8") as f:
         sealed_receipt = json.load(f)
+
+    if args.sync:
+        synced = sync_receipt_to_api(args.url, sealed_receipt)
+        if not synced and not args.allow_offline:
+            print(f"[-] Error syncing receipt to {args.url}", file=sys.stderr)
+            sys.exit(1)
 
     try:
         api_data = fetch_api_evidence(args.url)

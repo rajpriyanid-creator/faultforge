@@ -451,8 +451,8 @@ govern:audit_receipt_and_gate:
       if [ -f reports/release.json ]; then
         CAND_URL=$(python -c "import json; print(json.load(open('reports/release.json')).get('url', ''))")
         if [ -n "$CAND_URL" ] && [ "$CAND_URL" != "https://example.invalid/skipped" ]; then
-          echo "[+] Verifying live candidate API /api/v1/evidence against sealed receipt:"
-          python scripts/verify_live_evidence_api.py --url "$CAND_URL" --receipt reports/evidence_receipt.json --allow-offline
+          echo "[+] Syncing and verifying live candidate API /api/v1/evidence against sealed receipt:"
+          python scripts/verify_live_evidence_api.py --url "$CAND_URL" --receipt reports/evidence_receipt.json --sync --allow-offline
         fi
       fi
     - python scripts/evidence_ledger.py --stage govern --job govern:audit_receipt_and_gate --status SUCCESS --artifacts reports/evidence_receipt.json --approval-required
