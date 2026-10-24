@@ -2,10 +2,10 @@
   "stage": "monitor",
   "job_name": "monitor:telemetry_probes",
   "status": "SUCCESS",
-  "commit_sha": "c5d67cdfd092371194fca081d9105116ee0dbc2e",
-  "pipeline_id": "2984172017",
-  "job_id": "17436072842",
-  "artifact_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17436072842/artifacts/browse",
+  "commit_sha": "36c677fb8cc30f2cb1e036bca8ed0b9bcfe7426f",
+  "pipeline_id": "2984259115",
+  "job_id": "17436543227",
+  "artifact_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17436543227/artifacts/browse",
   "approval_required": false,
   "artifacts_declared": [
     "reports/monitor.json"
@@ -16,11 +16,11 @@
   "artifacts_details": [
     {
       "path": "reports/monitor.json",
-      "size_bytes": 304,
-      "sha256": "33ec4caff37fb2fb0be2d4334be6000ab51842bc8d4ba619b673a0decd53c346"
+      "size_bytes": 305,
+      "sha256": "25533f81769be6f479daed836ffcbe435e88267f1d731c05ed3412a5a176de35"
     }
   ],
-  "timestamp": 1792831530.138467,
+  "timestamp": 1792835428.1947045,
   "duo_executed": false,
   "notes": ""
 }

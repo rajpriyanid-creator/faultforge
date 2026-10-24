@@ -2,10 +2,10 @@
   "stage": "plan",
   "job_name": "plan:incident_tracking",
   "status": "SUCCESS",
-  "commit_sha": "c5d67cdfd092371194fca081d9105116ee0dbc2e",
-  "pipeline_id": "2984172017",
-  "job_id": "17436072830",
-  "artifact_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17436072830/artifacts/browse",
+  "commit_sha": "36c677fb8cc30f2cb1e036bca8ed0b9bcfe7426f",
+  "pipeline_id": "2984259115",
+  "job_id": "17436543215",
+  "artifact_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17436543215/artifacts/browse",
   "approval_required": false,
   "artifacts_declared": [
     "reports/issue.json"
@@ -16,11 +16,11 @@
   "artifacts_details": [
     {
       "path": "reports/issue.json",
-      "size_bytes": 559,
-      "sha256": "cb5c46187ba9088f89be0283047731587eb23f0cb621c8c9bb4f78032e958790"
+      "size_bytes": 558,
+      "sha256": "b73c40e57d268ad1c5d1e0491352684425197a8fd2d851b3efab1fdd97442bc9"
     }
   ],
-  "timestamp": 1792831159.0127282,
+  "timestamp": 1792834913.2022681,
   "duo_executed": false,
   "notes": ""
 }

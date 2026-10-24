@@ -2,10 +2,10 @@
   "stage": "release",
   "job_name": "release:cloudrun_candidate_deploy",
   "status": "SUCCESS",
-  "commit_sha": "c5d67cdfd092371194fca081d9105116ee0dbc2e",
-  "pipeline_id": "2984172017",
-  "job_id": "17436072841",
-  "artifact_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17436072841/artifacts/browse",
+  "commit_sha": "36c677fb8cc30f2cb1e036bca8ed0b9bcfe7426f",
+  "pipeline_id": "2984259115",
+  "job_id": "17436543226",
+  "artifact_url": "https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/jobs/17436543226/artifacts/browse",
   "approval_required": false,
   "artifacts_declared": [
     "reports/release.json",
@@ -19,15 +19,15 @@
     {
       "path": "reports/release.json",
       "size_bytes": 208,
-      "sha256": "c2f14913adfb4cc043a5a897ce8bdd07190e98cb1a310dcfa77592c2506c66ad"
+      "sha256": "8a1dc3dd5a961918845caecfbbd7aa4ef1a72bb912441b3ea36e69763503276a"
     },
     {
       "path": "reports/live_verification.json",
-      "size_bytes": 1147,
-      "sha256": "6eea972947ef6a2f7d47b4f93bcc4ac6659f787e14a96e048cc8a9ad54f98072"
+      "size_bytes": 1145,
+      "sha256": "4dc2da5e048b2b8e7039f5c3cc45ce179d2b5a45df54ebd263b780f806673b5a"
     }
   ],
-  "timestamp": 1792831502.411077,
+  "timestamp": 1792835399.8836594,
   "duo_executed": false,
   "notes": ""
 }

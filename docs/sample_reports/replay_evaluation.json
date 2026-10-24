@@ -5,13 +5,13 @@
   "gates": {
     "valid_git_shas": {
       "passed": true,
-      "baseline_sha": "578689ad048f3bfdff9754dcd391e33c5f73b38e",
-      "hardened_sha": "c5d67cdfd092371194fca081d9105116ee0dbc2e"
+      "baseline_sha": "4ec3a5ad7fd0cc635d9546acf6974b83f7a57054",
+      "hardened_sha": "36c677fb8cc30f2cb1e036bca8ed0b9bcfe7426f"
     },
     "distinct_revisions": {
       "passed": true,
-      "baseline_sha": "578689ad",
-      "hardened_sha": "c5d67cdf"
+      "baseline_sha": "4ec3a5ad",
+      "hardened_sha": "36c677fb"
     },
     "identical_profile_hash": {
       "passed": true,
@@ -26,7 +26,7 @@
     "proxy_in_request_path": {
       "passed": true,
       "fault_delay_ms": 3500,
-      "candidate_min_ms": 2.32
+      "candidate_min_ms": 2.18
     },
     "identical_payload_hash": {
       "passed": true,
@@ -67,8 +67,8 @@
       "breaker_state": "CLOSED (reset each probe)",
       "total_probes": 10,
       "sla_breaches": 0,
-      "p95_ms": 815.41,
-      "avg_ms": 812.8
+      "p95_ms": 814.05,
+      "avg_ms": 812.08
     },
     "candidate_breaker_short_circuit": {
       "passed": true,
@@ -76,14 +76,14 @@
       "breaker_state": "OPEN (N of 10 short-circuited)",
       "total_probes": 10,
       "short_circuited_probes": 8,
-      "p95_ms": 813.8,
-      "avg_ms": 164.71
+      "p95_ms": 812.93,
+      "avg_ms": 164.32
     },
     "latency_budget": {
       "passed": true,
       "budget_ms": 1500,
-      "candidate_p95_ms": 815.41,
-      "candidate_max_ms": 815.41
+      "candidate_p95_ms": 814.05,
+      "candidate_max_ms": 814.05
     },
     "fallback_marked_estimated": {
       "passed": true,
@@ -96,39 +96,39 @@
     }
   },
   "raw_metrics": {
-    "baseline_avg_ms": 3652.0,
-    "baseline_p50_ms": 3631.05,
-    "baseline_p95_ms": 3718.82,
-    "baseline_max_ms": 3718.82,
-    "hardened_avg_ms": 488.75,
-    "hardened_p50_ms": 811.5,
-    "hardened_p95_ms": 815.41,
-    "hardened_max_ms": 815.41
+    "baseline_avg_ms": 3572.47,
+    "baseline_p50_ms": 3560.49,
+    "baseline_p95_ms": 3678.92,
+    "baseline_max_ms": 3678.92,
+    "hardened_avg_ms": 488.2,
+    "hardened_p50_ms": 810.53,
+    "hardened_p95_ms": 814.05,
+    "hardened_max_ms": 814.05
   },
   "latency_reduction": {
     "mean_basis": {
       "metric": "mean_candidate_vs_mean_baseline",
-      "baseline_ms": 3652.0,
-      "candidate_ms": 488.75,
-      "percent": 86.6
+      "baseline_ms": 3572.47,
+      "candidate_ms": 488.2,
+      "percent": 86.3
     },
     "p50_basis": {
       "metric": "p50_candidate_vs_p50_baseline",
-      "baseline_ms": 3631.05,
-      "candidate_ms": 811.5,
-      "percent": 77.7
+      "baseline_ms": 3560.49,
+      "candidate_ms": 810.53,
+      "percent": 77.2
     },
     "p95_basis": {
       "metric": "p95_candidate_vs_p95_baseline",
-      "baseline_ms": 3718.82,
-      "candidate_ms": 815.41,
-      "percent": 78.1
+      "baseline_ms": 3678.92,
+      "candidate_ms": 814.05,
+      "percent": 77.9
     },
     "max_basis": {
       "metric": "max_candidate_vs_max_baseline",
-      "baseline_ms": 3718.82,
-      "candidate_ms": 815.41,
-      "percent": 78.1
+      "baseline_ms": 3678.92,
+      "candidate_ms": 814.05,
+      "percent": 77.9
     }
   }
 }
