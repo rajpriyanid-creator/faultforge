@@ -96,10 +96,22 @@ async def test_resilience_checkout_endpoint():
 
 @pytest.mark.asyncio
 async def test_evidence_endpoint():
+    """Verify /api/v1/evidence returns exactly the sealed receipt with zero synthesized or extra keys/values."""
+    import json
+    receipt_path = "reports/evidence_receipt.json" if os.path.exists("reports/evidence_receipt.json") else "docs/sample_reports/evidence_receipt.json"
+    assert os.path.exists(receipt_path)
+    with open(receipt_path, "r", encoding="utf-8") as f:
+        stored_receipt = json.load(f)
+
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         res = await client.get("/api/v1/evidence")
         assert res.status_code == 200
+        api_data = res.json()
+        assert api_data == stored_receipt
+        for k in api_data:
+            assert k in stored_receipt
+            assert api_data[k] == stored_receipt[k]
 
 @pytest.mark.asyncio
 async def test_ledger_endpoint():

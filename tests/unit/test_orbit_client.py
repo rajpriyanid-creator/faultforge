@@ -14,11 +14,15 @@ def test_orbit_client_fallback_mode():
     assert any(n["id"] == "shipping-service" for n in result["nodes"])
 
 def test_orbit_client_mcp_mode(monkeypatch):
-    """When ENABLE_ORBIT_MCP is enabled and server URL is set, client takes orbit_mcp route."""
+    """When ENABLE_ORBIT_MCP is enabled, client catches NotImplementedError and falls back to fallback_ast_git."""
     monkeypatch.setenv("ENABLE_ORBIT_MCP", "true")
     monkeypatch.setenv("ORBIT_MCP_SERVER_URL", "http://orbit-mcp.internal:9000")
     client = OrbitClient()
+    # Direct invocation raises NotImplementedError
+    with pytest.raises(NotImplementedError):
+        client._query_orbit_mcp(target_component="app/clients/shipping_client.py", commit_sha=None)
+    # query_graph catches NotImplementedError and gracefully uses deterministic AST fallback
     result = client.query_graph(target_component="app/clients/shipping_client.py")
-    assert result["resolution_path"] == "orbit_mcp"
-    assert result["orbit_version"] == "v1-alpha"
-    assert len(result["nodes"]) == 3
+    assert result["resolution_path"] == "fallback_ast_git"
+    assert result["orbit_mcp_enabled"] is False
+    assert len(result["nodes"]) == 4

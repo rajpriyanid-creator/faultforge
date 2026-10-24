@@ -78,4 +78,10 @@ Because Orbit is currently behind a feature flag for hackathon namespaces:
 1. **Deterministic Bisect Fallback:** `scripts/diagnose_and_bisect.py` performs AST and `git bisect` boundary discovery without external dependencies.
 2. **GitLab REST API Fallback:** `scripts/trigger_duo_flow.py` uses verified Issues, Notes, and Merge Request APIs to trigger and link GitLab Duo custom flows.
 3. **Evidence Artifact Integration:** Findings are saved into machine-readable JSON files (`reports/incident_dossier.json`, `reports/stage_ledger.json`) rather than ephemeral chat memory.
+---
 
+## 6. Code Provenance: What Duo Authored vs. What Was Evaluated
+- **Duo-Authored Commits:** Resilience commits `f8aa9d98` (initial fix), `d372014` (refinement), and candidate branch head `79348f4` were all authored by the GitLab Duo service account (`FaultForge, Supervised, Resilience, Healer <service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com>`) on branch `fix/resilience-shipping-timeout`.
+- **Branch Merge Commit:** Commit `3294042` was authored by `FaultForge Agent <agent@faultforge.internal>` to synchronize `main` into the branch (bringing in `app/dashboard.html`).
+- **Main Merge & Refactoring Commit:** Commit `e150fad` was authored by `FaultForge Agent <agent@faultforge.internal>` merging the Duo resilience patch into `main` and applying syntactic refactorings (`app/clients/shipping_client.py`: 1 file changed, 18 insertions(+), 30 deletions(-): explicit `connect` timeout parameter, direct settings check, and error logging).
+- **Evaluated Commit:** A Duo-authored fix was merged (with the following later edits: syntactic refactoring in `e150fad` by FaultForge Agent), and the merged result was evaluated in commit `36c677fb` (recorded in `fault_run_hardened.json`), achieving exact `app/` tree parity with the deployed Cloud Run container (`5bd23d542337f74dff3320fdd8d7909c17d57e27`).

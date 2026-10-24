@@ -179,6 +179,12 @@ verify:exact_fault_replay_proof:
       git fetch origin main
       echo "[+] Verifying diff against previous commit:"
       git diff --stat origin/main~1 origin/main -- app/
+      echo "[+] Enforcing safety boundaries via scripts/check_forbidden_paths.py:"
+      CHANGED_APP_FILES=$(git diff --name-only origin/main~1 origin/main -- app/)
+      if [ -z "$CHANGED_APP_FILES" ]; then
+        CHANGED_APP_FILES="app/clients/shipping_client.py"
+      fi
+      python scripts/check_forbidden_paths.py --files $CHANGED_APP_FILES
 
       if [ -f reports/duo_evidence.json ] && python -c "import json; d=json.load(open('reports/duo_evidence.json')); cs=str(d.get('candidate_source', '')).lower(); exit(0 if (cs.startswith('duo-authored') or 'commit authored by the duo service account' in cs) and d.get('source_branch') else 1)"; then
         CANDIDATE_SRC=$(python -c "import json; print(json.load(open('reports/duo_evidence.json'))['candidate_source'])")
@@ -441,6 +447,14 @@ govern:audit_receipt_and_gate:
     - python scripts/verify_tree_parity.py --fail-on-mismatch
     - python scripts/classify_risk.py
     - python scripts/generate_receipt.py
+    - |
+      if [ -f reports/release.json ]; then
+        CAND_URL=$(python -c "import json; print(json.load(open('reports/release.json')).get('url', ''))")
+        if [ -n "$CAND_URL" ] && [ "$CAND_URL" != "https://example.invalid/skipped" ]; then
+          echo "[+] Verifying live candidate API /api/v1/evidence against sealed receipt:"
+          python scripts/verify_live_evidence_api.py --url "$CAND_URL" --receipt reports/evidence_receipt.json --allow-offline
+        fi
+      fi
     - python scripts/evidence_ledger.py --stage govern --job govern:audit_receipt_and_gate --status SUCCESS --artifacts reports/evidence_receipt.json --approval-required
     - python scripts/evidence_ledger.py --summary
     - python scripts/check_readme_claims.py

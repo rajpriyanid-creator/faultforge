@@ -7,7 +7,8 @@ import time
 import hashlib
 import subprocess
 import re
-from typing import Dict, Any, List, Tuple
+import argparse
+from typing import Dict, Any, List, Tuple, Optional
 
 def hash_file(path: str) -> str:
     if not os.path.exists(path):
@@ -272,6 +273,22 @@ def generate_evidence_receipt(
 
     approver = os.getenv("GITLAB_USER_LOGIN", "SUPERVISED_OPERATOR")
 
+    hard_results = hard_run.get("per_request_results", [])
+    cand_resilience = replay.get("gates", {}).get("candidate_resilience", {})
+    probe_count = len(hard_results) if hard_results else cand_resilience.get("total_probes", 0)
+    base_results = base_run.get("per_request_results", [])
+    base_probe_count = len(base_results)
+
+    cand_failures = cand_resilience.get("failed_probes", 0) if replay.get("gates") else 0
+    cand_sla_breaches = cand_resilience.get("sla_breaches", 0) if replay.get("gates") else 0
+    cand_passed = cand_resilience.get("passed", False) if replay.get("gates") else (cand_failures == 0 and cand_sla_breaches == 0)
+
+    # approval_timestamp is strictly null until human approval at promotion
+    approval_timestamp = None
+    if os.getenv("PROMOTION_APPROVED", "").lower() in ("true", "1", "yes"):
+        approval_timestamp = time.time()
+        promotion_gate = "PROMOTED_TO_PRODUCTION"
+
     receipt_data = {
         "receipt_id": f"rcpt-{os.urandom(6).hex()}",
         "generated_at": time.time(),
@@ -310,14 +327,15 @@ def generate_evidence_receipt(
         "replay_tree_sha": replay_tree_sha,
         "deployed_tree_sha": deployed_tree_sha,
         "app_tree_matches_deployed": app_tree_matches_deployed,
-        "probe_count": 20,
+        "probe_count": probe_count,
         "probe_results": {
-            "total": len(hard_run.get("per_request_results", [])) or 20,
-            "candidate_failures": replay.get("gates", {}).get("candidate_resilience", {}).get("failed_probes", 0) if replay.get("gates") else 0,
-            "candidate_sla_breaches": replay.get("gates", {}).get("candidate_resilience", {}).get("sla_breaches", 0) if replay.get("gates") else 0,
-            "baseline_probes": len(base_run.get("per_request_results", [])) or 5,
+            "total": probe_count,
+            "passed": cand_passed,
+            "candidate_failures": cand_failures,
+            "candidate_sla_breaches": cand_sla_breaches,
+            "baseline_probes": base_probe_count,
         },
-        "approval_timestamp": time.time(),
+        "approval_timestamp": approval_timestamp,
         "duo_execution": {
             "executed": duo_executed,
             "run_id": duo_run.get("run_id"),
@@ -436,5 +454,35 @@ def generate_evidence_receipt(
     print(f"    Seal: {receipt_data['tamper_evident_seal_sha256'][:16]}...")
     return receipt_data
 
+def record_promotion_approval(reports_dir: str = "reports", approver: Optional[str] = None) -> Dict[str, Any]:
+    receipt_json_path = os.path.join(reports_dir, "evidence_receipt.json")
+    if not os.path.exists(receipt_json_path):
+        print(f"[-] Receipt not found at {receipt_json_path}", file=sys.stderr)
+        sys.exit(1)
+    with open(receipt_json_path, "r", encoding="utf-8") as f:
+        receipt_data = json.load(f)
+    now = time.time()
+    receipt_data["approval_timestamp"] = now
+    receipt_data["promotion_gate"] = "PROMOTED_TO_PRODUCTION"
+    if "governance" in receipt_data:
+        receipt_data["governance"]["promotion_gate"] = "PROMOTED_TO_PRODUCTION"
+    if approver:
+        receipt_data["approver"] = approver
+    seal_fields = {k: v for k, v in receipt_data.items() if k != "tamper_evident_seal_sha256"}
+    canonical_repr = json.dumps(seal_fields, sort_keys=True)
+    receipt_data["tamper_evident_seal_sha256"] = hashlib.sha256(canonical_repr.encode("utf-8")).hexdigest()
+    with open(receipt_json_path, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(receipt_data, f, indent=2)
+    print(f"[+] Recorded promotion approval in {receipt_json_path} at timestamp {now}")
+    return receipt_data
+
 if __name__ == "__main__":
-    generate_evidence_receipt()
+    parser = argparse.ArgumentParser(description="FaultForge Evidence Receipt Generator")
+    parser.add_argument("--reports-dir", default="reports", help="Path to reports directory")
+    parser.add_argument("--record-approval", action="store_true", help="Record production promotion approval timestamp and reseal")
+    args = parser.parse_args()
+
+    if args.record_approval:
+        record_promotion_approval(args.reports_dir)
+    else:
+        generate_evidence_receipt(args.reports_dir)

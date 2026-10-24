@@ -235,6 +235,34 @@ def test_audit_docs_claims_fails_on_old_run_metric(tmp_path, monkeypatch):
     assert len(violations) > 0
     assert any("3652" in v or "488.75" in v or "815.41" in v for v in violations)
 
+def test_audit_fails_if_receipt_has_approval_time_with_blocked_gate(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    reports_dir = tmp_path / "reports"
+    reports_dir.mkdir(parents=True, exist_ok=True)
+
+    receipt_file = reports_dir / "evidence_receipt.json"
+    with open(receipt_file, "w") as f:
+        json.dump({
+            "commit_sha": "a" * 40,
+            "generated_at": 1729350100.0,
+            "promotion_gate": "BLOCKED_PENDING_APPROVAL",
+            "approval_timestamp": 1729350200.0,
+            "governance": {"promotion_gate": "BLOCKED_PENDING_APPROVAL"}
+        }, f)
+
+    violations = audit_report_consistency(final_mode=False)
+    assert any("approval_timestamp" in v and "BLOCKED" in v for v in violations)
+
+def test_audit_forbidden_patterns_fails_on_app_evidence_synthesis(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    app_dir = tmp_path / "app"
+    app_dir.mkdir(parents=True, exist_ok=True)
+    bad_py = app_dir / "fake.py"
+    bad_py.write_text('data["probe_count"] = 20\n', encoding="utf-8")
+
+    violations = audit_forbidden_patterns()
+    assert any("Forbidden evidence synthesis pattern" in v for v in violations)
+
 
 
 

@@ -48,11 +48,15 @@ def test_toxiproxy_profile_hash_determinism():
     profile_a = {
         "name": "test_profile",
         "fault_type": "latency",
-        "attributes": {"latency": 3500, "jitter": 250}
+        "listen": "0.0.0.0:8082",
+        "upstream": "127.0.0.1:8081",
+        "attributes": {"latency": 1000, "jitter": 100}
     }
     profile_b = {
-        "attributes": {"jitter": 250, "latency": 3500},
-        "fault_type": "latency",
-        "name": "test_profile"
+        "upstream": "127.0.0.1:8081",
+        "attributes": {"jitter": 100, "latency": 1000},
+        "name": "test_profile",
+        "listen": "0.0.0.0:8082",
+        "fault_type": "latency"
     }
     assert compute_profile_hash(profile_a) == compute_profile_hash(profile_b)

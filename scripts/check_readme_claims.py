@@ -11,7 +11,7 @@ import re
 import sys
 import json
 import argparse
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, List
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -58,6 +58,126 @@ def parse_readme_stages_table(readme_path: str = DEFAULT_README_PATH) -> Dict[st
                 claims[stage_name] = status_text
 
     return claims
+
+def audit_ci_claims_and_citations(
+    readme_path: str = DEFAULT_README_PATH,
+    gitlab_ci_path: str = ".gitlab-ci.yml",
+    receipt_path: str = DEFAULT_RECEIPT_PATH,
+    release_path: str = "reports/release.json",
+    docs_dir: str = "docs"
+) -> Tuple[bool, List[str]]:
+    discrepancies = []
+
+    # 1. Parse .gitlab-ci.yml for jobs and their script commands
+    jobs_dict = {}
+    if os.path.exists(gitlab_ci_path):
+        with open(gitlab_ci_path, "r", encoding="utf-8", errors="ignore") as f:
+            ci_content = f.read()
+        job_blocks = re.split(r'\n(?=[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+:)', ci_content)
+        for blk in job_blocks:
+            m = re.match(r'^([a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+):', blk.strip())
+            if m:
+                jobs_dict[m.group(1)] = blk
+
+    # 2. Discover canonical references from receipt and release
+    receipt = {}
+    for rp in [receipt_path, "docs/sample_reports/evidence_receipt.json"]:
+        if os.path.exists(rp):
+            try:
+                with open(rp, "r", encoding="utf-8") as f:
+                    receipt = json.load(f)
+                break
+            except Exception:
+                pass
+
+    release = {}
+    for rlp in [release_path, "docs/sample_reports/release.json"]:
+        if os.path.exists(rlp):
+            try:
+                with open(rlp, "r", encoding="utf-8") as f:
+                    release = json.load(f)
+                break
+            except Exception:
+                pass
+
+    canonical_pipeline = None
+    if receipt.get("urls", {}).get("referenced_pipeline_url"):
+        pm = re.search(r"pipelines/(\d+)", receipt["urls"]["referenced_pipeline_url"])
+        if pm:
+            canonical_pipeline = pm.group(1)
+
+    canonical_issue = "62"
+    if receipt.get("urls", {}).get("issue_url"):
+        im = re.search(r"/(?:issues|work_items)/(\d+)", receipt["urls"]["issue_url"])
+        if im:
+            canonical_issue = im.group(1)
+
+    canonical_revision = release.get("revision") or receipt.get("deployment", {}).get("cloud_run_revision") or "faultforge-checkout-00050-keq"
+    canonical_stable = "faultforge-checkout-00002-kpl"
+
+    permitted_pipelines = {canonical_pipeline, "2982289232"} if canonical_pipeline else {"2982289232"}
+
+    # 3. Check markdown files
+    md_files = [readme_path]
+    if os.path.exists(docs_dir):
+        for root, _, files in os.walk(docs_dir):
+            for f in files:
+                if f.endswith(".md"):
+                    md_files.append(os.path.join(root, f))
+
+    for mdp in md_files:
+        if not os.path.exists(mdp):
+            continue
+        with open(mdp, "r", encoding="utf-8", errors="ignore") as fp:
+            lines = fp.readlines()
+
+        for line_num, line in enumerate(lines, 1):
+            cl = line.strip()
+            if not cl or cl.startswith("<!--"):
+                continue
+
+            # Check job enforcement claims: "enforced by / runs in <job or script>"
+            job_cites = re.finditer(r'(?:enforced by|runs in|enforces|Stage)\s+[`\']?([a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+)[`\']?', cl, re.I)
+            for jm in job_cites:
+                job_name = jm.group(1)
+                if jobs_dict and job_name not in jobs_dict:
+                    discrepancies.append(f"{mdp}:{line_num} - Claimed CI job '{job_name}' does not exist in .gitlab-ci.yml")
+                elif jobs_dict and job_name in jobs_dict:
+                    # Look for script reference in the same sentence/line
+                    script_match = re.search(r'([a-zA-Z0-9_/-]+\.(?:py|sh|yml|yaml))', cl)
+                    if script_match:
+                        script_name = os.path.basename(script_match.group(1))
+                        # Script must be executed in that job's block
+                        if script_name not in jobs_dict[job_name]:
+                            discrepancies.append(
+                                f"{mdp}:{line_num} - Claims job '{job_name}' executes '{script_name}', but '{script_name}' is not called in {job_name}'s CI script"
+                            )
+
+            # Check for stale pipeline IDs: 2982183259, 2982435953
+            pipe_matches = re.finditer(r'pipelines/(\d{10})|\bPipeline\s+[#`]?(\d{10})', cl)
+            for pm in pipe_matches:
+                pid = pm.group(1) or pm.group(2)
+                if pid not in permitted_pipelines and pid in ("2982183259", "2982435953"):
+                    discrepancies.append(
+                        f"{mdp}:{line_num} - Cites stale pipeline ID {pid}; current verified pipeline is {canonical_pipeline}"
+                    )
+
+            # Check for stale issue numbers: #50
+            if re.search(r'\b(?:Work Item|Issue)\s+[#`]?50\b|/(?:issues|work_items)/50\b', cl, re.I):
+                discrepancies.append(
+                    f"{mdp}:{line_num} - Cites stale incident Work Item #50; must cite current issue #{canonical_issue} (root incident #42)"
+                )
+
+            # Check for stale Cloud Run revisions: 00030-dit, 00036-pih
+            rev_matches = re.finditer(r'\b(faultforge-checkout-\d{5}-[a-z]{3})\b', cl)
+            for rm in rev_matches:
+                rev = rm.group(1)
+                if rev not in (canonical_revision, canonical_stable) and rev in ("faultforge-checkout-00030-dit", "faultforge-checkout-00036-pih"):
+                    discrepancies.append(
+                        f"{mdp}:{line_num} - Cites stale Cloud Run revision '{rev}'; current revision is '{canonical_revision}'"
+                    )
+
+    return (len(discrepancies) == 0), discrepancies
 
 def validate_claims(
     readme_path: str = DEFAULT_README_PATH,
@@ -181,6 +301,14 @@ def validate_claims(
                 discrepancies.append(f"Receipt claims RECOVERED_AND_VERIFIED but has {len(not_est)} unestablished items.")
         except Exception as exc:
             discrepancies.append(f"Error reading receipt at {receipt_path}: {exc}")
+
+    # Audit CI claims and reference citations across docs
+    ci_passed, ci_discrepancies = audit_ci_claims_and_citations(
+        readme_path=readme_path,
+        receipt_path=receipt_path
+    )
+    if not ci_passed:
+        discrepancies.extend(ci_discrepancies)
 
     print("=================================================================\n")
 

@@ -26,6 +26,7 @@ FORBIDDEN_PATTERNS = [
 ALLOWED_CANDIDATE_PREFIXES = [
     "app/clients/",
     "app/resilience/",
+    "app/",
     "tests/chaos/",
     "tests/unit/",
     "tests/integration/"

@@ -76,6 +76,23 @@ def audit_forbidden_patterns() -> List[str]:
                 if "time.sleep(" in line and not line.strip().startswith("#"):
                     violations.append(f"{run_fault_path}:{idx} - Forbidden time.sleep simulation: '{line.strip()}'")
 
+    # Audit app/ codebase to guarantee zero evidence field synthesis or defaulting
+    for root, _, files in os.walk("app"):
+        for f in files:
+            if f.endswith(".py"):
+                app_path = os.path.join(root, f)
+                with open(app_path, "r", encoding="utf-8", errors="ignore") as apf:
+                    for idx, line in enumerate(apf, 1):
+                        cl = line.strip()
+                        if cl.startswith("#"):
+                            continue
+                        if "setdefault" in cl and any(k in cl for k in ("probe_", "approval_", "duo_", "identical_")):
+                            violations.append(f"{app_path}:{idx} - Forbidden evidence synthesis pattern: setdefault on receipt key: '{cl}'")
+                        if "data[" in cl and any(k in cl for k in ("probe_count", "probe_results", "approval_timestamp", "identical_replay_confirmed")):
+                            violations.append(f"{app_path}:{idx} - Forbidden evidence synthesis pattern: mutating receipt data: '{cl}'")
+                        if "CONFIRMED" in cl and ("COMPLETED" in cl or "duo_execution" in cl):
+                            violations.append(f"{app_path}:{idx} - Forbidden evidence synthesis pattern: rewriting duo status to CONFIRMED: '{cl}'")
+
     return violations
 
 def audit_flow_yaml() -> List[str]:
@@ -282,6 +299,14 @@ def audit_report_consistency(final_mode: bool = False) -> List[str]:
             deployed_tree = receipt.get("deployed_tree_sha")
             if replay_tree and deployed_tree and replay_tree != deployed_tree:
                 violations.append(f"Evidence receipt tree SHA mismatch: replay '{replay_tree}' vs deployed '{deployed_tree}'")
+
+            # Audit promotion_gate vs approval_timestamp integrity
+            appr_ts = receipt.get("approval_timestamp")
+            prom_gate = receipt.get("promotion_gate") or receipt.get("governance", {}).get("promotion_gate", "")
+            if appr_ts is not None and str(prom_gate).startswith("BLOCKED"):
+                violations.append(
+                    f"Evidence receipt integrity violation: approval_timestamp ({appr_ts}) is recorded but promotion_gate is '{prom_gate}' (must be null while blocked)"
+                )
 
             # Enforce consistency between duo_run.json and evidence_receipt.json
             duo_run_file = os.path.join(reports_dir, "duo_run.json")
@@ -510,6 +535,20 @@ def audit_sample_reports_provenance(sample_dir: str = "docs/sample_reports") -> 
                     "docs/sample_reports/README.md attributes evidence_receipt.json to job 17392416795, "
                     "but it was sealed locally on 2026-10-23 03:44 UTC"
                 )
+
+    sample_rcpt = os.path.join(sample_dir, "evidence_receipt.json")
+    if os.path.exists(sample_rcpt):
+        try:
+            with open(sample_rcpt, "r", encoding="utf-8") as rf:
+                rcpt_data = json.load(rf)
+            appr_ts = rcpt_data.get("approval_timestamp")
+            prom_gate = rcpt_data.get("promotion_gate") or rcpt_data.get("governance", {}).get("promotion_gate", "")
+            if appr_ts is not None and str(prom_gate).startswith("BLOCKED"):
+                violations.append(
+                    f"{sample_rcpt} integrity violation: approval_timestamp ({appr_ts}) is recorded but promotion_gate is '{prom_gate}' (must be null while blocked)"
+                )
+        except Exception:
+            pass
 
     return violations
 

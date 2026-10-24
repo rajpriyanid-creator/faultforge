@@ -222,3 +222,16 @@ def test_generate_receipt_refuses_verified_on_standalone_proxy(tmp_path, monkeyp
     receipt = generate_evidence_receipt(reports_dir, str(tmp_path / "receipt.json"), str(tmp_path / "receipt.md"))
     assert receipt["final_status"] != "RECOVERED_AND_VERIFIED"
     assert any("Toxiproxy" in item for item in receipt["not_established"])
+
+def test_generate_receipt_approval_timestamp_is_null_while_blocked(tmp_path, monkeypatch):
+    reports_dir = str(tmp_path / "reports")
+    os.makedirs(reports_dir, exist_ok=True)
+    git_sha = "e53f1d3576bbdf1f9adb17f012beba101f92376a"
+    monkeypatch.setenv("CI_COMMIT_SHA", git_sha)
+
+    receipt = generate_evidence_receipt(reports_dir, str(tmp_path / "receipt.json"), str(tmp_path / "receipt.md"))
+    assert receipt["promotion_gate"] in ("BLOCKED_PENDING_APPROVAL", "BLOCKED_PENDING_REVIEW", "REJECTED")
+    assert receipt["approval_timestamp"] is None
+    assert "probe_count" in receipt
+    assert "probe_results" in receipt
+    assert "passed" in receipt["probe_results"]

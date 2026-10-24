@@ -49,12 +49,12 @@ def test_local_gate_controller_lifecycle(tmp_path, monkeypatch):
     assert APPROVE_FILE.exists()
     assert not ROLLBACK_FILE.exists()
 
-    # 3. Rollback gate -> APPROVE file removed, ROLLBACK created
+    # 3. Rollback gate -> ROLLBACK file created, APPROVE removed
     cmd_rollback()
     assert not APPROVE_FILE.exists()
     assert ROLLBACK_FILE.exists()
 
-    # 4. Stop gate -> clean state
+    # 4. Stop gate -> all cleaned up
     cmd_stop()
     assert not APPROVE_FILE.exists()
     assert not ROLLBACK_FILE.exists()

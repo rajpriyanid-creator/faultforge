@@ -42,23 +42,9 @@ class OrbitClient:
         return self._fallback_ast_git_resolution(target_component, commit_sha)
 
     def _query_orbit_mcp(self, target_component: str, commit_sha: Optional[str]) -> Dict[str, Any]:
-        return {
-            "resolution_path": "orbit_mcp",
-            "orbit_version": "v1-alpha",
-            "target_component": target_component,
-            "commit_sha": commit_sha or "HEAD",
-            "nodes": [
-                {"id": "checkout-service", "type": "service", "status": "monitored"},
-                {"id": target_component, "type": "client_component", "status": "regressed"},
-                {"id": "shipping-service", "type": "external_dependency", "status": "degraded"}
-            ],
-            "edges": [
-                {"source": "checkout-service", "target": target_component, "type": "invokes"},
-                {"source": target_component, "target": "shipping-service", "type": "network_call"}
-            ],
-            "blast_radius": "checkout_pipeline",
-            "confidence": "HIGH"
-        }
+        raise NotImplementedError(
+            "GitLab Duo Orbit MCP live protocol invocation is not implemented; live MCP server required."
+        )
 
     def _fallback_ast_git_resolution(self, target_component: str, commit_sha: Optional[str]) -> Dict[str, Any]:
         findings: List[Dict[str, str]] = []

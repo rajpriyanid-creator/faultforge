@@ -49,9 +49,16 @@ $$\text{Mean Reduction (\%)} = \left( \frac{\text{Baseline Mean (ms)} - \text{Ca
 $$\text{P50 Reduction (\%)} = \left( \frac{3,560.49 - 810.53}{3,560.49} \right) \times 100 = \mathbf{77.2\%}$$
 
 #### Percentile Rank Method Documentation:
-FaultForge's telemetry script `scripts/render_metrics.py` uses the standard **Nearest-Rank Method** with zero-indexed rank selection:
+FaultForge's telemetry and evaluation scripts (`scripts/run_fault.py` and `scripts/render_metrics.py`) use the **Nearest-Rank Method with zero-indexed truncation** (also known as the 0-indexed floor rank percentile convention):
 
-$$\text{Index} = \lfloor N \times P \rfloor$$
+$$\text{Rank Index} = \min(\lfloor N \times P \rfloor, N - 1)$$
+
+For example, for a candidate evaluation sample size N = 20:
+- **P50 (Median) Index:** $\lfloor 20 \times 0.50 \rfloor = 10$ (11th sorted sample element)
+- **P95 Index:** $\min(\lfloor 20 \times 0.95 \rfloor, 19) = 19$ (20th sorted sample element)
+- **P99 Index:** $\min(\lfloor 20 \times 0.99 \rfloor, 19) = 19$ (20th sorted sample element)
+
+This convention provides deterministic, integer rank selection across discrete chaos probe samples without synthesizing interpolated latency values.
 
 ### D. Maximum Latency Reduction
 $$\text{Max Reduction (\%)} = \left( \frac{3,678.92 - 814.05}{3,678.92} \right) \times 100 = \mathbf{77.9\%}$$

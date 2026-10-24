@@ -285,8 +285,8 @@
       "artifacts_details": [
         {
           "path": "reports/evidence_receipt.json",
-          "size_bytes": 14939,
-          "sha256": "08c1b2502f283599c50ebf5f2860a3362b033d46b52bd4179e0be951c50b9f46"
+          "size_bytes": 14925,
+          "sha256": "bd83b4f5de9edaab63a2ad921ea78e2e69179413f02ddb41941bc9ee17d48da7"
         }
       ],
       "timestamp": 1792835465.4772341,

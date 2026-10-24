@@ -15,7 +15,7 @@ All artifacts in this directory were generated during the execution of **GitLab 
    - Pipeline Execution Window: `2026-10-24T09:41:33Z` to `2026-10-24T09:51:11Z`
    - Automated Jobs Completed: 14 / 14 passed (100% green, including `secure:gitleaks`); human promotion gate held at `when: manual` per Supervised Autonomy policy.
    - Cloud Run Deployment: Candidate revision `faultforge-checkout-00050-keq` deployed to Google Cloud Run staging ([`https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app`](https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app)) with verified clean 90% production (`faultforge-checkout-00002-kpl`) / 10% canary traffic split.
-   - Cryptographic Seal: `4a58ba4daec1bd1313051b8b054f27bb9681da87af1878481a686f32ce8cc2d3`
+   - Cryptographic Seal: `e160243780a9d697dc26c1da6f677699ad7bc849b0332e24d970c574a74768d1`
    - App Tree Parity: `replay_tree_sha` (`5bd23d542337f74dff3320fdd8d7909c17d57e27`) matches `deployed_tree_sha` (`5bd23d542337f74dff3320fdd8d7909c17d57e27`) identically (`app_tree_matches_deployed: true`).
 
 2. **Evaluated Candidate Resilience Patch ([MR !3](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/merge_requests/3) on `fix/resilience-shipping-timeout`):**
@@ -58,7 +58,7 @@ All artifacts in this directory were generated during the execution of **GitLab 
 | `risk_classification.json` | `govern` | `36c677fb` | Pipeline [2984259115](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2984259115) (`govern:audit_receipt_and_gate`, Job 17436543228) | 2026-10-24 09:51:11 | Supervised Autonomy policy gate: classified as `MEDIUM` risk tier, requiring human outcome review. |
 | `stage_ledger.json` | All (1–9) | `36c677fb` | Pipeline [2984259115](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2984259115) (`govern:audit_receipt_and_gate`, Job 17436543228) | 2026-10-24 09:51:11 | Aggregated 9-stage empirical ledger recording atomic status and SHA-256 artifact hashes. |
 | `stage_ledger_*.json` | Stages 1–9 | `36c677fb` | Pipeline [2984259115](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2984259115) (Jobs 17436543215–17436543228) | 2026-10-24 09:51:11 | Individual per-stage ledger fragments recorded atomically during pipeline execution. |
-| `evidence_receipt.json` | `govern` | `36c677fb` | Pipeline [2984259115](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2984259115) (`govern:audit_receipt_and_gate`, Job 17436543228) | 2026-10-24 09:51:05 | Tamper-evident cryptographic receipt sealed in CI with SHA-256 `4a58ba4daec1bd1313051b8b054f27bb9681da87af1878481a686f32ce8cc2d3`. |
+ | `evidence_receipt.json` | 14,925 | `bd83b4f5de9edaab63a2ad921ea78e2e69179413f02ddb41941bc9ee17d48da7` | Pipeline [2984259115](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2984259115) (`govern:audit_receipt_and_gate`, Job 17436543228) | 2026-10-24 09:51:05 | Tamper-evident cryptographic receipt sealed in CI with SHA-256 `e160243780a9d697dc26c1da6f677699ad7bc849b0332e24d970c574a74768d1`. | 
 | `EVIDENCE_RECEIPT.md` | `govern` | `36c677fb` | Pipeline [2984259115](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2984259115) (`govern:audit_receipt_and_gate`, Job 17436543228) | 2026-10-24 09:51:11 | Human-readable rendering of the sealed evidence receipt from CI Job 17436543228. |
 
 ---

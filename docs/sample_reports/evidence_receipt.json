@@ -43,7 +43,7 @@
     "candidate_sla_breaches": 0,
     "baseline_probes": 5
   },
-  "approval_timestamp": 1792835465.4354808,
+  "approval_timestamp": null,
   "duo_execution": {
     "executed": true,
     "run_id": "9909079",
@@ -471,5 +471,5 @@
     "requires_human_approval_to_promote": true,
     "promotion_gate": "BLOCKED_PENDING_APPROVAL"
   },
-  "tamper_evident_seal_sha256": "4a58ba4daec1bd1313051b8b054f27bb9681da87af1878481a686f32ce8cc2d3"
+  "tamper_evident_seal_sha256": "e160243780a9d697dc26c1da6f677699ad7bc849b0332e24d970c574a74768d1"
 }

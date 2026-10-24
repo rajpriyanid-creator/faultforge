@@ -63,6 +63,81 @@ def test_validate_claims_passes_when_consistent(tmp_path):
         strict_all_stages=True
     ) is True
 
+def test_audit_ci_claims_fails_on_nonexistent_job(tmp_path):
+    from scripts.check_readme_claims import audit_ci_claims_and_citations
+    readme = tmp_path / "README.md"
+    readme.write_text("Enforced by nonexistent:fake_job in stage verification.\n", encoding="utf-8")
+    ci_yml = tmp_path / ".gitlab-ci.yml"
+    ci_yml.write_text("verify:job:\n  script: echo 1\n", encoding="utf-8")
+
+    passed, discrepancies = audit_ci_claims_and_citations(
+        readme_path=str(readme),
+        gitlab_ci_path=str(ci_yml),
+        docs_dir=str(tmp_path / "nonexistent_docs")
+    )
+    assert passed is False
+    assert any("does not exist in .gitlab-ci.yml" in d for d in discrepancies)
+
+def test_audit_ci_claims_fails_on_job_not_executing_script(tmp_path):
+    from scripts.check_readme_claims import audit_ci_claims_and_citations
+    readme = tmp_path / "README.md"
+    readme.write_text("Stage verify:job enforces scripts/uncalled_guard.py.\n", encoding="utf-8")
+    ci_yml = tmp_path / ".gitlab-ci.yml"
+    ci_yml.write_text("verify:job:\n  script: echo 1\n", encoding="utf-8")
+
+    passed, discrepancies = audit_ci_claims_and_citations(
+        readme_path=str(readme),
+        gitlab_ci_path=str(ci_yml),
+        docs_dir=str(tmp_path / "nonexistent_docs")
+    )
+    assert passed is False
+    assert any("not called in verify:job's CI script" in d for d in discrepancies)
+
+def test_audit_ci_claims_fails_on_stale_pipeline_id(tmp_path):
+    from scripts.check_readme_claims import audit_ci_claims_and_citations
+    readme = tmp_path / "README.md"
+    readme.write_text("Verified in Pipeline #2982183259.\n", encoding="utf-8")
+    ci_yml = tmp_path / ".gitlab-ci.yml"
+    ci_yml.write_text("job:1:\n  script: echo 1\n", encoding="utf-8")
+
+    passed, discrepancies = audit_ci_claims_and_citations(
+        readme_path=str(readme),
+        gitlab_ci_path=str(ci_yml),
+        docs_dir=str(tmp_path / "nonexistent_docs")
+    )
+    assert passed is False
+    assert any("stale pipeline ID 2982183259" in d for d in discrepancies)
+
+def test_audit_ci_claims_fails_on_stale_issue_number(tmp_path):
+    from scripts.check_readme_claims import audit_ci_claims_and_citations
+    readme = tmp_path / "README.md"
+    readme.write_text("Tracks Incident Work Item #50 in CI.\n", encoding="utf-8")
+    ci_yml = tmp_path / ".gitlab-ci.yml"
+    ci_yml.write_text("job:1:\n  script: echo 1\n", encoding="utf-8")
+
+    passed, discrepancies = audit_ci_claims_and_citations(
+        readme_path=str(readme),
+        gitlab_ci_path=str(ci_yml),
+        docs_dir=str(tmp_path / "nonexistent_docs")
+    )
+    assert passed is False
+    assert any("stale incident Work Item #50" in d for d in discrepancies)
+
+def test_audit_ci_claims_fails_on_stale_cloud_run_revision(tmp_path):
+    from scripts.check_readme_claims import audit_ci_claims_and_citations
+    readme = tmp_path / "README.md"
+    readme.write_text("Deployed revision faultforge-checkout-00030-dit to staging.\n", encoding="utf-8")
+    ci_yml = tmp_path / ".gitlab-ci.yml"
+    ci_yml.write_text("job:1:\n  script: echo 1\n", encoding="utf-8")
+
+    passed, discrepancies = audit_ci_claims_and_citations(
+        readme_path=str(readme),
+        gitlab_ci_path=str(ci_yml),
+        docs_dir=str(tmp_path / "nonexistent_docs")
+    )
+    assert passed is False
+    assert any("stale Cloud Run revision 'faultforge-checkout-00030-dit'" in d for d in discrepancies)
+
 def test_validate_claims_fails_when_inflated_claim(tmp_path):
     # README claims bare SUCCESS for release, but ledger says SKIPPED
     inflated_readme = SAMPLE_README.replace("⚠️ SKIPPED (no GCP credentials)", "✅ SUCCESS")
@@ -180,3 +255,78 @@ def test_validate_claims_passes_when_create_marked_partial_in_ledger(tmp_path):
         receipt_path=str(receipt_file),
         strict_all_stages=True
     ) is True
+
+def test_audit_ci_claims_fails_on_nonexistent_job(tmp_path):
+    from scripts.check_readme_claims import audit_ci_claims_and_citations
+    readme = tmp_path / "README.md"
+    readme.write_text("Enforced by nonexistent:fake_job in stage verification.\n", encoding="utf-8")
+    ci_yml = tmp_path / ".gitlab-ci.yml"
+    ci_yml.write_text("verify:job:\n  script: echo 1\n", encoding="utf-8")
+
+    passed, discrepancies = audit_ci_claims_and_citations(
+        readme_path=str(readme),
+        gitlab_ci_path=str(ci_yml),
+        docs_dir=str(tmp_path / "nonexistent_docs")
+    )
+    assert passed is False
+    assert any("does not exist in .gitlab-ci.yml" in d for d in discrepancies)
+
+def test_audit_ci_claims_fails_on_job_not_executing_script(tmp_path):
+    from scripts.check_readme_claims import audit_ci_claims_and_citations
+    readme = tmp_path / "README.md"
+    readme.write_text("Stage verify:job enforces scripts/uncalled_guard.py.\n", encoding="utf-8")
+    ci_yml = tmp_path / ".gitlab-ci.yml"
+    ci_yml.write_text("verify:job:\n  script: echo 1\n", encoding="utf-8")
+
+    passed, discrepancies = audit_ci_claims_and_citations(
+        readme_path=str(readme),
+        gitlab_ci_path=str(ci_yml),
+        docs_dir=str(tmp_path / "nonexistent_docs")
+    )
+    assert passed is False
+    assert any("not called in verify:job's CI script" in d for d in discrepancies)
+
+def test_audit_ci_claims_fails_on_stale_pipeline_id(tmp_path):
+    from scripts.check_readme_claims import audit_ci_claims_and_citations
+    readme = tmp_path / "README.md"
+    readme.write_text("Verified in Pipeline #2982183259.\n", encoding="utf-8")
+    ci_yml = tmp_path / ".gitlab-ci.yml"
+    ci_yml.write_text("job:1:\n  script: echo 1\n", encoding="utf-8")
+
+    passed, discrepancies = audit_ci_claims_and_citations(
+        readme_path=str(readme),
+        gitlab_ci_path=str(ci_yml),
+        docs_dir=str(tmp_path / "nonexistent_docs")
+    )
+    assert passed is False
+    assert any("stale pipeline ID 2982183259" in d for d in discrepancies)
+
+def test_audit_ci_claims_fails_on_stale_issue_number(tmp_path):
+    from scripts.check_readme_claims import audit_ci_claims_and_citations
+    readme = tmp_path / "README.md"
+    readme.write_text("Tracks Incident Work Item #50 in CI.\n", encoding="utf-8")
+    ci_yml = tmp_path / ".gitlab-ci.yml"
+    ci_yml.write_text("job:1:\n  script: echo 1\n", encoding="utf-8")
+
+    passed, discrepancies = audit_ci_claims_and_citations(
+        readme_path=str(readme),
+        gitlab_ci_path=str(ci_yml),
+        docs_dir=str(tmp_path / "nonexistent_docs")
+    )
+    assert passed is False
+    assert any("stale incident Work Item #50" in d for d in discrepancies)
+
+def test_audit_ci_claims_fails_on_stale_cloud_run_revision(tmp_path):
+    from scripts.check_readme_claims import audit_ci_claims_and_citations
+    readme = tmp_path / "README.md"
+    readme.write_text("Deployed revision faultforge-checkout-00030-dit to staging.\n", encoding="utf-8")
+    ci_yml = tmp_path / ".gitlab-ci.yml"
+    ci_yml.write_text("job:1:\n  script: echo 1\n", encoding="utf-8")
+
+    passed, discrepancies = audit_ci_claims_and_citations(
+        readme_path=str(readme),
+        gitlab_ci_path=str(ci_yml),
+        docs_dir=str(tmp_path / "nonexistent_docs")
+    )
+    assert passed is False
+    assert any("stale Cloud Run revision 'faultforge-checkout-00030-dit'" in d for d in discrepancies)
