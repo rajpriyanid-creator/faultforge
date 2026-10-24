@@ -83,7 +83,7 @@ create:duo_remediation_mr:
     - pip install -r requirements.txt
     - git fetch origin --tags
     - git checkout baseline-v0.1.0 -- app/
-    - BASELINE_SHA=$(git rev-parse baseline-v0.1.0 2>/dev/null || git rev-parse HEAD~1 2>/dev/null || echo "578689ad048f3bfdff9754dcd391e33c5f73b38e")
+    - BASELINE_SHA=$(git rev-parse baseline-v0.1.0)
     - python scripts/start_toxiproxy.py
     - python -m uvicorn stub.mock_shipping_api:app --host 127.0.0.1 --port 8081 &
     - python -m uvicorn app.main:app --host 127.0.0.1 --port 8090 &
