@@ -251,7 +251,7 @@ package:container_build:
     - mkdir -p reports
     - DEPLOYED_TREE_SHA=$(git rev-parse HEAD:app)
     - echo "$DEPLOYED_TREE_SHA" > reports/deployed_tree_sha.txt
-    - echo "[+] Deployed app/ tree SHA: $DEPLOYED_TREE_SHA"
+    - 'echo "[+] Deployed app/ tree SHA: $DEPLOYED_TREE_SHA"'
     - |
       if [ -n "$CI_REGISTRY_USER" ] && [ -n "$CI_REGISTRY_PASSWORD" ]; then
         echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
