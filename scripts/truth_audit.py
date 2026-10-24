@@ -650,53 +650,59 @@ def audit_docs_claims() -> List[str]:
         0.0, 10.0, 90.0, 100.0, 1500.0, 800.0, 3500.0, 250.0,
         60.0, 80.0, 685.95, 1496.73, 5.0, 6.0
     }
-    for v in raw_metrics.values():
-        if isinstance(v, (int, float)):
-            evidence_nums.add(round(float(v), 2))
-    for v in reductions.values():
-        if isinstance(v, dict):
-            for sub_v in v.values():
-                if isinstance(sub_v, (int, float)):
-                    evidence_nums.add(round(float(sub_v), 2))
-                    evidence_nums.add(round(float(sub_v), 1))
 
-    if baseline_data:
-        b_lats = baseline_data.get("metrics", {}).get("latencies_ms", [])
-        if b_lats:
-            evidence_nums.add(round(min(b_lats), 2))
-            evidence_nums.add(round(max(b_lats), 2))
-            mean_b = sum(b_lats) / len(b_lats)
-            evidence_nums.add(round(mean_b, 2))
-            var_b = sum((x - mean_b) ** 2 for x in b_lats) / (len(b_lats) - 1)
-            evidence_nums.add(round(var_b, 2))
-            evidence_nums.add(round(var_b ** 0.5, 2))
-
-    hardened_path = "reports/fault_run_hardened.json"
-    if not os.path.exists(hardened_path):
-        hardened_path = "docs/sample_reports/fault_run_hardened.json"
-    if os.path.exists(hardened_path):
+    def add_evidence_numbers_from_file(file_path: str):
+        if not os.path.exists(file_path):
+            return
+        import math
         try:
-            with open(hardened_path, "r", encoding="utf-8") as hf:
-                h_data = json.load(hf)
-            h_lats = h_data.get("metrics", {}).get("latencies_ms", [])
-            if h_lats:
-                import math
-                evidence_nums.add(round(min(h_lats), 2))
-                evidence_nums.add(round(max(h_lats), 2))
-                mean_h = sum(h_lats) / len(h_lats)
-                evidence_nums.add(round(mean_h, 2))
-                var_h = sum((x - mean_h) ** 2 for x in h_lats) / (len(h_lats) - 1)
-                evidence_nums.add(round(var_h, 2))
-                evidence_nums.add(round(var_h ** 0.5, 2))
-                if len(h_lats) >= 12:
-                    p_a = h_lats[:12]
-                    evidence_nums.add(round(sum(p_a) / len(p_a), 2))
-                    evidence_nums.add(round(sorted(p_a)[math.floor(len(p_a) * 0.95)], 2))
-                    p_b = h_lats[12:]
-                    evidence_nums.add(round(sum(p_b) / len(p_b), 2))
-                    evidence_nums.add(round(sorted(p_b)[math.floor(len(p_b) * 0.95)], 2))
+            with open(file_path, "r", encoding="utf-8") as f:
+                d = json.load(f)
         except Exception:
-            pass
+            return
+
+        # raw_metrics and reductions (from replay_evaluation)
+        for v in d.get("raw_metrics", {}).values():
+            if isinstance(v, (int, float)):
+                evidence_nums.add(round(float(v), 2))
+        for v in d.get("latency_reduction", {}).values():
+            if isinstance(v, dict):
+                for sub_v in v.values():
+                    if isinstance(sub_v, (int, float)):
+                        evidence_nums.add(round(float(sub_v), 2))
+                        evidence_nums.add(round(float(sub_v), 1))
+        for v in d.get("gates", {}).values():
+            if isinstance(v, dict):
+                for sub_v in v.values():
+                    if isinstance(sub_v, (int, float)):
+                        evidence_nums.add(round(float(sub_v), 2))
+
+        # latencies from fault runs
+        lats = d.get("metrics", {}).get("latencies_ms", [])
+        if not lats and "per_request_results" in d:
+            lats = [r.get("latency_ms") for r in d["per_request_results"] if isinstance(r.get("latency_ms"), (int, float))]
+
+        if lats:
+            evidence_nums.add(round(min(lats), 2))
+            evidence_nums.add(round(max(lats), 2))
+            mean_v = sum(lats) / len(lats)
+            evidence_nums.add(round(mean_v, 2))
+            if len(lats) > 1:
+                var_v = sum((x - mean_v) ** 2 for x in lats) / (len(lats) - 1)
+                evidence_nums.add(round(var_v, 2))
+                evidence_nums.add(round(math.sqrt(var_v), 2))
+            if len(lats) >= 12:
+                p_a = lats[:12]
+                evidence_nums.add(round(sum(p_a) / len(p_a), 2))
+                evidence_nums.add(round(sorted(p_a)[math.floor(len(p_a) * 0.95)], 2))
+            if len(lats) >= 20:
+                p_b = lats[12:]
+                evidence_nums.add(round(sum(p_b) / len(p_b), 2))
+                evidence_nums.add(round(sorted(p_b)[math.floor(len(p_b) * 0.95)], 2))
+
+    for base_dir in ["docs/sample_reports", "reports"]:
+        for report_name in ["replay_evaluation.json", "fault_run_baseline.json", "fault_run_hardened.json"]:
+            add_evidence_numbers_from_file(os.path.join(base_dir, report_name))
 
     for doc in all_markdown_files:
         if not os.path.exists(doc):
