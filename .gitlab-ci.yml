@@ -179,7 +179,10 @@ verify:exact_fault_replay_proof:
       git fetch origin main
       echo "[+] Enforcing safety boundaries via scripts/check_forbidden_paths.py:"
       if [ -n "$CI_MERGE_REQUEST_DIFF_BASE_SHA" ]; then
-        CHANGED_FILES=$(git diff --name-only "$CI_MERGE_REQUEST_DIFF_BASE_SHA..HEAD" -- app/ tests/)
+        CHANGED_FILES=$(git diff --name-status "$CI_MERGE_REQUEST_DIFF_BASE_SHA..HEAD" -- app/ tests/)
+        echo "[+] Changed files for safety boundary check (MR automated remediation mode):"
+        echo "$CHANGED_FILES"
+        python scripts/check_forbidden_paths.py --mode automated_remediation --files $CHANGED_FILES
       else
         if git rev-parse 'baseline-v0.1.0^{commit}' >/dev/null 2>&1; then
           BASELINE_COMMIT=$(git rev-parse 'baseline-v0.1.0^{commit}')
@@ -187,10 +190,10 @@ verify:exact_fault_replay_proof:
           BASELINE_COMMIT="4ec3a5ad7fd0cc635d9546acf6974b83f7a57054"
         fi
         CHANGED_FILES=$(git diff --name-only "$BASELINE_COMMIT" "$CI_COMMIT_SHA" -- app/ tests/)
+        echo "[+] Changed files for safety boundary check:"
+        echo "$CHANGED_FILES"
+        python scripts/check_forbidden_paths.py --files $CHANGED_FILES
       fi
-      echo "[+] Changed files for safety boundary check:"
-      echo "$CHANGED_FILES"
-      python scripts/check_forbidden_paths.py --files $CHANGED_FILES
 
       if [ -f reports/duo_evidence.json ] && python -c "import json; d=json.load(open('reports/duo_evidence.json')); cs=str(d.get('candidate_source', '')).lower(); exit(0 if (cs.startswith('duo-authored') or 'commit authored by the duo service account' in cs) and d.get('source_branch') else 1)"; then
         CANDIDATE_SRC=$(python -c "import json; print(json.load(open('reports/duo_evidence.json'))['candidate_source'])")

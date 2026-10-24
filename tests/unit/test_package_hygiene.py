@@ -10,6 +10,11 @@ def test_should_exclude_rules():
     assert should_exclude("bin/toxiproxy-server.exe") is True
     assert should_exclude("__pycache__/test.pyc") is True
     assert should_exclude("reports/fault_run.json") is True
+    assert should_exclude(".coverage") is True
+    assert should_exclude(".coverage.312") is True
+    assert should_exclude("test.db") is True
+    assert should_exclude("app.sqlite3") is True
+    assert should_exclude("library.so") is True
     assert should_exclude("reports/README.md") is False
     assert should_exclude("reports/.gitkeep") is False
     assert should_exclude("app/main.py") is False

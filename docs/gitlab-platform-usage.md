@@ -87,7 +87,7 @@ Running `git diff 79348f47 e150fad -- app/clients/shipping_client.py`:
 
 ### Safety Guard Boundary and Documented Orchestration Exemptions
 To prevent automated remediation agents from tampering with critical platform boundaries or test suites, `scripts/check_forbidden_paths.py` enforces strict boundaries in CI:
-- **Automated Remediation Scope:** Duo AI and automated candidate patches are strictly restricted to `app/clients/shipping_client.py`, `app/resilience/`, and **new test additions only** under `tests/`. Edits or deletions of existing test files are strictly forbidden (`status='M'` or `status='D'` triggers a fatal gate violation).
+- **Automated Remediation Scope:** Duo AI and automated candidate patches are strictly restricted to `app/clients/shipping_client.py`, `app/resilience/`, and **new test additions only** under `tests/`. Enforced for automated MR pipelines (`--name-status`) and covered by unit tests, edits or deletions of existing test files are strictly forbidden (`status='M'` or `status='D'` triggers a fatal gate violation).
 - **Documented Human/Orchestration Exemptions:**
   1. `app/main.py` (Author: `rajpriyanid`): Human/orchestration infrastructure providing read-only evidence retrieval (`/api/v1/evidence`), health probe routing, and request timing middleware. All write methods (`POST`, `PUT`, `PATCH`, `DELETE`) are strictly forbidden and blocked.
   2. `app/dashboard.html` (Author: `FaultForge Maintainer`): Interactive client-side HTML review dashboard for evaluators and incident commanders.

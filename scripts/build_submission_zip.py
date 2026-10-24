@@ -41,8 +41,16 @@ def should_exclude(rel_path: str) -> bool:
     if any(p in EXCLUDE_DIRS for p in parts):
         return True
 
-    # Exclude binaries and caches
-    if any(normalized.endswith(ext) for ext in [".exe", ".pyc", ".pyo", ".tmp", ".log", ".zip"]):
+    # Exclude binaries, sqlite databases, caches, and test coverage artifacts
+    binary_and_cache_exts = [
+        ".exe", ".pyc", ".pyo", ".tmp", ".log", ".zip",
+        ".db", ".sqlite", ".sqlite3", ".bin", ".dat", ".so", ".dll", ".dylib"
+    ]
+    if any(normalized.endswith(ext) for ext in binary_and_cache_exts):
+        return True
+
+    # Exclude coverage database and report files
+    if any(p.startswith(".coverage") for p in parts):
         return True
 
     # Exclude secrets
