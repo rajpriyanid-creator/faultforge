@@ -5,7 +5,7 @@
 > Built for the **GitLab Transcend 2026: Life After Code** Hackathon (Path A — Start Fresh).
 
 [![Target Prize](https://img.shields.io/badge/Target_Prize-Best_Supervised_Agent_($4,000)-gold.svg)](#2-why-faultforge-wins-best-supervised-agent)
-[![Google Cloud Run](https://img.shields.io/badge/Google_Cloud_Run-Deployment_Target-blue.svg)](https://faultforge-checkout-136942862703.us-central1.run.app/dashboard)
+[![Google Cloud Run](https://img.shields.io/badge/Google_Cloud_Run-Deployment_Target-blue.svg)](https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app/dashboard)
 [![GitLab Duo Agent Platform](https://img.shields.io/badge/GitLab_Duo-Custom_Flow-orange.svg)](flows/faultforge-flow.yaml)
 [![Autonomy Model](https://img.shields.io/badge/Autonomy-Supervised-brightgreen.svg)](docs/safety-policy.md)
 [![Lifecycle Stages](https://img.shields.io/badge/Stages-9_Covered-brightgreen.svg)](.gitlab-ci.yml)
@@ -14,7 +14,8 @@
 > [!NOTE]
 > **Google Cloud Run Deployment Target:**  
 > Cloud Run candidate deployment verified in CI: revision staged with 10% canary traffic split (verified via live_verification.json).  
-> 🌐 **Interactive Dashboard:** [https://faultforge-checkout-136942862703.us-central1.run.app/dashboard](https://faultforge-checkout-136942862703.us-central1.run.app/dashboard)  
+> 🌐 **Interactive Dashboard (Candidate Healed Release):** [https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app/dashboard](https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app/dashboard)  
+> 🌐 **Interactive Dashboard (Production Baseline):** [https://faultforge-checkout-136942862703.us-central1.run.app/dashboard](https://faultforge-checkout-136942862703.us-central1.run.app/dashboard)  
 > 🩺 **Live Health Probe (Production):** [https://faultforge-checkout-136942862703.us-central1.run.app/health](https://faultforge-checkout-136942862703.us-central1.run.app/health) — *stable baseline (unpatched, serves the baseline revision by design; the supervised promotion gate is still pending).* Production's `/api/v1/evidence` returns the sealed receipt baked into the image of the running revision, which records that image's build pipeline and does not mean production has been promoted; the candidate URL is the evidence of record.  
 > 📜 **Cryptographic Evidence Receipt:** [https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app/api/v1/evidence](https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app/api/v1/evidence)  
 > 🔗 **9-Stage Cryptographic Ledger:** [https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app/api/v1/ledger](https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app/api/v1/ledger)  
@@ -121,7 +122,7 @@ flowchart TD
         G2 --> G3["3. AST & Git Bisect Culprit (974035c)"]
         G3 --> G4["4. Scoped 0.8s Timeout & Fallback Patch"]
         G4 --> G5["5. Risk Policy Check (MEDIUM Tier, Supervised Gate)"]
-        G5 --> G6["6. Unit & Integration Tests (137 Passed)"]
+        G5 --> G6["6. Unit & Integration Tests (173 Passed in CI / 180 in Archive)"]
         G6 --> G7["7. Exact-Fault Replay (10/10 Passed under 644a89784316)"]
         G7 --> G8["8. Bandit Static AST Security Scan"]
         G8 --> G9["9. Hardened Multi-Stage Docker Build"]
@@ -218,7 +219,7 @@ FaultForge implements real, testable operations with machine-readable artifacts 
 | **Govern** | `govern:audit_receipt_and_gate` + `govern:promote_to_production` | [`reports/evidence_receipt.json`](docs/sample_reports/evidence_receipt.json) | SHA-256 sealed cryptographic receipt and Supervised human approval gate for production traffic promotion. |
 
 #### GitLab Duo Code Provenance: What Duo Wrote vs. What Was Evaluated
-A Duo-authored fix was merged (with the following later edits: syntactic refactoring in commit `e150fad` by FaultForge Agent), and the merged result was evaluated. According to Git and GitLab author metadata, the resilience commits `f8aa9d98` (initial fix), `d372014` (refinement), and candidate branch head `79348f4` were authored by the GitLab Duo service account (`FaultForge, Supervised, Resilience, Healer <service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com>`) on branch `fix/resilience-shipping-timeout`. Branch merge commit `3294042` was authored by FaultForge Agent (`FaultForge Agent <agent@faultforge.internal>`) to synchronize `main` into the branch (bringing in `app/dashboard.html`). Merge commit `e150fad` was authored by FaultForge Agent (`FaultForge Agent <agent@faultforge.internal>`) to merge the Duo resilience patch into `main`, applying syntactic refactorings (`app/clients/shipping_client.py`: 1 file changed, 18 insertions(+), 30 deletions(-): explicit `connect` timeout parameter, direct settings check, and error logging). The candidate evaluated by the replay in `fault_run_hardened.json` and the empirical evidence in `docs/sample_reports/` comes from CI pipeline [#2984589851](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2984589851) on commit `d75de80a` (on `main`), while the archive HEAD is `80084d5` (and subsequent documentation and truth audit polish commits); the application code tree `app/` across both commits is 100% byte-for-byte identical (tree SHA `de7c0b1cc7d6b7edb90c6b3041b10885ea702492`), exactly matching the deployed Cloud Run container image.
+A Duo-authored fix was merged (with the following later edits: syntactic refactoring in commit `e150fad` by FaultForge Agent), and the merged result was evaluated. According to Git and GitLab author metadata, the resilience commits `f8aa9d98` (initial fix), `d372014` (refinement), and candidate branch head `79348f4` were authored by the GitLab Duo service account (`FaultForge, Supervised, Resilience, Healer <service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com>`) on branch `fix/resilience-shipping-timeout`. Branch merge commit `3294042` was authored by FaultForge Agent (`FaultForge Agent <agent@faultforge.internal>`) to synchronize `main` into the branch (bringing in `app/dashboard.html`). Merge commit `e150fad` was authored by FaultForge Agent (`FaultForge Agent <agent@faultforge.internal>`) to merge the Duo resilience patch into `main`, applying syntactic refactorings (`app/clients/shipping_client.py`: 1 file changed, 18 insertions(+), 30 deletions(-): explicit `connect` timeout parameter, direct settings check, and error logging). The candidate evaluated by the replay in `fault_run_hardened.json` and the empirical evidence in `docs/sample_reports/` comes from CI pipeline [#2984589851](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2984589851) on commit `d75de80a` (on `main`), while the archive HEAD is `8a9fedd` (and subsequent documentation and truth audit polish commits); the application code tree `app/` across both commits is 100% byte-for-byte identical (tree SHA `de7c0b1cc7d6b7edb90c6b3041b10885ea702492`), exactly matching the deployed Cloud Run container image.
 
 #### Replay-to-Deploy App Tree Parity Gate
 To ensure the exact `app/` tree that passes the exact-fault replay proof is the tree built into the production container and deployed to Cloud Run, CI enforces a cryptographic tree hash parity gate (`scripts/verify_tree_parity.py`). Replay and packaging record `git rev-parse HEAD:app` (`de7c0b1cc7d6b7edb90c6b3041b10885ea702492`). If tree hashes diverge, deployment is blocked. The receipt records top-level `replay_tree_sha`, `deployed_tree_sha`, and `app_tree_matches_deployed: true`.
@@ -327,6 +328,12 @@ If evaluating the Supervised Human Gate and instant rollback without Google Clou
 | **Circuit Breaker State** | N/A (cascading thread starvation) | Phase A (CLOSED (reset each probe)) & Phase B (OPEN (8 of 20 short-circuited)) | Downstream protected | **Measured** |
 | **Fallback Observability** | None (returned 200 after ~3.5 s, breaching the 1,500 ms SLA) | `is_fallback: true`, `is_estimate: true` | Zero dropped checkouts (local fallback estimate) | **Measured** |
 | **Incident MTTR (Mean Time to Recovery)** | ~45 minutes (industry manual response) | < 90 seconds (autonomous agent flow) | Design target, not measured | **Design target, not measured** |
+
+### Visual Resilience Dashboard & Live Workbench Verification
+
+The interactive dashboard (served live at [`https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app/dashboard`](https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app/dashboard)) exposes real-time telemetry, live checkout transaction execution under active resilience policies, side-by-side failure vs. recovery metrics, and the 11 Supervised Governance quality checks:
+
+![FaultForge Candidate Resilience Dashboard & Transaction Workbench](docs/images/dashboard_candidate.png)
 
 ---
 

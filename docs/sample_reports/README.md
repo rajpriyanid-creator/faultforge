@@ -6,7 +6,7 @@ These sample reports document the complete empirical evidence lifecycle of Fault
 
 ## 1. Commit SHA & Multi-Stage Provenance Architecture
 
-> **Commit Provenance Note:** All sample evidence in `docs/sample_reports/` was generated during CI Pipeline [#2984589851](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2984589851) running on commit `d75de80a4242637bdf354f3b0631f4762c2f1f0e` (evaluating candidate commit `d75de80a4242637bdf354f3b0631f4762c2f1f0e` with merged Duo resilience fix against baseline `4ec3a5ad7fd0cc635d9546acf6974b83f7a57054`). While the repository submission archive HEAD is `80084d5` (and subsequent documentation/audit polish commits), the application code tree `app/` is 100% byte-for-byte identical (tree SHA `de7c0b1cc7d6b7edb90c6b3041b10885ea702492`).
+> **Commit Provenance Note:** All sample evidence in `docs/sample_reports/` was generated during CI Pipeline [#2984589851](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2984589851) running on commit `d75de80a4242637bdf354f3b0631f4762c2f1f0e` (evaluating candidate commit `d75de80a4242637bdf354f3b0631f4762c2f1f0e` with merged Duo resilience fix against baseline `4ec3a5ad7fd0cc635d9546acf6974b83f7a57054`). While the repository submission archive HEAD is `8a9fedd` (and subsequent documentation/audit polish commits), the application code tree `app/` is 100% byte-for-byte identical (tree SHA `de7c0b1cc7d6b7edb90c6b3041b10885ea702492`).
 
 All artifacts in this directory were generated during the execution of **GitLab CI Pipeline [#2984589851](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2984589851)** on the `main` branch, or reflect reference pipelines:
 
