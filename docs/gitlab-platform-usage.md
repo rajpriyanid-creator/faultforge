@@ -85,6 +85,14 @@ Running `git diff 79348f47 e150fad -- app/clients/shipping_client.py`:
   4. Logging statements use `logger.error` rather than `logger.warning`, and error message strings differ slightly (e.g. `"Upstream HTTP {code}"` vs `"Shipping dependency HTTP {code}"`).
   None of the changes alter or relax the resilience policy or SLA timeout bounds.
 
+### Safety Guard Boundary and Documented Orchestration Exemptions
+To prevent automated remediation agents from tampering with critical platform boundaries or test suites, `scripts/check_forbidden_paths.py` enforces strict boundaries in CI:
+- **Automated Remediation Scope:** Duo AI and automated candidate patches are strictly restricted to `app/clients/shipping_client.py`, `app/resilience/`, and **new test additions only** under `tests/`. Edits or deletions of existing test files are strictly forbidden (`status='M'` or `status='D'` triggers a fatal gate violation).
+- **Documented Human/Orchestration Exemptions:**
+  1. `app/main.py` (Author: `rajpriyanid`): Human/orchestration infrastructure providing read-only evidence retrieval (`/api/v1/evidence`), health probe routing, and request timing middleware. All write methods (`POST`, `PUT`, `PATCH`, `DELETE`) are strictly forbidden and blocked.
+  2. `app/dashboard.html` (Author: `FaultForge Maintainer`): Interactive client-side HTML review dashboard for evaluators and incident commanders.
+  3. `app/clients/orbit_client.py` (Author: `FaultForge Maintainer`): Forward-compatible client stub for GitLab Duo Orbit MCP integration, providing deterministic fallback to AST call-site inspection and git bisecting (`resolution_path: "fallback_ast_git"`).
+
 ### Verified Deployment Status:
 1. **Cloud Run Candidate Deployment:** `VERIFIED (SUCCESS)`  
    - *Status:* Candidate revision (`faultforge-checkout-00068-gaw`) actively deployed to Google Cloud Run staging in `us-central1` via CI stage `release:cloudrun_candidate_deploy` (`reports/release.json` status `STAGED`).

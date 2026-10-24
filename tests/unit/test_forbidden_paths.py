@@ -31,9 +31,38 @@ def test_validate_changed_files_passes_on_valid_scope():
     files = [
         "app/clients/shipping_client.py",
         "app/resilience/policy.py",
-        "tests/chaos/test_resilience.py"
+        "A tests/unit/test_new_resilience.py"
     ]
     assert validate_changed_files(files) is True
+
+def test_automated_remediation_allows_adding_tests():
+    files = [
+        "app/clients/shipping_client.py",
+        "A tests/unit/test_duo_resilience.py"
+    ]
+    assert validate_changed_files(files) is True
+
+def test_automated_remediation_forbids_modifying_existing_tests():
+    files = [
+        "app/clients/shipping_client.py",
+        "M tests/chaos/test_resilience.py"
+    ]
+    assert validate_changed_files(files) is False
+
+def test_automated_remediation_forbids_deleting_existing_tests():
+    files = [
+        "app/clients/shipping_client.py",
+        "D tests/unit/test_shipping_client.py"
+    ]
+    assert validate_changed_files(files) is False
+
+def test_automated_remediation_mode_flag_forbids_modifying_tracked_tests():
+    # In automated remediation mode, existing tracked test files without status prefix are recognized as modifications
+    assert validate_changed_files(["tests/chaos/test_resilience.py"], mode="automated_remediation") is False
+
+def test_automated_remediation_mode_flag_allows_new_untracked_tests():
+    # In automated remediation mode, newly added test files are permitted
+    assert validate_changed_files(["tests/unit/test_completely_new_proof.py"], mode="automated_remediation") is True
 
 def test_validate_changed_files_fails_on_forbidden():
     files = [

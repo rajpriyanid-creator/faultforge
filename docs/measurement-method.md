@@ -49,16 +49,23 @@ $$\text{Mean Reduction (\%)} = \left( \frac{\text{Baseline Mean (ms)} - \text{Ca
 $$\text{P50 Reduction (\%)} = \left( \frac{3,647.69 - 810.55}{3,647.69} \right) \times 100 = \mathbf{77.8\%}$$
 
 #### Percentile Rank Method Documentation:
-FaultForge's telemetry and evaluation scripts (`scripts/run_fault.py` and `scripts/render_metrics.py`) use the **Nearest-Rank Method with zero-indexed truncation** (also known as the 0-indexed floor rank percentile convention):
+FaultForge's telemetry and evaluation scripts (`scripts/run_fault.py` and `scripts/render_metrics.py`) use the **Nearest-Rank Method** with 0-indexed integer truncation:
 
-$$\text{Rank Index} = \min(\lfloor N \times P \rfloor, N - 1)$$
+$$\text{Rank Index} = \min(\lfloor N \times q \rfloor, N - 1) = \text{sorted}[\text{int}(N \times q)]$$
 
-For example, for a candidate evaluation sample size N = 20:
-- **P50 (Median) Index:** $\lfloor 20 \times 0.50 \rfloor = 10$ (11th sorted sample element)
-- **P95 Index:** $\min(\lfloor 20 \times 0.95 \rfloor, 19) = 19$ (20th sorted sample element)
-- **P99 Index:** $\min(\lfloor 20 \times 0.99 \rfloor, 19) = 19$ (20th sorted sample element)
+Where $q \in (0, 1]$ represents the percentile quantile (e.g. $q = 0.50$ for P50, $q = 0.95$ for P95). This convention provides deterministic integer rank selection across discrete chaos probe samples without synthesizing interpolated latency values.
 
-This convention provides deterministic, integer rank selection across discrete chaos probe samples without synthesizing interpolated latency values.
+#### Empirical Behavior at $N = 20$ (Candidate Replay):
+For candidate replay sample size $N = 20$:
+- **P50 (Median) Selection:** $\text{int}(20 \times 0.50) = 10$, selecting the 11th sorted element `sorted[10] = 810.55 ms`. In an even sample size ($N = 20$), the two central values are `sorted[9] = 810.04 ms` (lower-middle) and `sorted[10] = 810.55 ms` (upper-middle). The nearest-rank method selects the upper-middle value.
+  - **True Median Alongside:** The standard interpolated mathematical median $\frac{\text{sorted}[9] + \text{sorted}[10]}{2} = \frac{810.04 + 810.55}{2} = \mathbf{810.30\text{ ms}}$ (a difference of merely $0.25\text{ ms}$ or $0.03\%$).
+- **P95 Selection:** $\min(\text{int}(20 \times 0.95), 19) = 19$, selecting `sorted[19] = 813.32 ms`. Because $20 \times 0.95 = 19$, at $N = 20$ the 95th percentile rank **equals the maximum recorded probe latency** ($813.32\text{ ms}$).
+- **P99 Selection:** $\min(\text{int}(20 \times 0.99), 19) = 19$, also selecting the maximum element `sorted[19] = 813.32 ms`.
+
+#### Empirical Behavior at $N = 5$ (Baseline Run):
+For baseline sample size $N = 5$:
+- **P50 (Median) Selection:** $\text{int}(5 \times 0.50) = 2$, selecting `sorted[2] = 3,647.69 ms`. Because $N = 5$ is odd, index 2 is the exact central value; the nearest-rank P50 and true median are identical ($\mathbf{3,647.69\text{ ms}}$).
+- **P95 Selection:** $\min(\text{int}(5 \times 0.95), 4) = 4$, selecting `sorted[4] = 3,699.48 ms`, which likewise equals the baseline maximum recorded latency ($3,699.48\text{ ms}$).
 
 ### D. Maximum Latency Reduction
 $$\text{Max Reduction (\%)} = \left( \frac{3,699.48 - 813.32}{3,699.48} \right) \times 100 = \mathbf{78.0\%}$$
