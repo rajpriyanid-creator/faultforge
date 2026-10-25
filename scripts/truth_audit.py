@@ -619,7 +619,6 @@ def audit_docs_claims() -> List[str]:
         "docs/measurement-method.md",
         "docs/safety-policy.md",
         "docs/hackathon-submission.md",
-        "docs/demo-script.md",
     ]
     # Dynamically scan all markdown files under docs/ for stale figures
     all_markdown_files = list(core_doc_files)
