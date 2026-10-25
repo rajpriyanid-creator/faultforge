@@ -150,6 +150,7 @@ FaultForge is designed to cover all 9 stages of the software delivery lifecycle 
 ---
 
 ### 6. Key Documentation Links
+- **Demo Walkthrough Video:** [https://youtu.be/J_SI6_tIsdU](https://youtu.be/J_SI6_tIsdU) (2m 44s, Sarvam AI Voiceover)
 - **Devpost Submission Guide:** [`docs/hackathon-submission.md`](docs/hackathon-submission.md)
 - **Sub-3 Minute Video Script:** [`docs/demo-script.md`](docs/demo-script.md)
 - **Supervised Agent Architecture:** [`AGENTS.md`](AGENTS.md)

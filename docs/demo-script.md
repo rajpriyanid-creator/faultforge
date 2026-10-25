@@ -1,8 +1,10 @@
 # FaultForge Demo Video Script (< 3 Minutes)
 ## GitLab Transcend 2026: Life After Code
 
+🎬 **Official YouTube Video:** **[https://youtu.be/J_SI6_tIsdU](https://youtu.be/J_SI6_tIsdU)** (Duration: 2m 44s)  
+🎙️ **Neural Voiceover:** Synthesized via Sarvam AI `bulbul:v4-flash` (`shubh_en_narration`)  
 **Working Concept:** Rehearse a failure. Recover safely. Prove the service is stronger.  
-**Target Video Duration:** 2 minutes 50 seconds  
+**Target Video Duration:** 2 minutes 44 seconds  
 **Track:** Path A — Start Fresh  
 **Autonomy Level:** Supervised Autonomy  
 

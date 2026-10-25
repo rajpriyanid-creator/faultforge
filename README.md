@@ -11,12 +11,14 @@
 [![Opt-In: Environmental Impact](https://img.shields.io/badge/Opt--In-Environmentally_Impactful_($5,000)-forestgreen.svg)](#4-most-environmentally-impactful-either-path--5000-opt-in)
 [![Google Cloud Run](https://img.shields.io/badge/Google_Cloud_Run-Deployment_Bonus_(+0.2)-blue.svg)](https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app/dashboard)
 [![GitLab Duo Agent Platform](https://img.shields.io/badge/GitLab_Duo-Custom_Flow-orange.svg)](flows/faultforge-flow.yaml)
+[![YouTube Demo](https://img.shields.io/badge/Demo_Video-YouTube_(2m_44s)-red.svg?logo=youtube)](https://youtu.be/J_SI6_tIsdU)
 [![Autonomy Model](https://img.shields.io/badge/Autonomy-Supervised-brightgreen.svg)](docs/safety-policy.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 > [!NOTE]
-> **Google Cloud Run Deployment Target:**  
+> **Google Cloud Run Deployment Target & Live Assets:**  
 > Cloud Run candidate deployment verified in CI: revision staged with 10% canary traffic split (verified via live_verification.json).  
+> 🎬 **Official Demo Walkthrough (2m 44s):** [https://youtu.be/J_SI6_tIsdU](https://youtu.be/J_SI6_tIsdU)  
 > 🌐 **Interactive Dashboard (Candidate Healed Release):** [https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app/dashboard](https://candidate---faultforge-checkout-tiottsrikq-uc.a.run.app/dashboard)  
 > 🌐 **Interactive Dashboard (Production Baseline):** [https://faultforge-checkout-136942862703.us-central1.run.app/dashboard](https://faultforge-checkout-136942862703.us-central1.run.app/dashboard)  
 > 🩺 **Live Health Probe (Production):** [https://faultforge-checkout-136942862703.us-central1.run.app/health](https://faultforge-checkout-136942862703.us-central1.run.app/health) — *stable baseline (unpatched, serves the baseline revision by design; the supervised promotion gate is still pending).* Production's `/api/v1/evidence` returns the sealed receipt baked into the image of the running revision, which records that image's build pipeline and does not mean production has been promoted; the candidate URL is the evidence of record.  
@@ -29,10 +31,18 @@
 
 ## 🎥 Demo Video (Under 3 Minutes)
 
-> [!WARNING]
-> **P0 STOP-GUARD FOR SUBMISSION:** A sub-3 minute walkthrough video is a mandatory requirement for the GitLab Transcend Hackathon.
-> - **Video URL:** `[HUMAN ACTION REQUIRED — Record and paste YouTube URL here prior to submission]`
-> - **Production Script & Storyboard:** [`docs/demo-script.md`](docs/demo-script.md) (timed to 2 minutes 50 seconds covering the closed-loop break → heal → prove → approve → rollback lifecycle).
+[![FaultForge Demo Video](docs/images/thumbnail.png)](https://youtu.be/J_SI6_tIsdU)
+
+> 🎬 **Watch the Official Demo Walkthrough (2m 44s):** **[https://youtu.be/J_SI6_tIsdU](https://youtu.be/J_SI6_tIsdU)**  
+> *Voiced with Sarvam AI's latest neural speech engine (`bulbul:v4-flash`), capturing the complete break → bisect → heal → prove → govern lifecycle.*
+
+| Timestamp | Lifecycle Stage | Screen & Verification Covered |
+| :---: | :--- | :--- |
+| **`0:00 – 0:30`** | **1. Architecture & Telemetry** | Live Candidate Dashboard, 4 real-time KPI cards, and 9-stage DevSecOps banner |
+| **`0:30 – 1:07`** | **2. Chaos & Root-Cause Bisect** | Automated bisect terminal isolating culprit commit `974035c`, verified empirical latency recovery and SLA compliance |
+| **`1:07 – 1:39`** | **3. GitLab Duo Remediation** | GitLab Duo Merge Request `!3`, issue #62, diff review showing bounded `0.8s` timeout & fallback logic |
+| **`1:39 – 2:06`** | **4. Live Cloud Run Workbench** | Interactive live transaction against Google Cloud Run, 200 OK fallback alert, and machine-verifiable JSON |
+| **`2:06 – 2:44`** | **5. 9-Stage CI/CD & Governance** | Full horizontal swipe across all 9 CI stages on SaaS runners, manual gate hold, and SHA-256 seal |
 
 ---
 

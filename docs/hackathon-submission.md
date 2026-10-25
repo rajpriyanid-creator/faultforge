@@ -77,10 +77,12 @@ GitLab Duo custom flow execution on GitLab SaaS runners is tracked with complete
 
 ---
 
-## 4. Video Demonstration Outline (< 3 Minutes)
+## 4. Video Demonstration (< 3 Minutes)
 
-- **0:00 – 0:35:** Incident Issue & Baseline Failure (Toxiproxy 3500ms delay, 1500ms SLA budget breach).
-- **0:35 – 1:05:** Deterministic Regression Discovery (`git bisect` isolates commit `974035c`).
-- **1:05 – 1:45:** GitLab Duo Agent Platform Custom Flow (Diagnostician, Healer, Hardener MR).
-- **1:45 – 2:20:** 9-Stage CI/CD Pipeline & Exact-Fault Replay (10/10 passes under hash `644a89784316`, <850ms latency).
-- **2:20 – 2:50:** Supervised Governance Gate, Cloud Run Rollback & Tamper-Evident Evidence Receipt.
+- **YouTube Video URL:** **[https://youtu.be/J_SI6_tIsdU](https://youtu.be/J_SI6_tIsdU)** (Duration: 2m 44s)
+- **Neural Voiceover:** Voiced via Sarvam AI `bulbul:v4-flash` (`shubh_en_narration`).
+- **0:00 – 0:30:** Architecture, Candidate Dashboard & 4 Live Telemetry KPIs.
+- **0:30 – 1:07:** Deterministic Bisect Engine isolating culprit commit `974035c` & empirical latency recovery.
+- **1:07 – 1:39:** GitLab Duo Agent Platform MR !3 diff review (0.8s bounded timeout, circuit breaker & fallback).
+- **1:39 – 2:06:** Live Cloud Run Workbench transaction execution (200 OK fallback in 273ms, JSON trace).
+- **2:06 – 2:44:** Full 9-Stage GitLab CI/CD Lifecycle on SaaS runners, manual gate hold, and SHA-256 seal.
