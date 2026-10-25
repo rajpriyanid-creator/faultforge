@@ -399,8 +399,8 @@ In strict compliance with the **Never Fabricate Evidence** and **Claim Only What
 | **Best Supervised Agent ($4,000)** | 🟢 **GREEN** | Complete & Verified. Walkthrough video live ([https://youtu.be/J_SI6_tIsdU](https://youtu.be/J_SI6_tIsdU)); autonomous 11-step workflow, AST bisecting, and manual promotion gate verified. |
 | **Most Stages Covered ($5,000)** | 🟢 **GREEN** | Complete & Verified. Walkthrough video live; all 9 DevSecOps lifecycle stages active with verified artifacts in CI. |
 | **Most Creative ($4,000)** | 🟢 **GREEN** | Complete & Verified. Walkthrough video live; "Break It, Heal It" exact-fault replay verified under identical profile hash. |
-| **Most Environmentally Impactful ($5,000 Opt-In)** | 🟢 **GREEN** | Complete & Verified. Walkthrough video live; -86.6% compute duration reduction, SCI framework quantified, and autoscaling thrash eliminated. |
-| **Google Cloud Bonus (+0.2 Points)** | 🟢 **GREEN** | Complete & Verified. Walkthrough video live; Cloud Run live in `us-central1` with Knative canary split and rollback verified. |
+| **Most Environmentally Impactful ($5,000 Opt-In)** | 🟢 **GREEN** | Complete & Verified. Walkthrough video live; -86.6% compute duration reduction modeled under SCI framework with stated assumptions, eliminating autoscaling thrash. |
+| **Google Cloud Bonus (+0.2 Points)** | 🟢 **GREEN** | Complete & Verified. Walkthrough video live; Cloud Run live in `us-central1` with Knative canary split verified in CI; rollback command implemented and unit-tested (not executed against live service). |
 
 ### Category Alignment: Why FaultForge Fits & Wins
 
@@ -432,7 +432,8 @@ In strict compliance with the **Never Fabricate Evidence** and **Claim Only What
 
 #### 4. Most Environmentally Impactful (Either Path) ($5,000 — Opt-In Category)
 * **Competition Definition:** *"Demonstrates exceptional sustainability practices in its design, from model and pipeline optimization to energy-efficient architecture choices. Quantify the sustainability gain using the latest public measurement methodologies and SCI frameworks."*
-* **Why FaultForge Fits & Software Carbon Intensity (SCI) Quantification:**
+* **Why FaultForge Fits & Software Carbon Intensity (SCI) Modeling:**  
+  *(Note on Empirical Boundaries: Only request latency and thread duration are empirically measured in CI; energy and carbon reductions are modeled under the Green Software Foundation SCI framework based on the stated operational assumptions below).*
   - **The Problem:** Under downstream carrier latency spikes (3,500ms delay), unpatched microservices suffer cascading thread starvation. Each incoming request holds server worker threads, CPU cycles, and memory buffers open for ~3.6s, causing connection pool exhaustion and triggering cloud orchestrators (Knative / Cloud Run) to autoscale unnecessary container replicas, multiplying server idle power and carbon emissions.
   - **Operational Energy Reduction ($E$):** FaultForge's 0.8s strict timeout and circuit breaker cut mean request processing duration from 3,637.98ms down to 487.92ms (-86.6% mean latency reduction per [docs/measurement-method.md](docs/measurement-method.md)). Because CPU core-seconds and memory-seconds are reduced by **~86.6% per degraded transaction**, server energy consumption drops precipitously under degraded conditions.
   - **Embodied Carbon Allocation ($M$):** By short-circuiting failing carrier calls via circuit breaker (down to 2.35 ms min latency) during downstream outages, worker threads are instantly recycled. This prevents the synthetic load spikes that fool autoscalers into spinning up excess container instances, directly decreasing the embodied carbon allocation ($M$) of the hosting infrastructure.
@@ -440,7 +441,7 @@ In strict compliance with the **Never Fabricate Evidence** and **Claim Only What
   - **SCI Score Impact:** Under the Software Carbon Intensity specification ($\text{SCI} = \frac{E \times I + M}{R}$, where $R$ is 1 completed checkout transaction), FaultForge slashes operational energy ($E$) by ~86.6% and minimizes container replica inflation ($M$), delivering provably greener, energy-efficient microservices.
 
 #### 5. Google Cloud Deployment Target (+0.2 Bonus Points)
-* **Why FaultForge Fits:** Complete, live Google Cloud Run deployment in `us-central1` with Knative service specification ([`infra/cloudrun/service.yaml`](infra/cloudrun/service.yaml)), automated revision deployment, 90/10 canary traffic routing, and instant automated rollback ([`scripts/cloudrun_traffic.py`](scripts/cloudrun_traffic.py)).
+* **Why FaultForge Fits:** Complete, live Google Cloud Run deployment in `us-central1` with Knative service specification ([`infra/cloudrun/service.yaml`](infra/cloudrun/service.yaml)), automated revision deployment, 90/10 canary traffic routing verified in CI, and automated rollback controller implemented and unit-tested ([`scripts/cloudrun_traffic.py`](scripts/cloudrun_traffic.py)).
 
 ### Active Cloud Run Revisions & Canary Traffic Split
 
