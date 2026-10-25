@@ -81,7 +81,20 @@ Because Orbit is currently behind a feature flag for hackathon namespaces:
 ---
 
 ## 6. Code Provenance: What Duo Authored vs. What Was Evaluated
-- **Duo-Authored Commits:** Resilience commits `f8aa9d98` (initial fix), `d372014` (refinement), and candidate branch head `79348f4` were all authored by the GitLab Duo service account (`FaultForge, Supervised, Resilience, Healer <service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com>`) on branch `fix/resilience-shipping-timeout`.
-- **Branch Merge Commit:** Commit `3294042` was authored by `FaultForge Agent <agent@faultforge.internal>` to synchronize `main` into the branch (bringing in `app/dashboard.html`).
-- **Main Merge & Refactoring Commit:** Commit `e150fad` was authored by `FaultForge Agent <agent@faultforge.internal>` merging the Duo resilience patch into `main` and applying syntactic refactorings (`app/clients/shipping_client.py`: 1 file changed, 18 insertions(+), 30 deletions(-): explicit `connect` timeout parameter, direct settings check, and error logging).
-- **Evaluated Commit:** A Duo-authored fix was merged (with the following later edits: syntactic refactoring in `e150fad` by FaultForge Agent), and the merged result was evaluated in commit `d75de80a` (recorded in `fault_run_hardened.json`), achieving exact `app/` tree parity with the deployed Cloud Run container (`de7c0b1cc7d6b7edb90c6b3041b10885ea702492`).
+
+From `git log --all --author=service_account`, six commits were authored by the GitLab Duo service account (`FaultForge, Supervised, Resilience, Healer <service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com>`) on branch `fix/resilience-shipping-timeout`:
+
+| Short Commit | Full Commit SHA | Date (UTC) | Subject | GitLab Agent Session / Run |
+|---|---|---|---|:---:|
+| `f8aa9d9` | `f8aa9d98b8617b51c15b5fa6ceda39eb43762730` | 2026-10-22 17:18:48 | fix(resilience): bound shipping client with 0.8s timeout, circuit breaker and graceful fallback | Session `9909079` |
+| `d372014` | `d3720143e15c85f519a7624859541d1ce997f1a0` | 2026-10-23 15:48:38 | fix(resilience): bound shipping call to 0.8s with circuit breaker and fallback estimate | not established |
+| `fafadf8` | `fafadf8bdacf311e6ae7e34b6155b76905faa7d4` | 2026-10-23 17:13:14 | fix(resilience): bound shipping client with 0.8s timeout, circuit breaker and graceful fallback | not established |
+| `b57584a` | `b57584ae2517633d989506c1898611c9adb84760` | 2026-10-23 17:16:01 | fix(resilience): bound shipping client with 0.8s timeout, circuit breaker and graceful fallback | not established |
+| `001055b` | `001055befef13cb190f7f380b79dd371c4cdb8a3` | 2026-10-23 18:31:09 | fix(resilience): bound shipping call to 0.8s with circuit breaker and graceful fallback | not established |
+| `79348f4` | `79348f47042849465c737be2493b135a21f37e06` | 2026-10-23 18:35:09 | fix(resilience): bound shipping call to 0.8s with circuit breaker and graceful fallback | not established |
+
+### Provenance Facts
+1. **Ancestry:** None of the six service-account commits is an ancestor of `main` (`git merge-base --is-ancestor` returns `False` for all six).
+2. **Merge Request !3 Status:** Merge Request `!3` is **unmerged** (confirmed on GitLab via public API: `state: opened`, `merged_at: None`).
+3. **Main Code Authorship:** `main`'s `app/clients/shipping_client.py` was authored by FaultForge Agent in commit `e150fad` (`FaultForge Agent <agent@faultforge.internal>`) as an adapted copy of Duo's patch (1 file changed, 18 insertions(+), 30 deletions(-) vs `79348f4`), adding explicit `connect` timeouts and direct settings checks while preserving identical resilience behavior.
+4. **Evaluated Commit:** The candidate evaluated in `fault_run_hardened.json` and in CI pipeline [#2984589851](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/pipelines/2984589851) at commit `d75de80a` matches the deployed Cloud Run container image `app/` tree (tree SHA `de7c0b1cc7d6b7edb90c6b3041b10885ea702492`).

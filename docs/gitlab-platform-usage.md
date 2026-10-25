@@ -11,7 +11,7 @@ FaultForge is designed to showcase the full power of the **GitLab Duo Agent Plat
 |---|---|---|---|---|
 | **GitLab Duo Agent Platform** | [`flows/faultforge-flow.yaml`](../flows/faultforge-flow.yaml) | [`docs/sample_reports/duo_run.json`](sample_reports/duo_run.json) | `established` | Custom flow with Diagnostician, Resilience Healer, and Chaos Hardener; executed via Session [9909079](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/automate/agent-sessions/9909079). |
 | **Duo Flow Triggers** | [`flows/faultforge-flow.yaml:8-12`](../flows/faultforge-flow.yaml#L8-L12), [`docs/duo-run-guide.md:27-32`](duo-run-guide.md#L27-L32) | `reports/duo_run.json` | `established` | Supports both `@mention` trigger and issue `assign` trigger conditions configured in Automate → Flows; verified on Issue `#42`. |
-| **Duo-Authored Commit & Merge Request** | [`scripts/record_duo_evidence.py`](../scripts/record_duo_evidence.py), [`.gitlab-ci.yml:86-97`](../.gitlab-ci.yml#L86-L97) | `reports/duo_evidence.json` | `established` | Verified on GitLab Merge Request `!3` (Branch `fix/resilience-shipping-timeout`), commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token. Commit [`f8aa9d98`](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/commit/f8aa9d98b8617b51c15b5fa6ceda39eb43762730) authored by `FaultForge, Supervised, Resilience, Healer` (`service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com`). MR !3 is unmerged; `main` retains the unpatched regression version of `app/clients/shipping_client.py`. |
+| **Duo-Authored Commit & Merge Request** | [`scripts/record_duo_evidence.py`](../scripts/record_duo_evidence.py), [`.gitlab-ci.yml:86-97`](../.gitlab-ci.yml#L86-L97) | `reports/duo_evidence.json` | `established` | Verified on GitLab Merge Request `!3` (Branch `fix/resilience-shipping-timeout`), commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token. Commit [`f8aa9d98`](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/commit/f8aa9d98b8617b51c15b5fa6ceda39eb43762730) authored by `FaultForge, Supervised, Resilience, Healer` (`service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com`). MR !3 is unmerged; `main`'s `app/clients/shipping_client.py` was authored by FaultForge Agent in `e150fad` as an adapted copy of Duo's patch (18+/30- vs `79348f4`). |
 | **GitLab Work Items & Incident Management** | [`scripts/plan_incident.py`](../scripts/plan_incident.py), [`.gitlab-ci.yml:71-84`](../.gitlab-ci.yml#L71-L84) | [`docs/sample_reports/issue.json`](sample_reports/issue.json) | `established` | Creates and tracks incident work items (`type: incident`) linking telemetry logs, commit SHA, and pipeline URLs. |
 | **GitLab Environments (Staging & Production)** | [`.gitlab-ci.yml:292, 420`](../.gitlab-ci.yml#L292) | [`docs/sample_reports/stage_ledger.json`](sample_reports/stage_ledger.json) | `established` | Manages discrete `staging` deployment and manual protected `production` environment with tracked URLs. |
 | **GitLab Secret Detection** | [`.gitlab-ci.yml:235-248`](../.gitlab-ci.yml#L235-L248) | GitLab CI Security tab | `established` | Native `Jobs/Secret-Detection.gitlab-ci.yml` template scanning repository on every push. |
@@ -29,7 +29,7 @@ In strict accordance with the hackathon's truthfulness rules, FaultForge reports
 ### Established GitLab Duo Artifacts:
 - **Duo Agent Session:** [Session 9909079](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/automate/agent-sessions/9909079) (`claude_sonnet_5_5_vertex`, CI Job `17391324956`)
 - **Root Incident Work Item:** [Issue #42](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/work_items/42)
-- **Duo Remediation Merge Request:** [Merge Request !3](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/merge_requests/3) (Branch `fix/resilience-shipping-timeout`, Commit [`f8aa9d98`](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/commit/f8aa9d98b8617b51c15b5fa6ceda39eb43762730), **unmerged**; `main` retains unpatched `app/clients/shipping_client.py`)
+- **Duo Remediation Merge Request:** [Merge Request !3](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/merge_requests/3) (Branch `fix/resilience-shipping-timeout`, Commit [`f8aa9d98`](https://gitlab.com/gitlab-ai-hackathon/transcend-october-2026/43424456/showcase/-/commit/f8aa9d98b8617b51c15b5fa6ceda39eb43762730), **unmerged**; `main`'s `app/clients/shipping_client.py` was authored by FaultForge Agent in `e150fad` as an adapted copy of Duo's patch)
 - **Author Identity:** `FaultForge, Supervised, Resilience, Healer <service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com>`
 - **Candidate Replay Proof:** 0/20 SLA breaches (0%) under identical fault profile `644a89784316` (`candidate_source: commit authored by the Duo service account (session 9909079); MR opened under the maintainer's token`)
 
@@ -48,8 +48,22 @@ In the CI stage `verify:exact_fault_replay_proof`:
 Consequently, the candidate commit SHA evaluated and recorded in `fault_run_hardened.json` (`79348f47042849465c737be2493b135a21f37e06`) represents the candidate branch head evaluated by the pipeline, while the initial Duo synthesis commit is `f8aa9d98`.
 
 ### Code Provenance: Author Breakdown and Candidate Tree Provenance
-In `reports/duo_evidence.json` and the sealed receipt:
-- **Duo-Authored Commits (`f8aa9d98`, `d372014`, and `79348f4`):** According to Git and GitLab author metadata, all three resilience commits were authored by the GitLab Duo service account (`FaultForge, Supervised, Resilience, Healer <service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com>`) in session 9909079 on branch `fix/resilience-shipping-timeout`. Duo authored the core resilience bounded timeout, circuit breaker load shedding, and deterministic fallback calculation in `app/clients/shipping_client.py`.
+
+From `git log --all --author=service_account`, six commits were authored by the GitLab Duo service account (`FaultForge, Supervised, Resilience, Healer <service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com>`) on branch `fix/resilience-shipping-timeout`:
+
+| Short Commit | Full Commit SHA | Date (UTC) | Subject | GitLab Agent Session / Run |
+|---|---|---|---|:---:|
+| `f8aa9d9` | `f8aa9d98b8617b51c15b5fa6ceda39eb43762730` | 2026-10-22 17:18:48 | fix(resilience): bound shipping client with 0.8s timeout, circuit breaker and graceful fallback | Session `9909079` |
+| `d372014` | `d3720143e15c85f519a7624859541d1ce997f1a0` | 2026-10-23 15:48:38 | fix(resilience): bound shipping call to 0.8s with circuit breaker and fallback estimate | not established |
+| `fafadf8` | `fafadf8bdacf311e6ae7e34b6155b76905faa7d4` | 2026-10-23 17:13:14 | fix(resilience): bound shipping client with 0.8s timeout, circuit breaker and graceful fallback | not established |
+| `b57584a` | `b57584ae2517633d989506c1898611c9adb84760` | 2026-10-23 17:16:01 | fix(resilience): bound shipping client with 0.8s timeout, circuit breaker and graceful fallback | not established |
+| `001055b` | `001055befef13cb190f7f380b79dd371c4cdb8a3` | 2026-10-23 18:31:09 | fix(resilience): bound shipping call to 0.8s with circuit breaker and graceful fallback | not established |
+| `79348f4` | `79348f47042849465c737be2493b135a21f37e06` | 2026-10-23 18:35:09 | fix(resilience): bound shipping call to 0.8s with circuit breaker and graceful fallback | not established |
+
+**Provenance Facts & Commit Relationships:**
+- **None of the six service-account commits is an ancestor of `main`:** Verified via `git merge-base --is-ancestor <commit> main` (`False` for all six).
+- **Merge Request `!3` is unmerged:** Confirmed on GitLab via API (`state: opened`, `merged_at: None`).
+- **Main's `app/clients/shipping_client.py` is authored by FaultForge Agent in `e150fad`:** Authored by `FaultForge Agent <agent@faultforge.internal>` as an adapted copy of Duo's patch (1 file changed, 18 insertions(+), 30 deletions(-) vs `79348f4`), preserving identical resilience semantics.
 - **Orchestration Agent Commit (`3294042`):** Authored by `FaultForge Agent <agent@faultforge.internal>` to merge `main` into `fix/resilience-shipping-timeout`, synchronizing CI configuration and bringing in `app/dashboard.html` updates from `main`.
 - **Evaluated Candidate Head (`79348f47`):** Authored by the Duo service account and evaluated as the candidate commit during exact-fault replay proof in pipeline #2982633493. The diff between initial Duo commit `f8aa9d98` and evaluated `79348f4` is:
   ```
@@ -67,9 +81,9 @@ In `reports/duo_evidence.json` and the sealed receipt:
   app/main.py                    |  27 +++++++++
   5 files changed, 180 insertions(+), 37 deletions(-)
   ```
-  This reflects post-merge main branch features such as `orbit_client.py`.
+  This reflects post-remediation main branch features such as `orbit_client.py`.
 
-### Shipping Client Diff: Candidate Branch Head (`79348f47`) vs. Merged Main (`e150fad`)
+### Shipping Client Diff: Candidate Branch Head (`79348f47`) vs. Main Adapted Commit (`e150fad`)
 Running `git diff 79348f47 e150fad -- app/clients/shipping_client.py`:
 - **Diff Stat:**
   ```
@@ -95,7 +109,6 @@ To guarantee that post-pipeline documentation, test fixtures, and audit tooling 
   AGENTS.md                                       |   4 +-
   README.md                                       |  64 +++---
   docs/architecture.md                            |   2 +-
-  docs/demo-script.md                             |   6 +-
   docs/duo-integration.md                         |   2 +-
   docs/gitlab-platform-usage.md                   |  12 +-
   docs/hackathon-submission.md                    |   8 +-

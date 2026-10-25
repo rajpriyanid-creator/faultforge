@@ -174,7 +174,7 @@ def build_duo_detailed_fields(
     )
 
     shipping_client_diff_expl = (
-        "Comparing candidate branch head 79348f47 with merged main commit in app/clients/shipping_client.py "
+        "Comparing candidate branch head 79348f47 with main adapted commit in app/clients/shipping_client.py "
         "shows 1 file changed, 18 insertions(+), 30 deletions(-). The resilience logic is functionally identical in both: "
         "strict 0.8s timeout bound (SHIPPING_TIMEOUT_SECONDS), circuit breaker load shedding (3 failures, 10s cooldown), "
         "and deterministic fallback rate calculation. The differences are syntactic refactorings: explicit connect timeout "
@@ -182,16 +182,14 @@ def build_duo_detailed_fields(
     )
 
     explanation = (
-        f"According to Git and GitLab author metadata, the resilience commits f8aa9d98, d372014, and MR branch head "
-        f"79348f4 were authored by the GitLab Duo service account (FaultForge, Supervised, Resilience, Healer "
+        f"According to Git and GitLab author metadata, six resilience commits (f8aa9d98, d372014, fafadf8, b57584a, "
+        f"001055b, 79348f4) were authored by the GitLab Duo service account (FaultForge, Supervised, Resilience, Healer "
         f"<service_account_group_121124982_e6349fd5e8ecd6554efb712ed8e2654f@noreply.gitlab.com>) on branch "
-        f"fix/resilience-shipping-timeout. Branch merge commit 3294042 was authored by FaultForge Agent "
-        f"<agent@faultforge.internal> to synchronize main into the branch (bringing in app/dashboard.html). "
-        f"The evaluated commit ({evaluated_sha[:8]}) is the merged main commit containing the Duo resilience patch "
-        f"merged via MR !3, which matches the deployed Cloud Run container app/ tree (app_tree_matches_evaluated_candidate: true). "
-        f"The candidate diff between f8aa9d98 and MR branch head 79348f4 spans app/clients/shipping_client.py and "
-        f"app/dashboard.html (2 files changed, 34 insertions(+), 21 deletions(-)). Because subsequent commits added dashboard "
-        f"and main features, app_tree_matches_duo_commit is false."
+        f"fix/resilience-shipping-timeout; none is an ancestor of main, and MR !3 remains unmerged. Main's shipping client "
+        f"was adapted by FaultForge Agent in commit e150fad. The evaluated commit ({evaluated_sha[:8]}) matches the deployed "
+        f"Cloud Run container app/ tree (app_tree_matches_evaluated_candidate: true). The candidate diff between f8aa9d98 and "
+        f"MR branch head 79348f4 spans app/clients/shipping_client.py and app/dashboard.html (2 files changed, 34 insertions(+), 21 deletions(-)). "
+        f"Because subsequent commits added dashboard and main features, app_tree_matches_duo_commit is false."
     )
 
     return {
